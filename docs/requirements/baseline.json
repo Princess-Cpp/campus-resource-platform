@@ -607,5 +607,18 @@
     "deployment_status": "confirmed_by_user",
     "source": "latest_user_instruction",
     "deployment": "single_repository_single_application"
-  }
+  },
+  "source_documents": [
+    {
+      "path": "docs/source/Pj-任务书.pdf",
+      "kind": "original_course_assignment",
+      "content_modified": false,
+      "sha256": "eff96c69961d699c50e457931be48417161ab4768baf54c7a1aac17f783bd0c3",
+      "mapping_document": "docs/source/README.md",
+      "m1_original_requirement_pages": [
+        5,
+        6
+      ]
+    }
+  ]
 }

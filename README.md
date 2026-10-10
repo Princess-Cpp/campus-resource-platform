@@ -29,6 +29,8 @@ D 不单设第四组，各公共子域指定负责组，其他组负责各自接
 
 | 文档 | 阅读目的 |
 | --- | --- |
+| [课程原始任务书 PDF](docs/source/Pj-任务书.pdf) | 对照完整课程要求与附件 1 的 M1 详细需求 |
+| [任务来源与映射](docs/source/README.md) | 查看原任务书和项目文档的对应关系 |
 | [项目计划](docs/project-plan.md) | 理解项目范围、验收基线和迭代顺序；包含 M1 需求概要 |
 | [需求目录](docs/requirements/README.md) | 查看需求基线、共用规则与验收方法 |
 | [M2 需求](docs/requirements/m2.md) | 查看申请、审批、状态与异常处理 |
