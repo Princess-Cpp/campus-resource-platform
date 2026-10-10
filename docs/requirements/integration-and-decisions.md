@@ -1,5 +1,7 @@
 # 跨模块集成与待定决策
 
+三组共同的模块边界与接口设计入口为 [模块设计与集成总约定](../architecture/module-design-and-integration.md)；本文保留本主题的详细说明，公共接口调整须同步总约定。
+
 本文定义集成业务效果；接口评审、分别实现、失败处理和联调流程见 [模块协作与集成开发](../process/module-collaboration.md)。
 
 ## INT-01 整室审批写回
