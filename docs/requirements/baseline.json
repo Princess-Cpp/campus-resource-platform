@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "baseline_version": "0.3",
+  "baseline_version": "0.4",
   "status": "draft",
   "note": "编号需求中的具体业务政策均为提案，详见 DEC-01 至 DEC-12；来源字段不代表所有细节均由课程强制规定。",
   "requirements": [
@@ -23,7 +23,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "自习室、座位与权限配置；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M1-01.2",
@@ -44,7 +48,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "整点小时预约；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M1-01.3",
@@ -65,7 +73,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "搜索与插座标记；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M1-02.1",
@@ -86,7 +98,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "每日教室编码与 Web 签到；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M1-03.1",
@@ -107,7 +123,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "开始前提醒与迟到提醒；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M1-03.2",
@@ -128,7 +148,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "未签到自动取消与违约；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M1-04.1",
@@ -149,7 +173,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "本人历史与再次预约；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M1-04.2",
@@ -170,7 +198,11 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "授权运营查询、基础预约与使用指标、明确统计局限",
+      "hardening_scope": "高级分析和导出",
+      "hardening_status": "postponed"
     },
     {
       "id": "M2-01.1",
@@ -187,7 +219,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "申请资格与搜索；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M2-01.2",
@@ -204,7 +240,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "申请字段与校验；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M2-01.3",
@@ -221,7 +261,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "多级审批与审批轨迹；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M2-01.4",
@@ -238,7 +282,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "最终审批与资源冲突；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M2-01.5",
@@ -255,7 +303,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "本人及管辖待办/详情、稳定历史与基本统计",
+      "hardening_scope": "高级统计和导出",
+      "hardening_status": "postponed"
     },
     {
       "id": "M2-02.1",
@@ -272,7 +324,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "驳回与申请人撤销；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M2-02.2",
@@ -289,7 +345,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "到期自动撤销；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M2-02.3",
@@ -306,7 +366,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "通知与审计；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M3-01.1",
@@ -323,7 +387,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "授权用户文本上报、字段校验、幂等建单；图片未交付时不显示上传入口",
+      "hardening_scope": "图片及元数据清洗、相似工单管理",
+      "hardening_status": "postponed"
     },
     {
       "id": "M3-01.2",
@@ -340,7 +408,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "派单、接单与重派；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M3-01.3",
@@ -357,7 +429,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "开始维修与全室下架；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M3-01.4",
@@ -374,7 +450,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "完工与验收；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M3-01.5",
@@ -391,7 +471,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "REPORTED/ASSIGNED合法取消、结果未知核对；维修后不提供普通取消",
+      "hardening_scope": "异常关闭双人确认入口",
+      "hardening_status": "postponed"
     },
     {
       "id": "M3-01.6",
@@ -408,7 +492,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "评价；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M3-01.7",
@@ -425,7 +513,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "本人/区域列表、待办、基本耗时和评分统计",
+      "hardening_scope": "高级耗时分析和报表",
+      "hardening_status": "postponed"
     },
     {
       "id": "M3-02.1",
@@ -442,7 +534,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "超时检测与升级；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "M3-02.2",
@@ -459,7 +555,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "通知与审计；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-01.1",
@@ -475,8 +575,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M2",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "账号登录、会话有效期、禁用、密码安全、必要限流",
+      "hardening_scope": "完整恢复与高级风控",
+      "hardening_status": "postponed"
     },
     {
       "id": "D-01.2",
@@ -492,8 +596,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M2",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "动作权限与数据范围；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-01.3",
@@ -509,8 +617,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M2",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "角色授予与撤权、数据范围、基本管理入口及审计",
+      "hardening_scope": "丰富动态权限管理体验",
+      "hardening_status": "postponed"
     },
     {
       "id": "D-02.1",
@@ -525,9 +637,13 @@
       "implementation_files": [],
       "verification_files": [],
       "evidence": [],
-      "owner_module_group": "M1",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "owner_module_group": "M2",
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "空间主数据；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-02.2",
@@ -542,9 +658,13 @@
       "implementation_files": [],
       "verification_files": [],
       "evidence": [],
-      "owner_module_group": "M1",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "owner_module_group": "M2",
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "基本开放规则与院系范围；存在未处理预约时拒绝不安全停用/修改",
+      "hardening_scope": "任意日期例外编辑器、强制停用补偿产品化",
+      "hardening_status": "postponed"
     },
     {
       "id": "D-02.3",
@@ -559,9 +679,13 @@
       "implementation_files": [],
       "verification_files": [],
       "evidence": [],
-      "owner_module_group": "M1",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "owner_module_group": "M2",
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "通用参数存储、模块独立校验、生效规则及必要业务快照",
+      "hardening_scope": "完整参数版本浏览与自动迁移",
+      "hardening_status": "postponed"
     },
     {
       "id": "D-03.1",
@@ -577,8 +701,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M3",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "通知投递；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-03.2",
@@ -594,8 +722,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M3",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "本人站内消息和已读隔离，必要外部通知接收配置",
+      "hardening_scope": "多渠道偏好中心",
+      "hardening_status": "postponed"
     },
     {
       "id": "D-03.3",
@@ -611,8 +743,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M2",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "同事务本地审计库、统一字段、权限查询与来源关联",
+      "hardening_scope": "高级导出与远程汇聚（当前架构不实施）",
+      "hardening_status": "postponed"
     },
     {
       "id": "D-04.1",
@@ -628,8 +764,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M1",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "可用性判定；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-04.2",
@@ -645,8 +785,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M1",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "占用、阻塞与释放；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-04.3",
@@ -662,8 +806,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M1",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "持久化未知操作核对、重启补扫、按来源补偿与基本异常日志",
+      "hardening_scope": "可视化异常队列、通用运维控制台",
+      "hardening_status": "postponed"
     },
     {
       "id": "D-05.1",
@@ -678,9 +826,13 @@
       "implementation_files": [],
       "verification_files": [],
       "evidence": [],
-      "owner_module_group": "M2",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "owner_module_group": "M1",
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "公开接口与错误语义；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-05.2",
@@ -696,8 +848,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M3",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "SQL 迁移、种子与运行配置；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "D-05.3",
@@ -713,8 +869,12 @@
       "verification_files": [],
       "evidence": [],
       "owner_module_group": "M3",
-      "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "mixed",
+      "baseline_scope": "健康检查、共享持久化任务/时钟、备份恢复和最小保留规则",
+      "hardening_scope": "完整可观测平台与复杂治理控制台",
+      "hardening_status": "postponed"
     },
     {
       "id": "INT-01",
@@ -731,7 +891,11 @@
       "evidence": [],
       "owner_module_group": "M2",
       "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "整室审批写回；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "INT-02",
@@ -748,7 +912,11 @@
       "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "维修下架与恢复；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     },
     {
       "id": "INT-03",
@@ -765,7 +933,32 @@
       "evidence": [],
       "owner_module_group": "M1",
       "ownership_status": "proposed_pending_review",
-      "ownership_document": "docs/process/module-ownership.md"
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "来源追溯；包含该需求必要权限、并发、来源、基本幂等及恢复验收",
+      "hardening_scope": "无；必要权限、并发、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
+    },
+    {
+      "id": "INT-04",
+      "parent": null,
+      "title": "维修/停用对既有使用的影响",
+      "document": "docs/requirements/integration-and-decisions.md",
+      "acceptance_section": "补充集成：INT-04 停用、维修对既有使用的影响",
+      "origin": "integration_or_engineering_refinement",
+      "approval_status": "pending_review",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M3",
+      "ownership_status": "revised_proposal_pending_team_estimates",
+      "ownership_document": "docs/process/module-ownership.md",
+      "delivery_tier": "baseline",
+      "baseline_scope": "维修与停用影响的跨模块取消/终止、免违约和基本补偿",
+      "hardening_scope": "无；必要权限、来源保护、基本幂等与恢复均不得降级",
+      "hardening_status": "not_applicable"
     }
   ],
   "technology": {
@@ -787,6 +980,33 @@
         5,
         6
       ]
+    }
+  ],
+  "scope_document": "docs/requirements/scope.md",
+  "shared_deliverables": [
+    {
+      "name": "task_outbox_idempotency_clock_library",
+      "owner_module_group": "M2",
+      "status": "not_started",
+      "maintainer": "to_be_assigned"
+    },
+    {
+      "name": "service_authentication",
+      "owner_module_group": "M2",
+      "status": "not_started",
+      "maintainer": "to_be_assigned"
+    },
+    {
+      "name": "frontend_shell",
+      "owner_module_group": "M2",
+      "status": "not_started",
+      "maintainer": "to_be_assigned"
+    },
+    {
+      "name": "release_coordination_server_application",
+      "owner_module_group": "M3",
+      "status": "not_started",
+      "maintainer": "to_be_assigned"
     }
   ]
 }
