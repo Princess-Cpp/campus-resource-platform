@@ -65,8 +65,12 @@ React 负责界面，Go + Gin 负责服务端业务；用户已确认同仓库�
 
 ## 8. 当前细化基线
 
-采用 [需求基线 v0.2](requirements/README.md)：M2/M3/D 分文件细化，包含状态、权限、数据、界面、异常和验收；[baseline.json](requirements/baseline.json) 跟踪实现与验证。用户已选 MySQL，后端最新选择 Go + Gin，前端 React + Vite。公共层归属按三个模块组的需求分析、实现和验证总工作量评估，不以 M1 需求更详细推断负担。
+采用 [需求基线 v0.3](requirements/README.md)：M1/M2/M3/D 分文件整理与细化，包含状态、权限、数据、界面、异常和验收；[baseline.json](requirements/baseline.json) 跟踪实现与验证。用户已选 MySQL，后端最新选择 Go + Gin，前端 React + Vite。公共层归属按三个模块组的需求分析、实现和验证总工作量评估，不以 M1 需求更详细推断负担。
 
 ## 9. 模块组分工
 
 M1/M2/M3 分别归 M1/M2/M3 三个模块组；[完整分工表](process/module-ownership.md) 明确 D 子域、需求编号、协作边界和故障责任。D 分配为待评审提案，不能当作已形成组内一致。
+
+## 10. M1 原要求与阅读路径
+
+[M1 需求](requirements/m1.md)从 PDF 第 5–6 页附件 1 整理，原要求、验收补充和待定政策分开标注；本计划概要不替代完整需求。项目首页按“课程来源 → 需求基线 → 集成与架构 → 分工和迭代 → 追踪与验收”组织阅读，不把文档名称平铺成清单。

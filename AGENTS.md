@@ -29,7 +29,7 @@
 - 云任务已有隔离环境，使用现有 checkout；除非用户明确要求，不创建 Git worktree。
 
 ## 用户补充约束
-- 必须使用 SQL 数据库，至少三个业务模块；M2/M3 需求见 docs/requirements/m2-m3.md。
+- 必须使用 SQL 数据库，至少三个业务模块；M1/M2/M3/D 需求从 docs/requirements/README.md 进入，M1 原要求见 docs/requirements/m1.md。
 - 文件按用途放入目录，不堆在仓库根目录；架构提案见 docs/architecture/proposal.md。
 - 期中计划申请服务器；尚未取得服务器前不得宣称已远程部署。
 - 第 7 周开始 3 次 review，期末 3 次 review；具体安排见 docs/process/reviews-and-versioning.md。期末展示可能采用录屏。

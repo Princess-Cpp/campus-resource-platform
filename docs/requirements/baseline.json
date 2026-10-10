@@ -1,9 +1,177 @@
 {
   "schema_version": 1,
-  "baseline_version": "0.2",
+  "baseline_version": "0.3",
   "status": "draft",
   "note": "编号需求中的具体业务政策均为提案，详见 DEC-01 至 DEC-12；来源字段不代表所有细节均由课程强制规定。",
   "requirements": [
+    {
+      "id": "M1-01.1",
+      "parent": "M1-01",
+      "title": "自习室、座位与权限配置",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-01.1 自习室、座位与权限配置",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
+    {
+      "id": "M1-01.2",
+      "parent": "M1-01",
+      "title": "整点小时预约",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-01.2 整点小时预约",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
+    {
+      "id": "M1-01.3",
+      "parent": "M1-01",
+      "title": "搜索与插座标记",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-01.3 搜索与插座标记",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
+    {
+      "id": "M1-02.1",
+      "parent": "M1-02",
+      "title": "每日教室编码与 Web 签到",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-02.1 每日教室编码与 Web 签到",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
+    {
+      "id": "M1-03.1",
+      "parent": "M1-03",
+      "title": "开始前提醒与迟到提醒",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-03.1 开始前提醒与迟到提醒",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
+    {
+      "id": "M1-03.2",
+      "parent": "M1-03",
+      "title": "未签到自动取消与违约",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-03.2 未签到自动取消与违约",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
+    {
+      "id": "M1-04.1",
+      "parent": "M1-04",
+      "title": "本人历史与再次预约",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-04.1 本人历史与再次预约",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
+    {
+      "id": "M1-04.2",
+      "parent": "M1-04",
+      "title": "运营统计",
+      "document": "docs/requirements/m1.md",
+      "acceptance_section": "M1-04.2 运营统计",
+      "origin": "course_appendix_1_with_project_acceptance_refinement",
+      "source_pages": [
+        5,
+        6
+      ],
+      "approval_status": "course_requirement_with_pending_project_policies",
+      "implementation_status": "not_started",
+      "verification_status": "not_run",
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
+      "owner_module_group": "M1",
+      "ownership_status": "user_stated_module_assignment",
+      "ownership_document": "docs/process/module-ownership.md"
+    },
     {
       "id": "M2-01.1",
       "parent": "M2-01",

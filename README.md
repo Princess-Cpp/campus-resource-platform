@@ -25,26 +25,38 @@
 
 D 不单设第四组，各公共子域指定负责组，其他组负责各自接入。每组维护自己的前后端、测试和数据库迁移。详见 [模块组分工与协作边界](docs/process/module-ownership.md)。
 
-## 文档导航
+## 文档阅读路径
 
-| 文档 | 阅读目的 |
+文档按“来源 → 需求 → 集成与设计 → 执行 → 验证”组织。第一次了解项目按下面顺序阅读；开发某个模块时先看对应需求，再查它的公共依赖和集成约束。
+
+### 1. 课程要求：为什么做、必须交付什么
+
+阅读 [原始任务书 PDF](docs/source/Pj-任务书.pdf)，确认考核与交付约束。[来源对应表](docs/source/README.md)说明课程章节落在哪份项目文档，区分课程原文和项目补充。
+
+### 2. 需求基线：系统要做什么
+
+从 [需求入口](docs/requirements/README.md)了解共用规则，再按业务读：
+
+| 业务需求 | 公共依赖与关系 |
 | --- | --- |
-| [课程原始任务书 PDF](docs/source/Pj-任务书.pdf) | 对照完整课程要求与附件 1 的 M1 详细需求 |
-| [任务来源与映射](docs/source/README.md) | 查看原任务书和项目文档的对应关系 |
-| [项目计划](docs/project-plan.md) | 理解项目范围、验收基线和迭代顺序；包含 M1 需求概要 |
-| [需求目录](docs/requirements/README.md) | 查看需求基线、共用规则与验收方法 |
-| [M2 需求](docs/requirements/m2.md) | 查看申请、审批、状态与异常处理 |
-| [M3 需求](docs/requirements/m3.md) | 查看维修、验收、升级和评价 |
-| [D 需求](docs/requirements/d.md) | 查看权限、资源、通知、审计与公共工程要求 |
-| [集成与待定决策](docs/requirements/integration-and-decisions.md) | 查看跨模块写回和需评审的业务政策 |
-| [需求索引](docs/requirements/baseline.json) | 跟踪需求编号、责任、实现和验证状态 |
-| [架构](docs/architecture/proposal.md) | 查看目录方案、公开接口、数据一致性与部署 |
-| [分工](docs/process/module-ownership.md) | 查看主责组、协作方和公共能力边界 |
-| [Review 与版本流程](docs/process/reviews-and-versioning.md) | 查看评审、提交、发布和回滚约定 |
-| [进度](docs/progress.md) | 查看已完成规划、未实施任务及依赖 |
-| [AI 协作规则](AGENTS.md) | 查看任务、代码、测试与提交约束 |
+| [M1 座位预约](docs/requirements/m1.md) | 从 PDF 附件 1 整理；依赖 D 身份、空间、资源仲裁与通知 |
+| [M2 整室申请审批](docs/requirements/m2.md) | 依赖 D 权限；最终审批占用 M1 所在教室的座位 |
+| [M3 物业报修](docs/requirements/m3.md) | 依赖 D 派单权限与通知；维修下架、验收恢复 M1 资源 |
+| [D 公共能力](docs/requirements/d.md) | 三个业务模块共同使用，按子域分配维护责任 |
 
-本文件是整个项目的入口；需求目录下的 README 是该目录的说明，两者职责不同。
+然后读 [跨模块集成与待定决策](docs/requirements/integration-and-decisions.md)，确认模块之间怎样互相影响。模块验收与集成验收都要满足，不能各组单独完成就视为整个系统完成。
+
+### 3. 设计与分工：怎么做、谁负责
+
+[架构](docs/architecture/proposal.md)将需求落实到 React、Go/Gin、MySQL 和模块接口；[分工](docs/process/module-ownership.md)指定业务及 D 子域负责组、接入责任和联调方。技术已选，业务政策与 D 分工仍有待评审项。
+
+### 4. 迭代与交付：先做什么、如何发布
+
+[项目计划](docs/project-plan.md)安排需求依赖与迭代顺序；[AI 协作规则](AGENTS.md)约束每项任务的实现和验证；[Review 与版本流程](docs/process/reviews-and-versioning.md)约束评审、提交、部署与回滚。
+
+### 5. 追踪与验收：完成了什么、证据在哪
+
+[进度](docs/progress.md)展示当前阶段和阻塞；[需求索引](docs/requirements/baseline.json)将每项需求关联到负责组、实现、测试和真实证据。它们跟踪前述要求，不另立一套需求。目前没有应用实现或业务验收结果。
 
 ## 开发与验收原则
 
