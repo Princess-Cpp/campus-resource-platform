@@ -48,7 +48,7 @@ D 不单设第四组，各公共子域指定负责组，其他组负责各自接
 
 ### 3. 设计与分工：怎么做、谁负责
 
-[架构](docs/architecture/proposal.md)将需求落实到 React、Go/Gin、MySQL 和模块接口；[分工](docs/process/module-ownership.md)指定业务及 D 子域负责组、接入责任和联调方。技术已选，业务政策与 D 分工仍有待评审项。
+[架构](docs/architecture/proposal.md)将需求落实到 React、Go/Gin、MySQL 和模块接口；[分工](docs/process/module-ownership.md)指定业务及 D 子域负责组、接入责任和联调方。技术已选，业务政策与 D 分工仍有待评审项。接着读 [模块协作与集成开发](docs/process/module-collaboration.md)，明确接口如何共同确认、两端如何分别实现、失败怎样恢复和联调如何验收。
 
 ### 4. 迭代与交付：先做什么、如何发布
 
