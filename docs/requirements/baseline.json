@@ -16,11 +16,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -41,11 +52,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -66,11 +88,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -91,11 +124,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -116,11 +160,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -141,11 +196,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -166,11 +232,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -191,11 +268,22 @@
         6
       ],
       "approval_status": "course_requirement_with_pending_project_policies",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/m1",
+        "backend/migrations/001_m1.sql",
+        "frontend/src/main.jsx"
+      ],
+      "verification_files": [
+        "backend/internal/m1/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "go test ./... passed",
+        "frontend npm run build passed",
+        "local MySQL health/search/booking/idempotency smoke passed"
+      ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1008,5 +1096,8 @@
       "status": "not_started",
       "maintainer": "to_be_assigned"
     }
-  ]
+  ],
+  "implementation_notes": {
+    "M1": "M1 initial code is on this branch; M2 identity/catalog adapters are explicit development fixtures and must be replaced before production or cross-group acceptance. Cross-module HTTP clients, real concurrency and restart tests remain unrun."
+  }
 }

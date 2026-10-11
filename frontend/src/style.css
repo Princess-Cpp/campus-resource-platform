@@ -1,0 +1,1 @@
+body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#182230}main{display:grid;gap:1.5rem}section{border:1px solid #d7dee8;border-radius:12px;padding:1rem}input,button{margin:.25rem;padding:.55rem;border:1px solid #b8c4d4;border-radius:6px;background:white}button{cursor:pointer}.error{color:#b42318}li{margin:.6rem 0}
