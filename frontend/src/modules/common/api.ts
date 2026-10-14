@@ -1,0 +1,61 @@
+import { getDevToken } from "@/modules/common/session"
+
+// 统一 API 客户端：后端成功返回 {data, correlationId}，失败返回 {error: {code}, correlationId}。
+export class ApiError extends Error {
+  readonly code: string
+  readonly status: number
+  readonly correlationId?: string
+
+  constructor(code: string, status: number, correlationId?: string) {
+    super(errorMessage(code))
+    this.code = code
+    this.status = status
+    this.correlationId = correlationId
+  }
+}
+
+const MESSAGES: Record<string, string> = {
+  UNAUTHENTICATED: "身份无效，请在左下角切换开发令牌",
+  FORBIDDEN: "没有权限执行该操作",
+  INVALID_INPUT: "输入不符合要求，请检查时间和参数",
+  NOT_FOUND: "记录不存在或无权查看",
+  RESOURCE_UNAVAILABLE: "座位当前不可用（未开放、已下架或无权预约）",
+  RESOURCE_CONFLICT: "该时段已被占用，请换一个座位或时段",
+  IDEMPOTENCY_CONFLICT: "重复的请求，请刷新后重试",
+  INVALID_IDEMPOTENCY_KEY: "请求标识无效，请重试",
+  INVALID_STATE: "当前状态或时间不允许该操作",
+  INVALID_CODE: "签到码不正确",
+  VERSION_CONFLICT: "数据已变化，请刷新后重试",
+  INTERNAL_ERROR: "服务器内部错误，请稍后重试",
+  NETWORK_ERROR: "无法连接服务器",
+}
+
+export function errorMessage(code: string) {
+  return MESSAGES[code] ?? `请求失败（${code}）`
+}
+
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch("/api/v1" + path, {
+      ...init,
+      headers: {
+        Authorization: "Bearer " + getDevToken(),
+        "Content-Type": "application/json",
+        ...init.headers,
+      },
+    })
+  } catch {
+    throw new ApiError("NETWORK_ERROR", 0)
+  }
+  const body = await response.json().catch(() => null)
+  if (!response.ok) {
+    throw new ApiError(body?.error?.code ?? `HTTP_${response.status}`, response.status, body?.correlationId)
+  }
+  return body?.data as T
+}
+
+export function describeError(error: unknown) {
+  if (error instanceof ApiError) return error.message
+  return error instanceof Error ? error.message : String(error)
+}
