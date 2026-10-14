@@ -1,5 +1,83 @@
 package main
-import("context";"database/sql";"embed";"log";"net/http";"os";"time";"campus-resource-platform/backend/internal/dev";"campus-resource-platform/backend/internal/m1";"campus-resource-platform/backend/migrations";_ "github.com/go-sql-driver/mysql";"github.com/gin-gonic/gin")
+
+import (
+	"campus-resource-platform/backend/internal/dev"
+	"campus-resource-platform/backend/internal/m1"
+	"campus-resource-platform/backend/migrations"
+	"context"
+	"database/sql"
+	"embed"
+	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	"io/fs"
+	"log"
+	"net/http"
+	"os"
+	"path"
+	"strings"
+	"time"
+)
+
 //go:embed webdist/*
 var web embed.FS
-func main(){if os.Getenv("M1_DEV_MODE")!="true"{log.Fatal("M1_DEV_MODE=true is required until M2 identity/catalog is integrated")};secret:=os.Getenv("M1_CODE_SECRET");if len(secret)<32{log.Fatal("M1_CODE_SECRET must contain 32 bytes")};f,e:=dev.Load(os.Getenv("M1_DEV_FIXTURE"));if e!=nil{log.Fatal(e)};db,e:=sql.Open("mysql",os.Getenv("MYSQL_DSN"));if e!=nil{log.Fatal(e)};defer db.Close();db.SetMaxOpenConns(20);ctx:=context.Background();if e=db.PingContext(ctx);e!=nil{log.Fatal(e)};if e=migrations.Apply(ctx,db);e!=nil{log.Fatal(e)};s:=m1.New(db,f,[]byte(secret));r:=s.Router(f.Auth);r.NoRoute(func(c *gin.Context){if len(c.Request.URL.Path)>=5&&c.Request.URL.Path[:5]=="/api/"{c.Status(404);return};c.Data(200,"text/html; charset=utf-8",[]byte("<!doctype html><title>M1</title><p>React build pending.</p>"))});go func(){t:=time.NewTicker(10*time.Second);defer t.Stop();for range t.C{if e:=s.Tick(ctx);e!=nil{log.Printf("M1 task retry: %v",e)}}}();addr:=os.Getenv("LISTEN_ADDR");if addr==""{addr=":8080"};log.Printf("M1 development server on %s",addr);log.Fatal((&http.Server{Addr:addr,Handler:r,ReadHeaderTimeout:5*time.Second}).ListenAndServe())}
+
+func main() {
+	if os.Getenv("M1_DEV_MODE") != "true" {
+		log.Fatal("M1_DEV_MODE=true is required until M2 identity/catalog is integrated")
+	}
+	secret := os.Getenv("M1_CODE_SECRET")
+	if len(secret) < 32 {
+		log.Fatal("M1_CODE_SECRET must contain 32 bytes")
+	}
+	f, e := dev.Load(os.Getenv("M1_DEV_FIXTURE"))
+	if e != nil {
+		log.Fatal(e)
+	}
+	db, e := sql.Open("mysql", os.Getenv("MYSQL_DSN"))
+	if e != nil {
+		log.Fatal(e)
+	}
+	defer db.Close()
+	db.SetMaxOpenConns(20)
+	ctx := context.Background()
+	if e = db.PingContext(ctx); e != nil {
+		log.Fatal(e)
+	}
+	if e = migrations.Apply(ctx, db); e != nil {
+		log.Fatal(e)
+	}
+	s := m1.New(db, f, []byte(secret))
+	r := s.Router(f.Auth)
+	webRoot, e := fs.Sub(web, "webdist")
+	if e != nil {
+		log.Fatal(e)
+	}
+	static := http.FileServer(http.FS(webRoot))
+	r.NoRoute(func(c *gin.Context) {
+		p := c.Request.URL.Path
+		if strings.HasPrefix(p, "/api/") {
+			c.Status(404)
+			return
+		}
+		// 前端使用 History 路由：无扩展名且不存在的路径回退到 index.html，缺失的静态资源仍返回 404。
+		if _, e := fs.Stat(webRoot, strings.TrimPrefix(path.Clean(p), "/")); e != nil && path.Ext(p) == "" {
+			c.Request.URL.Path = "/"
+		}
+		static.ServeHTTP(c.Writer, c.Request)
+	})
+	go func() {
+		t := time.NewTicker(10 * time.Second)
+		defer t.Stop()
+		for range t.C {
+			if e := s.Tick(ctx); e != nil {
+				log.Printf("M1 task retry: %v", e)
+			}
+		}
+	}()
+	addr := os.Getenv("LISTEN_ADDR")
+	if addr == "" {
+		addr = ":8080"
+	}
+	log.Printf("M1 development server on %s", addr)
+	log.Fatal((&http.Server{Addr: addr, Handler: r, ReadHeaderTimeout: 5 * time.Second}).ListenAndServe())
+}
