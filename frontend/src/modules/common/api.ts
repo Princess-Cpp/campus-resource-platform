@@ -26,6 +26,10 @@ const MESSAGES: Record<string, string> = {
   INVALID_STATE: "当前状态或时间不允许该操作",
   INVALID_CODE: "签到码不正确",
   VERSION_CONFLICT: "数据已变化，请刷新后重试",
+  DEPENDENCY_UNAVAILABLE: "场地服务暂不可用，请稍后核对或重试原操作",
+  OPERATION_PENDING: "场地操作尚未确认，请刷新后查看进度",
+  DEADLINE_EXPIRED: "审批期限已到，不能继续批准",
+  APPROVERS_UNAVAILABLE: "缺少符合条件的审批人，请联系管理员配置",
   INTERNAL_ERROR: "服务器内部错误，请稍后重试",
   NETWORK_ERROR: "无法连接服务器",
 }

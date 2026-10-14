@@ -23,7 +23,7 @@ const RECENT_LIMIT = 100
 export function HomePage() {
   const { data, error, loading, reload } = useRequest(() => listBookings(1, RECENT_LIMIT), [])
   const upcoming = data ? summarize(data).upcoming.slice(0, 5) : []
-  const planned = modules.filter((m) => m.status === "planned")
+  const otherModules = modules.filter((m) => m.id !== "m1")
 
   return (
     <Page title="工作台" description="自习座位预约概览；统计基于你最近 100 条预约记录。">
@@ -83,13 +83,13 @@ export function HomePage() {
             )}
           </CardContent>
         </Card>
-        {planned.map((m) => (
+        {otherModules.map((m) => (
           <Card key={m.id}>
             <CardHeader>
               <CardTitle>{m.label}</CardTitle>
               <CardDescription>整间教室的申请与多级审批</CardDescription>
               <CardAction>
-                <Badge variant="outline">开发中</Badge>
+                <Badge variant="outline">{m.status === "planned" ? "开发中" : "开发预览"}</Badge>
               </CardAction>
             </CardHeader>
             <CardContent>
@@ -109,7 +109,7 @@ export function HomePage() {
                 ))}
               </ItemGroup>
             </CardContent>
-            <CardFooter className="text-xs text-muted-foreground">页面位置已预留，由 M2 组实现后接入。</CardFooter>
+            <CardFooter className="text-xs text-muted-foreground">申请后依次进行院系审批与场地确认。</CardFooter>
           </Card>
         ))}
       </div>

@@ -300,11 +300,24 @@
       "acceptance_section": "M2-01.1 申请资格与搜索",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -321,11 +334,24 @@
       "acceptance_section": "M2-01.2 申请字段与校验",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -342,11 +368,24 @@
       "acceptance_section": "M2-01.3 多级审批与审批轨迹",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -363,11 +402,24 @@
       "acceptance_section": "M2-01.4 最终审批与资源冲突",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -384,11 +436,24 @@
       "acceptance_section": "M2-01.5 查询、历史与统计",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -405,11 +470,24 @@
       "acceptance_section": "M2-02.1 驳回与申请人撤销",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -426,11 +504,24 @@
       "acceptance_section": "M2-02.2 到期自动撤销",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -447,11 +538,24 @@
       "acceptance_section": "M2-02.3 通知与审计",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/m2",
+        "backend/migrations/002_m2.sql",
+        "frontend/src/modules/m2",
+        "contracts/m2.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
+        "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "Frontend build passed; no frontend automated tests run, manual acceptance pending",
+        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",

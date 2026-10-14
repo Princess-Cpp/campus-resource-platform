@@ -1,1 +1,123 @@
-{"tokens":{"student-demo":{"id":"student-1","department":"CS","role":"student"},"operator-demo":{"id":"operator-1","department":"CS","role":"operator"},"m2-service":{"id":"m2-service","service":"M2"},"m3-service":{"id":"m3-service","service":"M3"}},"rooms":[{"id":"room-101","name":"自习室101","area":"A楼","department":"","active":true,"openHour":8,"closeHour":22,"seats":[{"id":"seat-101-01","label":"A01","outlet":true,"active":true},{"id":"seat-101-02","label":"A02","outlet":false,"active":true}]}],"emails":{"student-1":"student@example.test"}}
+{
+  "tokens": {
+    "student-demo": {
+      "id": "student-1",
+      "department": "CS",
+      "role": "student"
+    },
+    "operator-demo": {
+      "id": "operator-1",
+      "department": "CS",
+      "role": "operator"
+    },
+    "m2-service": {
+      "id": "m2-service",
+      "service": "M2"
+    },
+    "m3-service": {
+      "id": "m3-service",
+      "service": "M3"
+    },
+    "department-demo": {
+      "id": "department-1",
+      "department": "CS",
+      "role": "approver"
+    },
+    "venue-demo": {
+      "id": "venue-1",
+      "department": "CS",
+      "role": "approver"
+    }
+  },
+  "rooms": [
+    {
+      "id": "room-101",
+      "name": "自习室101",
+      "area": "A楼",
+      "department": "",
+      "active": true,
+      "openHour": 8,
+      "closeHour": 22,
+      "seats": [
+        {
+          "id": "seat-101-01",
+          "label": "A01",
+          "outlet": true,
+          "active": true
+        },
+        {
+          "id": "seat-101-02",
+          "label": "A02",
+          "outlet": false,
+          "active": true
+        }
+      ]
+    }
+  ],
+  "emails": {
+    "student-1": "student@example.test"
+  },
+  "m2Tokens": {
+    "student-demo": {
+      "id": "student-1",
+      "department": "CS",
+      "permissions": [
+        "classroom.apply"
+      ],
+      "areas": [],
+      "contactRefs": [
+        "campus-email"
+      ]
+    },
+    "department-demo": {
+      "id": "department-1",
+      "department": "CS",
+      "permissions": [
+        "approval.department"
+      ],
+      "areas": [],
+      "contactRefs": []
+    },
+    "venue-demo": {
+      "id": "venue-1",
+      "department": "CS",
+      "permissions": [
+        "approval.final",
+        "classroom.terminate"
+      ],
+      "areas": [
+        "A楼"
+      ],
+      "contactRefs": []
+    },
+    "operator-demo": {
+      "id": "operator-1",
+      "department": "CS",
+      "permissions": [
+        "classroom.stats"
+      ],
+      "areas": [
+        "A楼"
+      ],
+      "contactRefs": []
+    }
+  },
+  "m2Rooms": [
+    {
+      "id": "room-101",
+      "name": "自习室101",
+      "area": "A楼",
+      "department": "",
+      "capacity": 30,
+      "active": true,
+      "openHour": 8,
+      "closeHour": 22
+    }
+  ],
+  "m2Policy": {
+    "version": "proposal-v1",
+    "maxHours": 4,
+    "advanceDays": 14,
+    "approvalHours": 24
+  }
+}
