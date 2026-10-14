@@ -1,0 +1,8 @@
+node_modules/
+frontend/dist/
+backend/cmd/server/webdist/
+*.log
+.env
+.env.*
+!.env.example
+backend/server
