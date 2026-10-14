@@ -68,7 +68,7 @@ export function SearchPage() {
         <Card>
           <CardContent>
             <form onSubmit={submit}>
-              <FieldGroup className="grid gap-4 @3xl/main:grid-cols-[1.2fr_1fr_1fr_1.2fr_auto_auto] @3xl/main:items-end">
+              <FieldGroup className="grid grid-cols-1 gap-4 @3xl/main:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_auto_auto] @3xl/main:items-end">
                 <Field>
                   <FieldLabel htmlFor="search-date">日期</FieldLabel>
                   <Input id="search-date" type="date" value={date} min={campusToday()} onChange={(e) => setDate(e.target.value)} required />

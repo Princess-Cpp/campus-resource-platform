@@ -39,7 +39,7 @@ export function HomePage() {
       <div className="px-4 lg:px-6">
         <BookingHoursChart bookings={data ?? []} />
       </div>
-      <div className="grid gap-4 px-4 lg:px-6 @4xl/main:grid-cols-[3fr_2fr]">
+      <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @4xl/main:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>
           <CardHeader>
             <CardTitle>即将开始</CardTitle>
