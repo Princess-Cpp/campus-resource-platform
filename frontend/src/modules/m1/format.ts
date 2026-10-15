@@ -46,3 +46,8 @@ export function isUsed(booking: Booking) {
 export function isNoShow(booking: Booking) {
   return booking.status === "CANCELLED" && booking.reason === "NO_SHOW"
 }
+
+// 违约记录需保留以便申诉，与服务端规则一致。
+export function canDelete(booking: Booking) {
+  return booking.status === "FINISHED" || (booking.status === "CANCELLED" && !isNoShow(booking))
+}

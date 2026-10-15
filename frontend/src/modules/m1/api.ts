@@ -52,6 +52,11 @@ export function cancelBooking(bookingId: string) {
   return request<Booking>(`/m1/bookings/${encodeURIComponent(bookingId)}/cancel`, { method: "POST" })
 }
 
+// 仅从本人列表移除已结束的记录；服务端保留预约、审计与违约数据。
+export function deleteBooking(bookingId: string) {
+  return request<{ id: string }>(`/m1/bookings/${encodeURIComponent(bookingId)}`, { method: "DELETE" })
+}
+
 export function listNotifications() {
   return request<Notification[] | null>("/m1/notifications").then((rows) => rows ?? [])
 }

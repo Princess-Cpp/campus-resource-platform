@@ -33,6 +33,10 @@ export function formatDateTime(value: string | Date) {
   return dateTime.format(new Date(value))
 }
 
+export function formatClock(value: string | Date) {
+  return clock.format(new Date(value))
+}
+
 export function formatRange(start: string, end: string) {
   return `${dateTime.format(new Date(start))} – ${clock.format(new Date(end))}`
 }

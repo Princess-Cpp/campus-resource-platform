@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { describeError } from "@/modules/common/api"
 import { Page } from "@/modules/common/page"
-import { campusHour, campusInstant, campusToday, formatRange } from "@/modules/common/time"
+import { campusHour, campusInstant, campusToday, formatClock, formatRange } from "@/modules/common/time"
 import { searchSeats, type AvailableSeat } from "@/modules/m1/api"
 import { BookSeatDialog } from "@/modules/m1/components/book-seat-dialog"
 
@@ -24,8 +24,24 @@ import { BookSeatDialog } from "@/modules/m1/components/book-seat-dialog"
 const MAX_HOURS = 4
 const HOURS = Array.from({ length: 24 }, (_, h) => ({ value: String(h), label: `${String(h).padStart(2, "0")}:00` }))
 const DURATIONS = Array.from({ length: MAX_HOURS }, (_, i) => ({ value: String(i + 1), label: `${i + 1} 小时` }))
+// 与 backend/dev-fixture.json 的测试教室一致；接入正式空间主数据后改为读取各教室开放时间。
+const TEST_ROOM_HOURS = { open: 8, close: 22 }
+const TEST_ROOM_HOURS_LABEL = `${String(TEST_ROOM_HOURS.open).padStart(2, "0")}:00–${TEST_ROOM_HOURS.close}:00`
 
 type Query = { startAt: Date; endAt: Date; area: string; outlet: boolean }
+
+function pastTimeProblem(startAt: Date, now = new Date()) {
+  if (startAt.getTime() <= now.getTime()) {
+    return `已过当前时段：现在是 ${formatClock(now)}，所选开始时间 ${formatClock(startAt)} 已过去，请选择之后的整点或其他日期。`
+  }
+  return ""
+}
+
+function outsideTestRoomHours(q: Query) {
+  const startHour = campusHour(q.startAt)
+  const endHour = campusHour(q.endAt) || 24
+  return startHour < TEST_ROOM_HOURS.open || endHour > TEST_ROOM_HOURS.close
+}
 
 export function SearchPage() {
   const navigate = useNavigate()
@@ -37,11 +53,13 @@ export function SearchPage() {
   const [query, setQuery] = useState<Query>()
   const [results, setResults] = useState<AvailableSeat[]>()
   const [error, setError] = useState("")
+  const [crossDay, setCrossDay] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const run = async (q: Query) => {
     setLoading(true)
     setError("")
+    setCrossDay(false)
     try {
       setResults(await searchSeats(q))
       setQuery(q)
@@ -57,6 +75,19 @@ export function SearchPage() {
     event.preventDefault()
     const startAt = campusInstant(date, Number(hour))
     const endAt = new Date(startAt.getTime() + Number(duration) * 3_600_000)
+    const problem = pastTimeProblem(startAt)
+    if (problem) {
+      setError(problem)
+      setCrossDay(false)
+      setResults(undefined)
+      return
+    }
+    if (Number(hour) + Number(duration) > 24) {
+      setError("")
+      setCrossDay(true)
+      setResults(undefined)
+      return
+    }
     run({ startAt, endAt, area: area.trim(), outlet })
   }
 
@@ -124,7 +155,17 @@ export function SearchPage() {
       </div>
 
       <div className="px-4 lg:px-6">
-        {error ? (
+        {crossDay ? (
+          <Empty className="border">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <SearchIcon />
+              </EmptyMedia>
+              <EmptyTitle>不允许预约跨天</EmptyTitle>
+              <EmptyDescription>教室开放时间为 {TEST_ROOM_HOURS_LABEL}，请选择该范围内的时段。</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : error ? (
           <Alert variant="destructive">
             <AlertTitle>查询失败</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -147,8 +188,17 @@ export function SearchPage() {
               <EmptyMedia variant="icon">
                 <SearchIcon />
               </EmptyMedia>
-              <EmptyTitle>该时段没有可预约的座位</EmptyTitle>
-              <EmptyDescription>试试更换时段、区域，或关闭“需要插座”筛选。</EmptyDescription>
+              {outsideTestRoomHours(query) ? (
+                <>
+                  <EmptyTitle>所选时段不在开放时间内</EmptyTitle>
+                  <EmptyDescription>教室开放时间为 {TEST_ROOM_HOURS_LABEL}，请选择该范围内的时段。</EmptyDescription>
+                </>
+              ) : (
+                <>
+                  <EmptyTitle>该时段没有可预约的座位</EmptyTitle>
+                  <EmptyDescription>试试更换时段、区域，或关闭“需要插座”筛选。</EmptyDescription>
+                </>
+              )}
             </EmptyHeader>
           </Empty>
         ) : (

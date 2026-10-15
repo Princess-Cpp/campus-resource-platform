@@ -17,6 +17,8 @@ import { HISTORY_PAGE_SIZE, listBookings, type Booking } from "@/modules/m1/api"
 import { BookingStatusBadge } from "@/modules/m1/components/booking-status-badge"
 import { CancelBookingButton } from "@/modules/m1/components/cancel-booking-button"
 import { CheckInDialog } from "@/modules/m1/components/check-in-dialog"
+import { DeleteBookingButton } from "@/modules/m1/components/delete-booking-button"
+import { canDelete } from "@/modules/m1/format"
 
 const FILTERS: { value: string; label: string; match: (b: Booking) => boolean }[] = [
   { value: "all", label: "全部", match: () => true },
@@ -110,12 +112,15 @@ export function BookingsPage() {
                         <BookingStatusBadge booking={b} />
                       </TableCell>
                       <TableCell className="pr-4">
-                        {b.status === "RESERVED" && (
-                          <div className="flex justify-end gap-2">
-                            <CheckInDialog booking={b} onDone={reload} />
-                            <CancelBookingButton booking={b} onDone={reload} />
-                          </div>
-                        )}
+                        <div className="flex justify-end gap-2">
+                          {b.status === "RESERVED" && (
+                            <>
+                              <CheckInDialog booking={b} onDone={reload} />
+                              <CancelBookingButton booking={b} onDone={reload} />
+                            </>
+                          )}
+                          {canDelete(b) && <DeleteBookingButton booking={b} onDone={reload} />}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

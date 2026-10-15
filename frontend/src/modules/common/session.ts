@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react"
 // 页面只依赖 useDevToken/getDevToken，不直接读写 localStorage。
 const STORAGE_KEY = "campus.devToken"
 export const DEFAULT_DEV_TOKEN = "student-demo"
-export const KNOWN_DEV_TOKENS = ["student-demo", "operator-demo"]
+export const KNOWN_DEV_TOKENS = ["student-demo", "department-demo", "venue-demo", "operator-demo"]
 
 const listeners = new Set<() => void>()
 

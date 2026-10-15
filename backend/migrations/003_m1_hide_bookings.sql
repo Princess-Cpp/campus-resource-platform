@@ -1,0 +1,1 @@
+ALTER TABLE m1_bookings ADD COLUMN hidden_at DATETIME(6) NULL;
