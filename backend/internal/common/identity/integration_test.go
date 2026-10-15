@@ -1,0 +1,433 @@
+package identity_test
+
+import (
+	"bytes"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+	"net/http/cookiejar"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"slices"
+	"testing"
+	"time"
+
+	"campus-resource-platform/backend/internal/common/identity"
+	"campus-resource-platform/backend/internal/dev"
+	"campus-resource-platform/backend/internal/m1"
+	"campus-resource-platform/backend/internal/m2"
+	"campus-resource-platform/backend/migrations"
+	_ "github.com/go-sql-driver/mysql"
+)
+
+type identityHarness struct {
+	t       *testing.T
+	db      *sql.DB
+	store   *identity.Store
+	server  *httptest.Server
+	client  *http.Client
+	baseURL *url.URL
+	now     time.Time
+}
+
+type sqlDirectory struct {
+	store   *identity.Store
+	fixture *dev.M2Fixture
+}
+
+func (d *sqlDirectory) Authenticate(ctx context.Context, token string) (m2.Actor, error) {
+	session, err := d.store.Authenticate(ctx, token)
+	if err != nil {
+		return m2.Actor{}, err
+	}
+	p := session.Principal
+	return m2.Actor{
+		ID: p.ID, Department: p.Department, Permissions: p.Permissions,
+		Areas: p.Areas, ContactRefs: p.ContactRefs,
+	}, nil
+}
+
+func (d *sqlDirectory) Actors(ctx context.Context) ([]m2.Actor, error) {
+	principals, err := d.store.Principals(ctx)
+	if err != nil {
+		return nil, err
+	}
+	actors := make([]m2.Actor, 0, len(principals))
+	for _, p := range principals {
+		actors = append(actors, m2.Actor{
+			ID: p.ID, Department: p.Department, Permissions: p.Permissions,
+			Areas: p.Areas, ContactRefs: p.ContactRefs,
+		})
+	}
+	return actors, nil
+}
+
+func (d *sqlDirectory) Rooms(ctx context.Context) ([]m2.Room, error) {
+	return d.fixture.Rooms(ctx)
+}
+
+func setupIdentity(t *testing.T) *identityHarness {
+	t.Helper()
+	dsn := os.Getenv("IDENTITY_TEST_DSN")
+	if dsn == "" {
+		t.Skip("IDENTITY_TEST_DSN not set; requires isolated MySQL database")
+	}
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(20)
+	t.Cleanup(func() { db.Close() })
+
+	var database string
+	if err = db.QueryRow("SELECT DATABASE()").Scan(&database); err != nil {
+		t.Fatal(err)
+	}
+	if database != "campus_identity_check" {
+		t.Fatal("identity tests only run against campus_identity_check")
+	}
+	if err = migrations.Apply(context.Background(), db); err != nil {
+		t.Fatal(err)
+	}
+	tables := []string{
+		"m2_commands", "m2_events", "m2_outbox", "m2_operations", "m2_applications",
+		"m1_operations", "m1_sources", "m1_bookings", "m1_audit", "m1_outbox", "m1_violations",
+		"d_login_attempts", "d_sessions", "d_user_contacts", "d_user_areas",
+		"d_user_roles", "d_users", "d_student_roster",
+	}
+	for _, table := range tables {
+		if _, err = db.Exec("DELETE FROM " + table); err != nil {
+			t.Fatalf("clear %s: %v", table, err)
+		}
+	}
+	if _, err = db.Exec(`INSERT INTO d_student_roster(school_number,user_id,name,department,active)
+		VALUES ('20269999','identity-student','测试学生','CS',1)`); err != nil {
+		t.Fatal(err)
+	}
+
+	now := time.Date(2030, 1, 10, 0, 0, 0, 0, time.UTC)
+	store := identity.New(db, false)
+	store.Now = func() time.Time { return now }
+	fixture, err := dev.Load("../../../dev-fixture.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	m2Fixture, err := dev.LoadM2("../../../dev-fixture.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	auth := func(ctx context.Context, token string) (m1.Actor, error) {
+		session, sessionErr := store.Authenticate(ctx, token)
+		if sessionErr == nil {
+			p := session.Principal
+			role := ""
+			if len(p.Roles) > 0 {
+				role = p.Roles[0]
+			}
+			return m1.Actor{ID: p.ID, Department: p.Department, Role: role}, nil
+		}
+		service, serviceErr := fixture.Auth(ctx, token)
+		if serviceErr != nil || service.Service == "" {
+			return m1.Actor{}, sessionErr
+		}
+		return service, nil
+	}
+	resource := m1.New(db, fixture, []byte("test-only-signing-secret-at-least-32"))
+	resource.Now = func() time.Time { return now }
+	authHTTP := &identity.HTTP{Store: store}
+	router := resource.Router(auth, authHTTP.CSRFMiddleware())
+	authHTTP.Register(router)
+	classrooms := m2.New(db, &sqlDirectory{store: store, fixture: m2Fixture}, &m2.HTTPResources{})
+	classrooms.Now = func() time.Time { return now }
+	classrooms.Register(router)
+	server := httptest.NewServer(router)
+	t.Cleanup(server.Close)
+	classrooms.Resources = &m2.HTTPResources{BaseURL: server.URL, Token: "m2-service"}
+
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseURL, _ := url.Parse(server.URL)
+	return &identityHarness{
+		t: t, db: db, store: store, server: server,
+		client: &http.Client{Jar: jar}, baseURL: baseURL, now: now,
+	}
+}
+
+func (h *identityHarness) request(method, path string, body any, headers map[string]string) (int, []byte, []*http.Cookie) {
+	h.t.Helper()
+	var reader io.Reader
+	if body != nil {
+		raw, err := json.Marshal(body)
+		if err != nil {
+			h.t.Fatal(err)
+		}
+		reader = bytes.NewReader(raw)
+	}
+	req, err := http.NewRequest(method, h.server.URL+path, reader)
+	if err != nil {
+		h.t.Fatal(err)
+	}
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+	res, err := h.client.Do(req)
+	if err != nil {
+		h.t.Fatal(err)
+	}
+	defer res.Body.Close()
+	raw, err := io.ReadAll(res.Body)
+	if err != nil {
+		h.t.Fatal(err)
+	}
+	return res.StatusCode, raw, res.Cookies()
+}
+
+func errorCode(raw []byte) string {
+	var envelope struct {
+		Error struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	_ = json.Unmarshal(raw, &envelope)
+	return envelope.Error.Code
+}
+
+func sessionData(t *testing.T, raw []byte) identity.SessionData {
+	t.Helper()
+	var envelope struct {
+		Data identity.SessionData `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		t.Fatal(err)
+	}
+	return envelope.Data
+}
+
+func (h *identityHarness) csrf() string {
+	h.t.Helper()
+	status, raw, _ := h.request(http.MethodGet, "/api/v1/auth/session", nil, nil)
+	if status != http.StatusOK {
+		h.t.Fatalf("session: %d %s", status, raw)
+	}
+	return sessionData(h.t, raw).CSRFToken
+}
+
+func TestSQLIdentityHTTPAndModuleIsolation(t *testing.T) {
+	h := setupIdentity(t)
+
+	status, raw, _ := h.request(http.MethodPost, "/api/v1/auth/register", map[string]any{
+		"schoolNumber": "20269999", "name": "测试学生",
+		"password": "short", "confirmPassword": "short",
+	}, nil)
+	if status != http.StatusBadRequest || errorCode(raw) != "INVALID_INPUT" {
+		t.Fatalf("weak password: %d %s", status, raw)
+	}
+
+	status, raw, cookies := h.request(http.MethodPost, "/api/v1/auth/register", map[string]any{
+		"schoolNumber": "not-on-roster", "name": "未知学生", "role": "operator",
+		"password": "student-pass-1", "confirmPassword": "student-pass-1",
+	}, nil)
+	if status != http.StatusOK {
+		t.Fatalf("open registration: %d %s", status, raw)
+	}
+	session := sessionData(t, raw)
+	if session.Actor.ID != "NOT-ON-ROSTER" || session.Actor.Name != "未知学生" ||
+		session.Actor.Department != "CS" || !slices.Equal(session.Actor.Roles, []string{"student"}) ||
+		session.LandingPath != "/m1/search" {
+		t.Fatalf("server did not assign student identity: %+v", session)
+	}
+	var sessionCookie *http.Cookie
+	for _, cookie := range cookies {
+		if cookie.Name == identity.CookieName {
+			sessionCookie = cookie
+		}
+	}
+	if sessionCookie == nil || !sessionCookie.HttpOnly || sessionCookie.SameSite != http.SameSiteLaxMode ||
+		sessionCookie.Path != "/" {
+		t.Fatalf("unsafe session cookie: %+v", sessionCookie)
+	}
+
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/auth/register", map[string]any{
+		"schoolNumber": "not-on-roster", "name": "未知学生",
+		"password": "student-pass-1", "confirmPassword": "student-pass-1",
+	}, nil)
+	if status != http.StatusBadRequest || errorCode(raw) != "REGISTRATION_UNAVAILABLE" {
+		t.Fatalf("duplicate registration: %d %s", status, raw)
+	}
+
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/auth/session", nil, nil)
+	if status != http.StatusOK || sessionData(t, raw).Actor.ID != "NOT-ON-ROSTER" {
+		t.Fatalf("session lookup: %d %s", status, raw)
+	}
+
+	booking := map[string]any{
+		"roomId": "room-101", "seatId": "seat-101-01",
+		"startAt": h.now.Add(2 * time.Hour), "endAt": h.now.Add(3 * time.Hour),
+	}
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/m1/bookings", booking, map[string]string{"Idempotency-Key": "identity-booking-no-csrf"})
+	if status != http.StatusForbidden || errorCode(raw) != "CSRF_INVALID" {
+		t.Fatalf("write without csrf: %d %s", status, raw)
+	}
+	csrf := h.csrf()
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/m1/bookings", booking, map[string]string{
+		"Idempotency-Key": "identity-booking", "X-CSRF-Token": csrf,
+	})
+	if status != http.StatusOK {
+		t.Fatalf("SQL student M1 request: %d %s", status, raw)
+	}
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/m2/session", nil, nil)
+	if status != http.StatusOK {
+		t.Fatalf("SQL student M2 request: %d %s", status, raw)
+	}
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/internal/resources/operations", map[string]any{},
+		map[string]string{"X-CSRF-Token": csrf, "Idempotency-Key": "browser-cannot-be-service"})
+	if status != http.StatusForbidden || errorCode(raw) != "FORBIDDEN" {
+		t.Fatalf("browser session reached service API: %d %s", status, raw)
+	}
+
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/auth/logout", nil, nil)
+	if status != http.StatusForbidden || errorCode(raw) != "CSRF_INVALID" {
+		t.Fatalf("logout without csrf: %d %s", status, raw)
+	}
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/auth/logout", nil, map[string]string{"X-CSRF-Token": csrf})
+	if status != http.StatusOK {
+		t.Fatalf("logout: %d %s", status, raw)
+	}
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/auth/session", nil, nil)
+	if status != http.StatusUnauthorized {
+		t.Fatalf("revoked session remained valid: %d %s", status, raw)
+	}
+	h.client.Jar.SetCookies(h.baseURL, []*http.Cookie{{Name: identity.CookieName, Value: "m2-service", Path: "/"}})
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/internal/resources/sources", nil, nil)
+	if status != http.StatusUnauthorized {
+		t.Fatalf("service credential in browser cookie was accepted: %d %s", status, raw)
+	}
+}
+
+func TestSessionInvalidationPermissionsAndRateLimit(t *testing.T) {
+	h := setupIdentity(t)
+	_, err := h.store.Register(context.Background(), "20269999", "测试学生", "student-pass-1", "setup")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	login := func(password string) (int, []byte) {
+		status, raw, _ := h.request(http.MethodPost, "/api/v1/auth/login", map[string]string{
+			"schoolNumber": "20269999", "password": password,
+		}, nil)
+		return status, raw
+	}
+	status, raw := login("student-pass-1")
+	if status != http.StatusOK {
+		t.Fatalf("login: %d %s", status, raw)
+	}
+
+	if _, err = h.db.Exec("UPDATE d_users SET active=0 WHERE id='20269999'"); err != nil {
+		t.Fatal(err)
+	}
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/auth/session", nil, nil)
+	if status != http.StatusUnauthorized {
+		t.Fatalf("disabled user remained authenticated: %d %s", status, raw)
+	}
+	if _, err = h.db.Exec("UPDATE d_users SET active=1 WHERE id='20269999'"); err != nil {
+		t.Fatal(err)
+	}
+	status, raw = login("student-pass-1")
+	if status != http.StatusOK {
+		t.Fatalf("login after re-enable: %d %s", status, raw)
+	}
+	if _, err = h.db.Exec("UPDATE d_users SET auth_version=auth_version+1 WHERE id='20269999'"); err != nil {
+		t.Fatal(err)
+	}
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/auth/session", nil, nil)
+	if status != http.StatusUnauthorized {
+		t.Fatalf("old auth version remained valid: %d %s", status, raw)
+	}
+
+	status, raw = login("student-pass-1")
+	if status != http.StatusOK {
+		t.Fatalf("fresh login: %d %s", status, raw)
+	}
+	if _, err = h.db.Exec("DELETE FROM d_role_permissions WHERE role_id='student' AND permission_id='booking.create'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, _ = h.db.Exec("INSERT IGNORE INTO d_role_permissions(role_id,permission_id) VALUES ('student','booking.create')")
+	})
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/auth/session", nil, nil)
+	if status != http.StatusOK {
+		t.Fatalf("session after permission removal: %d %s", status, raw)
+	}
+	if slices.Contains(sessionData(t, raw).Actor.Permissions, "booking.create") {
+		t.Fatal("removed permission remained in the next session response")
+	}
+
+	if _, err = h.db.Exec("UPDATE d_sessions SET expires_at=? WHERE revoked_at IS NULL", h.now.Add(-time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	status, raw, _ = h.request(http.MethodGet, "/api/v1/auth/session", nil, nil)
+	if status != http.StatusUnauthorized {
+		t.Fatalf("expired session remained valid: %d %s", status, raw)
+	}
+
+	for attempt := 1; attempt <= 5; attempt++ {
+		status, raw = login("wrong-password")
+		if status != http.StatusUnauthorized || errorCode(raw) != "INVALID_CREDENTIALS" {
+			t.Fatalf("failed login %d: %d %s", attempt, status, raw)
+		}
+	}
+	status, raw = login("wrong-password")
+	if status != http.StatusTooManyRequests || errorCode(raw) != "RATE_LIMITED" {
+		t.Fatalf("rate limit after five failures: %d %s", status, raw)
+	}
+
+	var fault *identity.Fault
+	_, err = h.store.Authenticate(context.Background(), "not-a-session")
+	if !errors.As(err, &fault) || fault.Code != "UNAUTHENTICATED" {
+		t.Fatalf("invalid session error: %v", err)
+	}
+}
+
+func TestDevelopmentSeedIsIdempotentAndRolesLandCorrectly(t *testing.T) {
+	h := setupIdentity(t)
+	const password = "local-seed-pass"
+	if err := h.store.SeedDevelopment(context.Background(), password); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.store.SeedDevelopment(context.Background(), password); err != nil {
+		t.Fatal(err)
+	}
+	cases := []struct {
+		schoolNumber string
+		landingPath  string
+	}{
+		{"DEV-DEP-001", "/m2/approvals"},
+		{"DEV-VENUE-001", "/m2/approvals"},
+		{"DEV-OP-001", "/m2/stats"},
+	}
+	for _, test := range cases {
+		session, err := h.store.Login(context.Background(), test.schoolNumber, password, "seed-test")
+		if err != nil {
+			t.Fatalf("%s login: %v", test.schoolNumber, err)
+		}
+		if got := identity.LandingPath(session.Principal); got != test.landingPath {
+			t.Fatalf("%s landing path = %s, want %s", test.schoolNumber, got, test.landingPath)
+		}
+	}
+	var users int
+	if err := h.db.QueryRow("SELECT COUNT(*) FROM d_users WHERE school_number LIKE 'DEV-%'").Scan(&users); err != nil {
+		t.Fatal(err)
+	}
+	if users != len(cases) {
+		t.Fatalf("development seed created %d users, want %d", users, len(cases))
+	}
+}
