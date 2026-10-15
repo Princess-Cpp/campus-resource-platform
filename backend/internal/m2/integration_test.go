@@ -165,6 +165,8 @@ func TestM2HTTPWorkflowAndScopes(t *testing.T) {
 	h.code(409, "IDEMPOTENCY_CONFLICT", "POST", "/m2/applications", "student-demo", "create", q)
 	h.code(404, "NOT_FOUND", "GET", "/m2/applications/"+b.ID, "student2", "", nil)
 	h.code(404, "NOT_FOUND", "GET", "/m2/applications/"+b.ID, "operator-demo", "", nil)
+	h.code(404, "NOT_FOUND", "DELETE", "/m2/applications/"+b.ID, "student2", "", nil)
+	h.code(409, "INVALID_STATE", "DELETE", "/m2/applications/"+b.ID, "student-demo", "", nil)
 	h.code(404, "NOT_FOUND", "POST", "/m2/applications/"+b.ID+"/actions", "other-area", "x", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "self", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "venue-demo", "skip", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
@@ -206,7 +208,25 @@ func TestM2HTTPWorkflowAndScopes(t *testing.T) {
 	if repeated.Status != "CANCELLED" {
 		t.Fatal("cancel retry failed")
 	}
-	status, raw := h.request("GET", "/m2/stats", "operator-demo", "", nil)
+	for range 2 {
+		status, raw := h.request("DELETE", "/m2/applications/"+b.ID, "student-demo", "", nil)
+		if status != 200 {
+			t.Fatalf("delete application: %d %s", status, raw)
+		}
+	}
+	status, raw := h.request("GET", "/m2/applications?page=1&pageSize=20", "student-demo", "", nil)
+	var page struct{ Data m2.Page }
+	json.Unmarshal(raw, &page)
+	if status != 200 || page.Data.Total != 0 || len(page.Data.Items) != 0 {
+		t.Fatalf("hidden application remained in owner list: %d %s", status, raw)
+	}
+	var applicationRows, hideEvents int
+	h.db.QueryRow("SELECT COUNT(*) FROM m2_applications WHERE id=? AND hidden_at IS NOT NULL", b.ID).Scan(&applicationRows)
+	h.db.QueryRow("SELECT COUNT(*) FROM m2_events WHERE application_id=? AND action='HIDE'", b.ID).Scan(&hideEvents)
+	if applicationRows != 1 || hideEvents != 1 {
+		t.Fatalf("application rows=%d hide events=%d, want 1 and 1", applicationRows, hideEvents)
+	}
+	status, raw = h.request("GET", "/m2/stats", "operator-demo", "", nil)
 	var stats struct{ Data m2.Statistics }
 	json.Unmarshal(raw, &stats)
 	if status != 200 || stats.Data.Approved != 1 || stats.Data.Total != 1 || stats.Data.ApprovalRate == nil || *stats.Data.ApprovalRate != 1 {

@@ -56,7 +56,7 @@ func (s *Service) List(ctx context.Context, a Actor, f Filters) (Page, error) {
 	if f.Page < 1 || f.Page > 100000 || f.PageSize < 1 || f.PageSize > 100 {
 		return result, fault("INVALID_INPUT", 400)
 	}
-	where := "user_id=?"
+	where := "user_id=? AND hidden_at IS NULL"
 	args := []any{a.ID}
 	if f.Inbox {
 		scopes := []string{}

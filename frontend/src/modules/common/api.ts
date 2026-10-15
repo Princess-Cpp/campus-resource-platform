@@ -21,6 +21,7 @@ const MESSAGES: Record<string, string> = {
   NOT_FOUND: "记录不存在或无权查看",
   RESOURCE_UNAVAILABLE: "座位当前不可用（未开放、已下架或无权预约）",
   RESOURCE_CONFLICT: "该时段已被占用，请换一个座位或时段",
+  CLOSED: "所选时段不在自习室开放时间内",
   IDEMPOTENCY_CONFLICT: "重复的请求，请刷新后重试",
   INVALID_IDEMPOTENCY_KEY: "请求标识无效，请重试",
   INVALID_STATE: "当前状态或时间不允许该操作",

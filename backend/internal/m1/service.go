@@ -51,7 +51,18 @@ func (s *Service)Book(ctx context.Context,a Actor,q BookRequest,key,trace string
  _,err=tx.ExecContext(ctx,"INSERT INTO m1_sources VALUES ('M1',?,?,?,1,1,'SEAT',?,?,?,NULL)",b.ID,r.ID,b.SeatID,b.StartAt,b.EndAt,s.Now().UTC());if err!=nil{return b,err}
  if err=s.audit(ctx,tx,a.ID,"BOOK",b.ID,"M1",trace);err!=nil{return b,err};if err=s.notify(ctx,tx,b,"CREATED");err!=nil{return b,err};return b,tx.Commit()
 }
-func (s *Service)History(ctx context.Context,a Actor,page,size int)([]Booking,error){rows,err:=s.DB.QueryContext(ctx,"SELECT "+bookingCols+" FROM m1_bookings WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?",a.ID,size,(page-1)*size);if err!=nil{return nil,err};defer rows.Close();out:=[]Booking{};for rows.Next(){b,e:=scanBooking(rows);if e!=nil{return nil,e};out=append(out,b)};return out,rows.Err()}
+func (s *Service)History(ctx context.Context,a Actor,page,size int)([]Booking,error){rows,err:=s.DB.QueryContext(ctx,"SELECT "+bookingCols+" FROM m1_bookings WHERE user_id=? AND hidden_at IS NULL ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?",a.ID,size,(page-1)*size);if err!=nil{return nil,err};defer rows.Close();out:=[]Booking{};for rows.Next(){b,e:=scanBooking(rows);if e!=nil{return nil,e};out=append(out,b)};return out,rows.Err()}
+// Hide removes a finished record from the owner's history only; the row, audit
+// and violation records stay. No-show records remain visible for appeals.
+func (s *Service)Hide(ctx context.Context,a Actor,id,trace string)error{
+ tx,err:=s.tx(ctx);if err!=nil{return err};defer tx.Rollback()
+ var status,reason string;var hidden sql.NullTime
+ err=tx.QueryRowContext(ctx,"SELECT status,reason,hidden_at FROM m1_bookings WHERE id=? AND user_id=? FOR UPDATE",id,a.ID).Scan(&status,&reason,&hidden);if err==sql.ErrNoRows{return bad("NOT_FOUND",404)};if err!=nil{return err}
+ if hidden.Valid{return nil}
+ if status!="FINISHED"&&(status!="CANCELLED"||reason=="NO_SHOW"){return bad("INVALID_STATE",409)}
+ if _,err=tx.ExecContext(ctx,"UPDATE m1_bookings SET hidden_at=? WHERE id=?",s.Now().UTC(),id);err!=nil{return err}
+ if err=s.audit(ctx,tx,a.ID,"HIDE",id,"M1",trace);err!=nil{return err};return tx.Commit()
+}
 func (s *Service)Code(room string,day time.Time)string{h:=hmac.New(sha256.New,s.CodeSecret);h.Write([]byte(room+"|"+day.In(s.Zone).Format("2006-01-02")));return fmt.Sprintf("%X",h.Sum(nil)[:4])}
 func (s *Service)Change(ctx context.Context,a Actor,id,action,code,trace string)(Booking,error){
  var room string;if err:=s.DB.QueryRowContext(ctx,"SELECT room_id FROM m1_bookings WHERE id=? AND user_id=?",id,a.ID).Scan(&room);err!=nil{if err==sql.ErrNoRows{return Booking{},bad("NOT_FOUND",404)};return Booking{},err}

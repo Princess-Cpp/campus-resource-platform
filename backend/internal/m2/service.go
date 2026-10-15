@@ -206,6 +206,44 @@ func (s *Service) Get(ctx context.Context, a Actor, application string) (Applica
 	}
 	return b, rows.Err()
 }
+
+// Hide removes a completed application from its owner's list while preserving
+// the application, approval events and statistics.
+func (s *Service) Hide(ctx context.Context, a Actor, application, trace string) error {
+	tx, e := s.begin(ctx)
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback()
+
+	var status, syncStatus string
+	var endAt time.Time
+	var hiddenAt sql.NullTime
+	e = tx.QueryRowContext(ctx, "SELECT status,sync_status,end_at,hidden_at FROM m2_applications WHERE id=? AND user_id=? FOR UPDATE", application, a.ID).Scan(&status, &syncStatus, &endAt, &hiddenAt)
+	if errors.Is(e, sql.ErrNoRows) {
+		return fault("NOT_FOUND", 404)
+	}
+	if e != nil {
+		return e
+	}
+	if hiddenAt.Valid {
+		return nil
+	}
+	terminal := contains([]string{"REJECTED", "CANCELLED", "EXPIRED", "TERMINATED"}, status)
+	finishedApproval := status == "APPROVED" && !s.Now().Before(endAt)
+	if syncStatus != "IDLE" || (!terminal && !finishedApproval) {
+		return fault("INVALID_STATE", 409)
+	}
+	now := s.Now().UTC()
+	if _, e = tx.ExecContext(ctx, "UPDATE m2_applications SET hidden_at=? WHERE id=?", now, application); e != nil {
+		return e
+	}
+	if _, e = tx.ExecContext(ctx, "INSERT INTO m2_events VALUES (?,?,?,?,?,?,?,?,?)", id(), application, a.ID, "HIDE", status, status, "", trace, now); e != nil {
+		return e
+	}
+	return tx.Commit()
+}
+
 func approvalAllowed(a Actor, b Application) bool {
 	if a.ID == b.UserID {
 		return false

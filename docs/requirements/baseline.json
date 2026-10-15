@@ -237,16 +237,19 @@
       "implementation_files": [
         "backend/internal/m1",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "backend/migrations/003_m1_hide_bookings.sql",
+        "frontend/src/modules/m1"
       ],
       "verification_files": [
         "backend/internal/m1/service_test.go",
+        "backend/internal/m1/hide_integration_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
         "go test ./... passed",
         "frontend npm run build passed",
-        "local MySQL health/search/booking/idempotency smoke passed"
+        "local MySQL health/search/booking/idempotency smoke passed",
+        "2026-10-15 TestHideBookingKeepsRecordsAndProtectsActiveOrViolations passed on campus_m1_check (real HTTP + MySQL); failed as expected when NO_SHOW guard was removed, passed after restore"
       ],
       "owner_module_group": "M1",
       "ownership_status": "user_stated_module_assignment",
@@ -305,6 +308,7 @@
       "implementation_files": [
         "backend/internal/m2",
         "backend/migrations/002_m2.sql",
+        "backend/migrations/004_m2_hide_applications.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
@@ -315,6 +319,8 @@
       "evidence": [
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
+        "2026-10-15: M1/M2 real MySQL integration tests passed with go test -race -count=1 ./...; M2 owner-only hide kept application/statistics and one HIDE event, active application rejected",
+        "Removing CANCELLED from the deletable terminal states caused TestM2HTTPWorkflowAndScopes to fail with 409; restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
         "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
       ],

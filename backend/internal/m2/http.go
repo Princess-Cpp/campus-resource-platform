@@ -84,6 +84,11 @@ func (s *Service) Register(r *gin.Engine) {
 		reply(c, v, e)
 	})
 	api.GET("/applications/:id", func(c *gin.Context) { v, e := s.Get(c.Request.Context(), actor(c), c.Param("id")); reply(c, v, e) })
+	api.DELETE("/applications/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		e := s.Hide(c.Request.Context(), actor(c), id, c.GetString("trace"))
+		reply(c, gin.H{"id": id}, e)
+	})
 	api.POST("/applications/:id/actions", func(c *gin.Context) {
 		var q ActionRequest
 		if c.ShouldBindJSON(&q) != nil {

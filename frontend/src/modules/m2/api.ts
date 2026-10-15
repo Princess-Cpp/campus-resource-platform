@@ -16,6 +16,7 @@ export const searchRooms = (q: Record<string, string>) => request<Room[]>("/m2/r
 export const createApplication = (q: CreateInput, key: string) => request<Application>("/m2/applications", { method: "POST", headers: { "Idempotency-Key": key }, body: JSON.stringify(q) })
 export const listApplications = (inbox: boolean, q: Record<string, string>) => request<PageResult>(`/m2/${inbox ? "approvals" : "applications"}?` + new URLSearchParams(q))
 export const getApplication = (id: string) => request<Application>(`/m2/applications/${encodeURIComponent(id)}`)
+export const deleteApplication = (id: string) => request<{ id: string }>(`/m2/applications/${encodeURIComponent(id)}`, { method: "DELETE" })
 export const act = (id: string, q: { action: string; expectedVersion: number; comment: string }, key: string) => request<Application>(`/m2/applications/${encodeURIComponent(id)}/actions`, { method: "POST", headers: { "Idempotency-Key": key }, body: JSON.stringify(q) })
 export const retry = (id: string, expectedVersion: number) => request<Application>(`/m2/applications/${encodeURIComponent(id)}/retry`, { method: "POST", body: JSON.stringify({ expectedVersion }) })
 export const getStats = (q: Record<string, string>) => request<Stats>("/m2/stats?" + new URLSearchParams(q))
