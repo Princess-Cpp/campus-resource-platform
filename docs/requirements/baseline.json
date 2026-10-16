@@ -786,7 +786,9 @@
         "2026-10-15: real MySQL/HTTP identity integration tests passed on campus_identity_check, including open student registration, password/login, HttpOnly SameSite=Lax cookie, CSRF, expiry/logout/disable/auth_version invalidation and rate limiting",
         "2026-10-15: SQL student sessions reached M1 and M2 over HTTP; browser cookies were rejected as internal service credentials",
         "Changing self-registration from student to operator made TestSQLIdentityHTTPAndModuleIsolation fail as expected; restored implementation passed",
-        "Full backend go test -race -count=1 ./... and go vet ./... passed; frontend npm run build passed; browser manual acceptance remains pending"
+        "Full backend go test -race -count=1 ./... and go vet ./... passed; frontend npm run build passed; browser manual acceptance remains pending",
+        "2026-10-16: login rate limit ignores X-Forwarded-For after SetTrustedProxies(nil); sixth failed login with rotating XFF returned 429",
+        "2026-10-16: login/register reject text/plain and cross-site Origin/Sec-Fetch-Site without setting a session cookie; browser login-CSRF attack flow not executed"
       ],
       "owner_module_group": "M2",
       "ownership_status": "revised_proposal_pending_team_estimates",
@@ -820,6 +822,8 @@
       ],
       "evidence": [
         "2026-10-15: SQL RBAC and department/area/contact scopes are loaded on every authenticated request; role permission removal was visible on the next session request",
+        "2026-10-16: SQL permissions are passed into M1; POST /m1/bookings requires booking.create. Removing all roles left the session valid but booking returned 403 instead of 200/RESERVED",
+        "Temporarily disabling the booking.create HTTP check made TestSQLIdentityHTTPAndModuleIsolation fail with 200 RESERVED; restored implementation passed",
         "M1 internal service routes reject SQL users and reject service credentials supplied through browser cookies",
         "Existing M2 scope, self-approval and out-of-area integration tests passed with the SQL identity adapter present",
         "Role/scope management UI, authorization audit and complete M3/system roles remain unimplemented"

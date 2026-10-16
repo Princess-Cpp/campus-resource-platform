@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
@@ -128,7 +129,7 @@ func setupIdentity(t *testing.T) *identityHarness {
 			if len(p.Roles) > 0 {
 				role = p.Roles[0]
 			}
-			return m1.Actor{ID: p.ID, Department: p.Department, Role: role}, nil
+			return m1.Actor{ID: p.ID, Department: p.Department, Role: role, Permissions: p.Permissions}, nil
 		}
 		service, serviceErr := fixture.Auth(ctx, token)
 		if serviceErr != nil || service.Service == "" {
@@ -284,6 +285,19 @@ func TestSQLIdentityHTTPAndModuleIsolation(t *testing.T) {
 	if status != http.StatusOK {
 		t.Fatalf("SQL student M1 request: %d %s", status, raw)
 	}
+	if _, err := h.db.Exec("DELETE FROM d_user_roles WHERE user_id='NOT-ON-ROSTER'"); err != nil {
+		t.Fatal(err)
+	}
+	revoked := map[string]any{
+		"roomId": "room-101", "seatId": "seat-101-02",
+		"startAt": h.now.Add(2 * time.Hour), "endAt": h.now.Add(3 * time.Hour),
+	}
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/m1/bookings", revoked, map[string]string{
+		"Idempotency-Key": "identity-booking-revoked", "X-CSRF-Token": h.csrf(),
+	})
+	if status != http.StatusForbidden || errorCode(raw) != "FORBIDDEN" {
+		t.Fatalf("booking after role removal: %d %s", status, raw)
+	}
 	status, raw, _ = h.request(http.MethodGet, "/api/v1/m2/session", nil, nil)
 	if status != http.StatusOK {
 		t.Fatalf("SQL student M2 request: %d %s", status, raw)
@@ -370,6 +384,13 @@ func TestSessionInvalidationPermissionsAndRateLimit(t *testing.T) {
 	if slices.Contains(sessionData(t, raw).Actor.Permissions, "booking.create") {
 		t.Fatal("removed permission remained in the next session response")
 	}
+	status, raw, _ = h.request(http.MethodPost, "/api/v1/m1/bookings", map[string]any{
+		"roomId": "room-101", "seatId": "seat-101-01",
+		"startAt": h.now.Add(2 * time.Hour), "endAt": h.now.Add(3 * time.Hour),
+	}, map[string]string{"Idempotency-Key": "revoked-write", "X-CSRF-Token": sessionData(t, raw).CSRFToken})
+	if status != http.StatusForbidden || errorCode(raw) != "FORBIDDEN" {
+		t.Fatalf("booking after permission removal: %d %s", status, raw)
+	}
 
 	if _, err = h.db.Exec("UPDATE d_sessions SET expires_at=? WHERE revoked_at IS NULL", h.now.Add(-time.Second)); err != nil {
 		t.Fatal(err)
@@ -429,5 +450,70 @@ func TestDevelopmentSeedIsIdempotentAndRolesLandCorrectly(t *testing.T) {
 	}
 	if users != len(cases) {
 		t.Fatalf("development seed created %d users, want %d", users, len(cases))
+	}
+}
+
+func hasSessionCookie(cookies []*http.Cookie) bool {
+	for _, cookie := range cookies {
+		if cookie.Name == identity.CookieName && cookie.Value != "" && cookie.MaxAge != -1 {
+			return true
+		}
+	}
+	return false
+}
+
+func TestLoginRateLimitIgnoresForwardedFor(t *testing.T) {
+	h := setupIdentity(t)
+	if _, err := h.store.Register(context.Background(), "20269999", "测试学生", "student-pass-1", "setup"); err != nil {
+		t.Fatal(err)
+	}
+	for attempt := 1; attempt <= 5; attempt++ {
+		status, raw, _ := h.request(http.MethodPost, "/api/v1/auth/login", map[string]string{
+			"schoolNumber": "20269999", "password": "wrong-password",
+		}, map[string]string{"X-Forwarded-For": fmt.Sprintf("203.0.113.%d", attempt)})
+		if status != http.StatusUnauthorized || errorCode(raw) != "INVALID_CREDENTIALS" {
+			t.Fatalf("failed login %d: %d %s", attempt, status, raw)
+		}
+	}
+	status, raw, _ := h.request(http.MethodPost, "/api/v1/auth/login", map[string]string{
+		"schoolNumber": "20269999", "password": "wrong-password",
+	}, map[string]string{"X-Forwarded-For": "203.0.113.99"})
+	if status != http.StatusTooManyRequests || errorCode(raw) != "RATE_LIMITED" {
+		t.Fatalf("forwarded-for bypassed rate limit: %d %s", status, raw)
+	}
+}
+
+func TestLoginRegisterRejectCrossSiteAndNonJSON(t *testing.T) {
+	h := setupIdentity(t)
+	if _, err := h.store.Register(context.Background(), "20269999", "测试学生", "student-pass-1", "setup"); err != nil {
+		t.Fatal(err)
+	}
+	status, raw, cookies := h.request(http.MethodPost, "/api/v1/auth/login", map[string]string{
+		"schoolNumber": "20269999", "password": "student-pass-1",
+	}, map[string]string{"Content-Type": "text/plain"})
+	if status != http.StatusBadRequest || errorCode(raw) != "INVALID_INPUT" || hasSessionCookie(cookies) {
+		t.Fatalf("text/plain login: %d %s cookies=%v", status, raw, cookies)
+	}
+	status, raw, cookies = h.request(http.MethodPost, "/api/v1/auth/login", map[string]string{
+		"schoolNumber": "20269999", "password": "student-pass-1",
+	}, map[string]string{"Origin": "https://evil.example", "Sec-Fetch-Site": "cross-site"})
+	if status != http.StatusForbidden || errorCode(raw) != "CSRF_INVALID" || hasSessionCookie(cookies) {
+		t.Fatalf("cross-site login: %d %s cookies=%v", status, raw, cookies)
+	}
+	status, raw, cookies = h.request(http.MethodPost, "/api/v1/auth/register", map[string]any{
+		"schoolNumber": "open-1", "name": "跨站学生",
+		"password": "student-pass-1", "confirmPassword": "student-pass-1",
+	}, map[string]string{"Origin": "https://evil.example", "Sec-Fetch-Site": "cross-site"})
+	if status != http.StatusForbidden || errorCode(raw) != "CSRF_INVALID" || hasSessionCookie(cookies) {
+		t.Fatalf("cross-site register: %d %s cookies=%v", status, raw, cookies)
+	}
+	status, raw, cookies = h.request(http.MethodPost, "/api/v1/auth/login", map[string]string{
+		"schoolNumber": "20269999", "password": "student-pass-1",
+	}, map[string]string{
+		"Origin":         "http://127.0.0.1:5173",
+		"Sec-Fetch-Site": "same-origin",
+	})
+	if status != http.StatusOK || !hasSessionCookie(cookies) {
+		t.Fatalf("vite-proxied same-origin login: %d %s", status, raw)
 	}
 }

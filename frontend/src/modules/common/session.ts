@@ -52,7 +52,7 @@ function authMessage(code: string) {
     INVALID_CREDENTIALS: "学工号或密码错误",
     REGISTRATION_UNAVAILABLE: "该学工号已注册，请直接登录",
     RATE_LIMITED: "尝试次数过多，请 15 分钟后再试",
-    CSRF_INVALID: "页面会话已失效，请刷新后重试",
+    CSRF_INVALID: "无法验证请求来源，请从本站页面刷新后重试",
   }
   return messages[code] ?? `请求失败（${code}）`
 }

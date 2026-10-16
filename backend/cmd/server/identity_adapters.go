@@ -57,9 +57,10 @@ func m1Authenticate(store *identity.Store, fixture *dev.Fixture) m1.Authenticate
 				role = session.Principal.Roles[0]
 			}
 			return m1.Actor{
-				ID:         session.Principal.ID,
-				Department: session.Principal.Department,
-				Role:       role,
+				ID:          session.Principal.ID,
+				Department:  session.Principal.Department,
+				Role:        role,
+				Permissions: session.Principal.Permissions,
 			}, nil
 		}
 		service, serviceErr := fixture.Auth(ctx, token)

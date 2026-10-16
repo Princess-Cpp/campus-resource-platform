@@ -18,6 +18,7 @@ type Authenticate func(context.Context, string) (Actor, error)
 func (s *Service) Router(auth Authenticate, before ...gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
+	_ = r.SetTrustedProxies(nil)
 	r.Use(gin.Recovery())
 	r.Use(func(c *gin.Context) {
 		t := c.GetHeader("X-Correlation-Id")
@@ -80,6 +81,10 @@ func (s *Service) Router(auth Authenticate, before ...gin.HandlerFunc) *gin.Engi
 	})
 	api.POST("/m1/bookings", func(c *gin.Context) {
 		if !user(c) {
+			return
+		}
+		if !get(c).Can("booking.create") {
+			s.reply(c, nil, bad("FORBIDDEN", 403))
 			return
 		}
 		var q BookRequest

@@ -4,6 +4,8 @@ import (
 	"crypto/subtle"
 	"errors"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +18,10 @@ type HTTP struct {
 func (h *HTTP) Register(router *gin.Engine) {
 	auth := router.Group("/api/v1/auth")
 	auth.POST("/register", func(c *gin.Context) {
+		if err := rejectCrossSiteAuth(c); err != nil {
+			h.reply(c, nil, err)
+			return
+		}
 		var input struct {
 			SchoolNumber    string `json:"schoolNumber"`
 			Name            string `json:"name"`
@@ -35,6 +41,10 @@ func (h *HTTP) Register(router *gin.Engine) {
 		h.reply(c, sessionData(session), nil)
 	})
 	auth.POST("/login", func(c *gin.Context) {
+		if err := rejectCrossSiteAuth(c); err != nil {
+			h.reply(c, nil, err)
+			return
+		}
 		var input struct {
 			SchoolNumber string `json:"schoolNumber"`
 			Password     string `json:"password"`
@@ -109,6 +119,47 @@ func (h *HTTP) clearCookie(c *gin.Context) {
 
 func csrfMatches(got, want string) bool {
 	return got != "" && len(got) == len(want) && subtle.ConstantTimeCompare([]byte(got), []byte(want)) == 1
+}
+
+func jsonContentType(value string) bool {
+	media := strings.ToLower(strings.TrimSpace(strings.Split(value, ";")[0]))
+	return media == "application/json"
+}
+
+func hostOf(raw string) (string, bool) {
+	parsed, err := url.Parse(raw)
+	if err != nil || parsed.Host == "" {
+		return "", false
+	}
+	return strings.ToLower(parsed.Host), true
+}
+
+func rejectCrossSiteAuth(c *gin.Context) error {
+	if !jsonContentType(c.GetHeader("Content-Type")) {
+		return fault("INVALID_INPUT", http.StatusBadRequest)
+	}
+	site := strings.ToLower(c.GetHeader("Sec-Fetch-Site"))
+	if site == "cross-site" {
+		return fault("CSRF_INVALID", http.StatusForbidden)
+	}
+	// Vite 把浏览器同源 /api 代理到 Go 后 Host 变成后端端口；
+	// 浏览器已标明 same-origin/same-site 时不再用 Host 对比 Origin。
+	if site == "same-origin" || site == "same-site" || site == "none" {
+		return nil
+	}
+	if origin := c.GetHeader("Origin"); origin != "" {
+		host, ok := hostOf(origin)
+		if !ok || host != strings.ToLower(c.Request.Host) {
+			return fault("CSRF_INVALID", http.StatusForbidden)
+		}
+	}
+	if referer := c.GetHeader("Referer"); referer != "" {
+		host, ok := hostOf(referer)
+		if !ok || host != strings.ToLower(c.Request.Host) {
+			return fault("CSRF_INVALID", http.StatusForbidden)
+		}
+	}
+	return nil
 }
 
 func (h *HTTP) CSRFMiddleware() gin.HandlerFunc {
