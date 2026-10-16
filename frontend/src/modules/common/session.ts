@@ -1,27 +1,35 @@
 import { useSyncExternalStore } from "react"
 
-// 开发期身份：后端 M1_DEV_MODE 用 fixture 令牌认证。M2 交付 D-01 登录后替换本文件，
-// 页面只依赖 useDevToken/getDevToken，不直接读写 localStorage。
-const STORAGE_KEY = "campus.devToken"
-export const DEFAULT_DEV_TOKEN = "student-demo"
-export const KNOWN_DEV_TOKENS = ["student-demo", "department-demo", "venue-demo", "operator-demo"]
-
-const listeners = new Set<() => void>()
-
-export function getDevToken(): string {
-  try {
-    return localStorage.getItem(STORAGE_KEY) || DEFAULT_DEV_TOKEN
-  } catch {
-    return DEFAULT_DEV_TOKEN
-  }
+export type Principal = {
+  id: string
+  schoolNumber: string
+  name: string
+  department: string
+  roles: string[]
+  permissions: string[]
+  areas: string[]
+  contactRefs: string[]
 }
 
-export function setDevToken(token: string) {
-  try {
-    localStorage.setItem(STORAGE_KEY, token)
-  } catch {
-    // 隐私模式下无法持久化，仍通知订阅者以便本次会话生效。
-  }
+export type SessionData = {
+  actor: Principal
+  csrfToken: string
+  expiresAt: string
+  landingPath: string
+}
+
+type SessionState = {
+  loading: boolean
+  data?: SessionData
+  error?: string
+}
+
+let state: SessionState = { loading: true }
+let loadingPromise: Promise<SessionData | undefined> | undefined
+const listeners = new Set<() => void>()
+
+function publish(next: SessionState) {
+  state = next
   listeners.forEach((notify) => notify())
 }
 
@@ -30,6 +38,103 @@ function subscribe(notify: () => void) {
   return () => listeners.delete(notify)
 }
 
-export function useDevToken() {
-  return useSyncExternalStore(subscribe, getDevToken)
+function snapshot() {
+  return state
+}
+
+async function readBody(response: Response) {
+  return response.json().catch(() => null)
+}
+
+function authMessage(code: string) {
+  const messages: Record<string, string> = {
+    INVALID_INPUT: "请检查输入内容，密码长度需为 10–72 个字符",
+    INVALID_CREDENTIALS: "学工号或密码错误",
+    REGISTRATION_UNAVAILABLE: "该学工号已注册，请直接登录",
+    RATE_LIMITED: "尝试次数过多，请 15 分钟后再试",
+    CSRF_INVALID: "无法验证请求来源，请从本站页面刷新后重试",
+  }
+  return messages[code] ?? `请求失败（${code}）`
+}
+
+async function authRequest(path: string, body?: object): Promise<SessionData> {
+  const response = await fetch("/api/v1/auth/" + path, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      ...(state.data?.csrfToken ? { "X-CSRF-Token": state.data.csrfToken } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const payload = await readBody(response)
+  if (!response.ok) throw new Error(authMessage(payload?.error?.code ?? `HTTP_${response.status}`))
+  const data = payload.data as SessionData
+  publish({ loading: false, data })
+  return data
+}
+
+export function ensureSession(force = false) {
+  if (!force && !state.loading) return Promise.resolve(state.data)
+  if (loadingPromise) return loadingPromise
+  loadingPromise = fetch("/api/v1/auth/session", { credentials: "same-origin" })
+    .then(async (response) => {
+      const payload = await readBody(response)
+      if (response.status === 401) {
+        publish({ loading: false })
+        return undefined
+      }
+      if (!response.ok) {
+        publish({ loading: false, error: "暂时无法验证登录状态" })
+        return undefined
+      }
+      const data = payload.data as SessionData
+      publish({ loading: false, data })
+      return data
+    })
+    .catch(() => {
+      publish({ loading: false, error: "无法连接服务器" })
+      return undefined
+    })
+    .finally(() => {
+      loadingPromise = undefined
+    })
+  return loadingPromise
+}
+
+export function login(schoolNumber: string, password: string) {
+  return authRequest("login", { schoolNumber, password })
+}
+
+export function register(schoolNumber: string, name: string, password: string, confirmPassword: string) {
+  return authRequest("register", { schoolNumber, name, password, confirmPassword })
+}
+
+export async function logout() {
+  const response = await fetch("/api/v1/auth/logout", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: state.data?.csrfToken ? { "X-CSRF-Token": state.data.csrfToken } : {},
+  })
+  if (!response.ok) {
+    const payload = await readBody(response)
+    throw new Error(authMessage(payload?.error?.code ?? `HTTP_${response.status}`))
+  }
+  publish({ loading: false })
+}
+
+export function clearSession() {
+  publish({ loading: false })
+}
+
+export function getCurrentSession() {
+  return state.data
+}
+
+export function getCSRFToken() {
+  return state.data?.csrfToken
+}
+
+export function useSession() {
+  return useSyncExternalStore(subscribe, snapshot, snapshot)
 }

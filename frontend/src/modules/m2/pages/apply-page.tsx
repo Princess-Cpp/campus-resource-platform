@@ -13,12 +13,12 @@ import { Page } from "@/modules/common/page"
 import { ApiError } from "@/modules/common/api"
 import { useRequest } from "@/modules/common/use-request"
 import { campusToday, campusInstant, formatRange } from "@/modules/common/time"
-import { getDevToken } from "@/modules/common/session"
+import { getCurrentSession } from "@/modules/common/session"
 import { createApplication, getSession, searchRooms, type CreateInput, type Room } from "../api"
 import { Choice, ErrorBox } from "../components/shared"
 
 type Pending = { key: string; input: CreateInput; roomName: string }
-const pendingKey = () => `campus.m2.pending.${getDevToken()}`
+const pendingKey = () => `campus.m2.pending.${getCurrentSession()?.actor.id ?? "anonymous"}`
 function readPending(): Pending | undefined { try { return JSON.parse(sessionStorage.getItem(pendingKey()) || "null") ?? undefined } catch { return undefined } }
 export function ApplyPage() {
   const navigate = useNavigate()

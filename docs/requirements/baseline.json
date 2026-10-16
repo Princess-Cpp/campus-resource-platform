@@ -767,11 +767,29 @@
       "acceptance_section": "D-01.1 账户与登录",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/common/identity",
+        "backend/migrations/005_identity.sql",
+        "backend/cmd/server/identity_adapters.go",
+        "frontend/src/modules/auth",
+        "frontend/src/modules/common/session.ts",
+        "frontend/src/modules/common/require-auth.tsx",
+        "contracts/identity.openapi.json"
+      ],
+      "verification_files": [
+        "backend/internal/common/identity/integration_test.go",
+        "docs/implementation/identity-code.md"
+      ],
+      "evidence": [
+        "2026-10-15: real MySQL/HTTP identity integration tests passed on campus_identity_check, including open student registration, password/login, HttpOnly SameSite=Lax cookie, CSRF, expiry/logout/disable/auth_version invalidation and rate limiting",
+        "2026-10-15: SQL student sessions reached M1 and M2 over HTTP; browser cookies were rejected as internal service credentials",
+        "Changing self-registration from student to operator made TestSQLIdentityHTTPAndModuleIsolation fail as expected; restored implementation passed",
+        "Full backend go test -race -count=1 ./... and go vet ./... passed; frontend npm run build passed; browser manual acceptance remains pending",
+        "2026-10-16: login rate limit ignores X-Forwarded-For after SetTrustedProxies(nil); sixth failed login with rotating XFF returned 429",
+        "2026-10-16: login/register reject text/plain and cross-site Origin/Sec-Fetch-Site without setting a session cookie; browser login-CSRF attack flow not executed"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -788,11 +806,28 @@
       "acceptance_section": "D-01.2 动作权限与数据范围",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/common/identity",
+        "backend/cmd/server/identity_adapters.go",
+        "backend/internal/m1/http.go",
+        "backend/internal/m2/http.go",
+        "backend/migrations/005_identity.sql"
+      ],
+      "verification_files": [
+        "backend/internal/common/identity/integration_test.go",
+        "backend/internal/m2/integration_test.go",
+        "docs/implementation/identity-code.md"
+      ],
+      "evidence": [
+        "2026-10-15: SQL RBAC and department/area/contact scopes are loaded on every authenticated request; role permission removal was visible on the next session request",
+        "2026-10-16: SQL permissions are passed into M1; POST /m1/bookings requires booking.create. Removing all roles left the session valid but booking returned 403 instead of 200/RESERVED",
+        "Temporarily disabling the booking.create HTTP check made TestSQLIdentityHTTPAndModuleIsolation fail with 200 RESERVED; restored implementation passed",
+        "M1 internal service routes reject SQL users and reject service credentials supplied through browser cookies",
+        "Existing M2 scope, self-approval and out-of-area integration tests passed with the SQL identity adapter present",
+        "Role/scope management UI, authorization audit and complete M3/system roles remain unimplemented"
+      ],
       "owner_module_group": "M2",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1191,13 +1226,13 @@
     {
       "name": "service_authentication",
       "owner_module_group": "M2",
-      "status": "not_started",
+      "status": "partial_development",
       "maintainer": "to_be_assigned"
     },
     {
       "name": "frontend_shell",
       "owner_module_group": "M2",
-      "status": "not_started",
+      "status": "partial_development",
       "maintainer": "to_be_assigned"
     },
     {
@@ -1208,6 +1243,7 @@
     }
   ],
   "implementation_notes": {
-    "M1": "M1 initial code is on this branch; M2 identity/catalog adapters are explicit development fixtures and must be replaced before production or cross-group acceptance. Cross-module HTTP clients, real concurrency and restart tests remain unrun."
+    "M1": "M1 and M2 now consume SQL user sessions; M2-to-M1 service authentication and D-02 catalog/policy remain explicit development fixtures. These fixtures must be replaced before production acceptance.",
+    "D-01": "Local SQL registration, login, server sessions and current M1/M2 RBAC integration are implemented and backend-verified. Role administration, authorization audit, complete M3/system roles and browser manual acceptance remain open."
   }
 }

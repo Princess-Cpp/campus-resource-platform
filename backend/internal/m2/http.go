@@ -1,11 +1,11 @@
 package m2
 
 import (
+	"campus-resource-platform/backend/internal/common/identity"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -24,9 +24,8 @@ func reply(c *gin.Context, v any, e error) {
 func (s *Service) Register(r *gin.Engine) {
 	api := r.Group("/api/v1/m2")
 	api.Use(func(c *gin.Context) {
-		header := c.GetHeader("Authorization")
-		token := strings.TrimPrefix(header, "Bearer ")
-		if token == header || token == "" {
+		token, ok := identity.Credential(c.Request)
+		if !ok {
 			reply(c, nil, fault("UNAUTHENTICATED", 401))
 			c.Abort()
 			return
