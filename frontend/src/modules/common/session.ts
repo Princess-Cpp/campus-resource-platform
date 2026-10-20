@@ -53,6 +53,7 @@ function authMessage(code: string) {
     REGISTRATION_UNAVAILABLE: "该学工号已注册，请直接登录",
     RATE_LIMITED: "尝试次数过多，请 15 分钟后再试",
     CSRF_INVALID: "无法验证请求来源，请从本站页面刷新后重试",
+    NETWORK_ERROR: "无法连接服务器",
   }
   return messages[code] ?? `请求失败（${code}）`
 }
@@ -111,11 +112,21 @@ export function register(schoolNumber: string, name: string, password: string, c
 }
 
 export async function logout() {
-  const response = await fetch("/api/v1/auth/logout", {
-    method: "POST",
-    credentials: "same-origin",
-    headers: state.data?.csrfToken ? { "X-CSRF-Token": state.data.csrfToken } : {},
-  })
+  let response: Response
+  try {
+    response = await fetch("/api/v1/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: state.data?.csrfToken ? { "X-CSRF-Token": state.data.csrfToken } : {},
+    })
+  } catch {
+    throw new Error(authMessage("NETWORK_ERROR"))
+  }
+  // 服务端会话已过期或已失效：本地同样结束会话，调用方可进入登录页。
+  if (response.status === 401) {
+    publish({ loading: false })
+    return
+  }
   if (!response.ok) {
     const payload = await readBody(response)
     throw new Error(authMessage(payload?.error?.code ?? `HTTP_${response.status}`))
