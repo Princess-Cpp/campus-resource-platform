@@ -578,11 +578,19 @@
       "acceptance_section": "M3-01.1 故障上报",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "domain_unit_passed_integration_not_run",
+      "implementation_files": [
+        "backend/internal/m3/domain/workorder.go"
+      ],
+      "verification_files": [
+        "backend/internal/m3/domain/workorder_test.go",
+        "docs/implementation/m3-plan.md"
+      ],
+      "evidence": [
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "尚缺 MySQL 幂等建单、可信目录接入、HTTP 和页面；图片保持 postponed。"
+      ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -599,11 +607,19 @@
       "acceptance_section": "M3-01.2 派单、接单与重派",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "domain_unit_passed_integration_not_run",
+      "implementation_files": [
+        "backend/internal/m3/domain/workorder.go"
+      ],
+      "verification_files": [
+        "backend/internal/m3/domain/workorder_test.go",
+        "docs/implementation/m3-plan.md"
+      ],
+      "evidence": [
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "尚缺分派历史持久化、事务并发与幂等命令、实际身份撤权及工作台。"
+      ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -620,11 +636,19 @@
       "acceptance_section": "M3-01.3 开始维修与全室下架",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "domain_unit_passed_integration_not_run",
+      "implementation_files": [
+        "backend/internal/m3/domain/workorder.go"
+      ],
+      "verification_files": [
+        "backend/internal/m3/domain/workorder_test.go",
+        "docs/implementation/m3-plan.md"
+      ],
+      "evidence": [
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "仅测试准备/回执规则；真实 M1 HTTP、MySQL、多来源、进程重启与影响补偿 not_run。"
+      ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -641,11 +665,19 @@
       "acceptance_section": "M3-01.4 完工与验收",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "domain_unit_passed_integration_not_run",
+      "implementation_files": [
+        "backend/internal/m3/domain/workorder.go"
+      ],
+      "verification_files": [
+        "backend/internal/m3/domain/workorder_test.go",
+        "docs/implementation/m3-plan.md"
+      ],
+      "evidence": [
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "仅测试验收规则；处理/验收历史持久化、真实来源释放及重复 HTTP 命令 not_run。"
+      ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -662,11 +694,19 @@
       "acceptance_section": "M3-01.5 取消与异常关闭",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "domain_unit_passed_integration_not_run",
+      "implementation_files": [
+        "backend/internal/m3/domain/workorder.go"
+      ],
+      "verification_files": [
+        "backend/internal/m3/domain/workorder_test.go",
+        "docs/implementation/m3-plan.md"
+      ],
+      "evidence": [
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "仅测试普通取消与未知结果保护；SQL 并发、真实结果核对 not_run；异常关闭 postponed。"
+      ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -683,11 +723,19 @@
       "acceptance_section": "M3-01.6 评价",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "domain_unit_passed_integration_not_run",
+      "implementation_files": [
+        "backend/internal/m3/domain/workorder.go"
+      ],
+      "verification_files": [
+        "backend/internal/m3/domain/workorder_test.go",
+        "docs/implementation/m3-plan.md"
+      ],
+      "evidence": [
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "仅测试归属、评分、窗口和一次评价规则；数据库唯一约束、HTTP 幂等、统计 not_run。"
+      ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
@@ -725,11 +773,19 @@
       "acceptance_section": "M3-02.1 超时检测与升级",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "domain_unit_passed_integration_not_run",
+      "implementation_files": [
+        "backend/internal/m3/domain/workorder.go"
+      ],
+      "verification_files": [
+        "backend/internal/m3/domain/workorder_test.go",
+        "docs/implementation/m3-plan.md"
+      ],
+      "evidence": [
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "仅测试阶段阈值与状态规则；公共任务、持久化去重、主管异常、通知失败和重启补扫 not_run。"
+      ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
       "ownership_document": "docs/process/module-ownership.md",
