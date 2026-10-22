@@ -1,0 +1,1069 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M3 property maintenance, reporting and own queries",
+    "version": "1.0.0",
+    "description": "Local first-round implementation based on shared design v0.2 and requirements v0.4. Does not assert team approval or completion of maintenance/assignment/notification delivery.",
+    "x-review-status": "pending-team-review"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "browserSession": []
+    }
+  ],
+  "paths": {
+    "/m3/session": {
+      "get": {
+        "operationId": "maintenanceSession",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Session"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/m3/rooms": {
+      "get": {
+        "operationId": "reportableRooms",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Room"
+                      }
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/m3/workorders": {
+      "post": {
+        "operationId": "reportWorkorder",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Correlation-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "description": "Text report only. Maximum JSON body 16 KiB. Current server-side workorder.report permission and room/seat scope are required. Same actor/key/content replays the original committed result, including after room retirement; current permission is rechecked. A timeout does not mean failure. Events and pending notification intent commit with the order. No resource block is created.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Report"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listOwnWorkorders",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Page"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mine"
+              ],
+              "default": "mine"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "REPORTED",
+                "ASSIGNED",
+                "IN_PROGRESS",
+                "AWAITING_ACCEPTANCE",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LIGHTING",
+                "POWER",
+                "FURNITURE",
+                "DOOR_WINDOW",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "description": "Own records only, SQL-scoped before pagination. Stable createdAt DESC, id DESC. Dates use [from,to). Unknown or duplicate query parameters are rejected. Other views are not implemented."
+      }
+    },
+    "/m3/workorders/{id}": {
+      "get": {
+        "operationId": "ownWorkorderDetail",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Detail"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "INVALID_INPUT / UNAUTHENTICATED / FORBIDDEN / NOT_FOUND / IDEMPOTENCY_CONFLICT / INTERNAL_ERROR / DEPENDENCY_UNAVAILABLE, as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "browserSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "campus_session",
+        "description": "Existing shared SQL-backed identity session. A service Bearer cannot act as a user."
+      }
+    },
+    "schemas": {
+      "Report": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "UTF-8 stable ID, at most 64 bytes"
+          },
+          "seatId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "LIGHTING",
+              "POWER",
+              "FURNITURE",
+              "DOOR_WINDOW",
+              "OTHER"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000,
+            "description": "Trimmed, counted as Unicode code points"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "URGENT"
+            ],
+            "default": "NORMAL"
+          }
+        },
+        "required": [
+          "roomId",
+          "category",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "Seat": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "seats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Seat"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "area",
+          "status",
+          "seats"
+        ],
+        "additionalProperties": false
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reporterId": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "string"
+          },
+          "roomName": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "seatId": {
+            "type": "string"
+          },
+          "seatLabel": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "LIGHTING",
+              "POWER",
+              "FURNITURE",
+              "DOOR_WINDOW",
+              "OTHER"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "URGENT"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "REPORTED",
+              "ASSIGNED",
+              "IN_PROGRESS",
+              "AWAITING_ACCEPTANCE",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "syncState": {
+            "type": "string",
+            "enum": [
+              "IDLE",
+              "PENDING",
+              "UNKNOWN",
+              "NEEDS_ATTENTION"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "reporterId",
+          "roomId",
+          "roomName",
+          "area",
+          "category",
+          "description",
+          "severity",
+          "state",
+          "syncState",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "Timeline": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "text",
+          "at"
+        ],
+        "additionalProperties": false
+      },
+      "Detail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reporterId": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "string"
+          },
+          "roomName": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "seatId": {
+            "type": "string"
+          },
+          "seatLabel": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "LIGHTING",
+              "POWER",
+              "FURNITURE",
+              "DOOR_WINDOW",
+              "OTHER"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "URGENT"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "REPORTED",
+              "ASSIGNED",
+              "IN_PROGRESS",
+              "AWAITING_ACCEPTANCE",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "syncState": {
+            "type": "string",
+            "enum": [
+              "IDLE",
+              "PENDING",
+              "UNKNOWN",
+              "NEEDS_ATTENTION"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Timeline"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "reporterId",
+          "roomId",
+          "roomName",
+          "area",
+          "category",
+          "description",
+          "severity",
+          "state",
+          "syncState",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "timeline"
+        ],
+        "additionalProperties": false
+      },
+      "Page": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "actor": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "permissions"
+            ],
+            "additionalProperties": false
+          },
+          "development": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "actor",
+          "development"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code"
+            ],
+            "additionalProperties": false
+          },
+          "correlationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "correlationId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

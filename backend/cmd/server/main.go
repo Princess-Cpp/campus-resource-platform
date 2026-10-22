@@ -62,6 +62,9 @@ func main() {
 	s := booking.New(db, f, []byte(secret))
 	r := s.Router(bookingAuthenticate(identityStore, f), identityHTTP.CSRFMiddleware())
 	identityHTTP.Register(r)
+	if e = registerMaintenance(r, db, identityStore); e != nil {
+		log.Fatal(e)
+	}
 	if os.Getenv("M2_ENABLED") == "true" {
 		fixtureDirectory, err := dev.LoadClassroom(os.Getenv("M1_DEV_FIXTURE"))
 		if err != nil {

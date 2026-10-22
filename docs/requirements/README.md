@@ -15,7 +15,7 @@
 
 M1 已有初始代码，尚未完成 M2 身份/主数据接入和跨组联调；实现与证据见 [M1 代码说明](../implementation/m1-code.md)。需求索引中的状态区分局部实现与完整验收。
 
-M2 已有初始代码，见 [M2 代码说明](../implementation/m2-code.md)。M3 已完成第一步独立领域规则与单元测试，尚无 MySQL/API/页面接入，见 [M3 开发方案与证据](../implementation/m3-plan.md)；不代表 M3 或跨模块验收完成。
+M2 已有初始代码，见 [M2 代码说明](../implementation/m2-code.md)。M3 已有独立领域规则，现已打通本地文本报修、本人列表/详情的 MySQL/API/页面，见 [第一轮实施记录](../implementation/m3-reporting.md)；目录、报修权限映射和事务事件仍为开发适配器，派单/维修等后续功能及跨组集成未完成，人工验收待进行。
 
 ## 原始任务来源
 

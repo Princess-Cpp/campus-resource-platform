@@ -1,0 +1,16 @@
+{
+  "note": "M3 development-only catalog with explicit lifecycle states; stable room/seat IDs match the existing shared fixture. Not formal D-02.",
+  "rooms": [
+    {
+      "id": "room-101",
+      "name": "自习室101",
+      "area": "A楼",
+      "department": "",
+      "status": "ACTIVE",
+      "seats": [
+        { "id": "seat-101-01", "label": "A01" },
+        { "id": "seat-101-02", "label": "A02" }
+      ]
+    }
+  ]
+}
