@@ -1,10 +1,10 @@
 package main
 
 import (
-	"campus-resource-platform/backend/internal/common/identity"
+	"campus-resource-platform/backend/internal/booking"
+	"campus-resource-platform/backend/internal/classroom"
 	"campus-resource-platform/backend/internal/dev"
-	"campus-resource-platform/backend/internal/m1"
-	"campus-resource-platform/backend/internal/m2"
+	"campus-resource-platform/backend/internal/identity"
 	"campus-resource-platform/backend/migrations"
 	"context"
 	"database/sql"
@@ -59,11 +59,11 @@ func main() {
 		}
 	}
 	identityHTTP := &identity.HTTP{Store: identityStore}
-	s := m1.New(db, f, []byte(secret))
-	r := s.Router(m1Authenticate(identityStore, f), identityHTTP.CSRFMiddleware())
+	s := booking.New(db, f, []byte(secret))
+	r := s.Router(bookingAuthenticate(identityStore, f), identityHTTP.CSRFMiddleware())
 	identityHTTP.Register(r)
 	if os.Getenv("M2_ENABLED") == "true" {
-		fixtureDirectory, err := dev.LoadM2(os.Getenv("M1_DEV_FIXTURE"))
+		fixtureDirectory, err := dev.LoadClassroom(os.Getenv("M1_DEV_FIXTURE"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,15 +71,15 @@ func main() {
 		if base == "" || token == "" {
 			log.Fatal("M2_RESOURCE_URL and M2_SERVICE_TOKEN are required")
 		}
-		directory := &m2Directory{identity: identityStore, fixture: fixtureDirectory}
-		classroom := m2.New(db, directory, &m2.HTTPResources{BaseURL: base, Token: token})
-		classroom.Policy = fixtureDirectory.Policy
-		classroom.Register(r)
+		directory := &classroomDirectory{identity: identityStore, fixture: fixtureDirectory}
+		classroomService := classroom.New(db, directory, &classroom.HTTPResources{BaseURL: base, Token: token})
+		classroomService.Policy = fixtureDirectory.Policy
+		classroomService.Register(r)
 		go func() {
 			ticker := time.NewTicker(2 * time.Second)
 			defer ticker.Stop()
 			for range ticker.C {
-				if err := classroom.Tick(ctx); err != nil {
+				if err := classroomService.Tick(ctx); err != nil {
 					log.Printf("M2 task error: %v", err)
 				}
 			}

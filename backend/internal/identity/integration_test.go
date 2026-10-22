@@ -17,10 +17,10 @@ import (
 	"testing"
 	"time"
 
-	"campus-resource-platform/backend/internal/common/identity"
+	"campus-resource-platform/backend/internal/booking"
+	"campus-resource-platform/backend/internal/classroom"
 	"campus-resource-platform/backend/internal/dev"
-	"campus-resource-platform/backend/internal/m1"
-	"campus-resource-platform/backend/internal/m2"
+	"campus-resource-platform/backend/internal/identity"
 	"campus-resource-platform/backend/migrations"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -37,29 +37,29 @@ type identityHarness struct {
 
 type sqlDirectory struct {
 	store   *identity.Store
-	fixture *dev.M2Fixture
+	fixture *dev.ClassroomFixture
 }
 
-func (d *sqlDirectory) Authenticate(ctx context.Context, token string) (m2.Actor, error) {
+func (d *sqlDirectory) Authenticate(ctx context.Context, token string) (classroom.Actor, error) {
 	session, err := d.store.Authenticate(ctx, token)
 	if err != nil {
-		return m2.Actor{}, err
+		return classroom.Actor{}, err
 	}
 	p := session.Principal
-	return m2.Actor{
+	return classroom.Actor{
 		ID: p.ID, Department: p.Department, Permissions: p.Permissions,
 		Areas: p.Areas, ContactRefs: p.ContactRefs,
 	}, nil
 }
 
-func (d *sqlDirectory) Actors(ctx context.Context) ([]m2.Actor, error) {
+func (d *sqlDirectory) Actors(ctx context.Context) ([]classroom.Actor, error) {
 	principals, err := d.store.Principals(ctx)
 	if err != nil {
 		return nil, err
 	}
-	actors := make([]m2.Actor, 0, len(principals))
+	actors := make([]classroom.Actor, 0, len(principals))
 	for _, p := range principals {
-		actors = append(actors, m2.Actor{
+		actors = append(actors, classroom.Actor{
 			ID: p.ID, Department: p.Department, Permissions: p.Permissions,
 			Areas: p.Areas, ContactRefs: p.ContactRefs,
 		})
@@ -67,7 +67,7 @@ func (d *sqlDirectory) Actors(ctx context.Context) ([]m2.Actor, error) {
 	return actors, nil
 }
 
-func (d *sqlDirectory) Rooms(ctx context.Context) ([]m2.Room, error) {
+func (d *sqlDirectory) Rooms(ctx context.Context) ([]classroom.Room, error) {
 	return d.fixture.Rooms(ctx)
 }
 
@@ -113,15 +113,15 @@ func setupIdentity(t *testing.T) *identityHarness {
 	now := time.Date(2030, 1, 10, 0, 0, 0, 0, time.UTC)
 	store := identity.New(db, false)
 	store.Now = func() time.Time { return now }
-	fixture, err := dev.Load("../../../dev-fixture.json")
+	fixture, err := dev.Load("../../dev-fixture.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	m2Fixture, err := dev.LoadM2("../../../dev-fixture.json")
+	m2Fixture, err := dev.LoadClassroom("../../dev-fixture.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	auth := func(ctx context.Context, token string) (m1.Actor, error) {
+	auth := func(ctx context.Context, token string) (booking.Actor, error) {
 		session, sessionErr := store.Authenticate(ctx, token)
 		if sessionErr == nil {
 			p := session.Principal
@@ -129,25 +129,25 @@ func setupIdentity(t *testing.T) *identityHarness {
 			if len(p.Roles) > 0 {
 				role = p.Roles[0]
 			}
-			return m1.Actor{ID: p.ID, Department: p.Department, Role: role, Permissions: p.Permissions}, nil
+			return booking.Actor{ID: p.ID, Department: p.Department, Role: role, Permissions: p.Permissions}, nil
 		}
 		service, serviceErr := fixture.Auth(ctx, token)
 		if serviceErr != nil || service.Service == "" {
-			return m1.Actor{}, sessionErr
+			return booking.Actor{}, sessionErr
 		}
 		return service, nil
 	}
-	resource := m1.New(db, fixture, []byte("test-only-signing-secret-at-least-32"))
+	resource := booking.New(db, fixture, []byte("test-only-signing-secret-at-least-32"))
 	resource.Now = func() time.Time { return now }
 	authHTTP := &identity.HTTP{Store: store}
 	router := resource.Router(auth, authHTTP.CSRFMiddleware())
 	authHTTP.Register(router)
-	classrooms := m2.New(db, &sqlDirectory{store: store, fixture: m2Fixture}, &m2.HTTPResources{})
+	classrooms := classroom.New(db, &sqlDirectory{store: store, fixture: m2Fixture}, &classroom.HTTPResources{})
 	classrooms.Now = func() time.Time { return now }
 	classrooms.Register(router)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
-	classrooms.Resources = &m2.HTTPResources{BaseURL: server.URL, Token: "m2-service"}
+	classrooms.Resources = &classroom.HTTPResources{BaseURL: server.URL, Token: "m2-service"}
 
 	jar, err := cookiejar.New(nil)
 	if err != nil {

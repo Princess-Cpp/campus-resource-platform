@@ -19,16 +19,17 @@
 
 ## 目录与部署
 
-计划结构（尚未创建应用脚手架）：
+目录结构（基础目录已存在，infra 与独立端到端测试目录仍为规划）：
 
 ```text
 frontend/                         React + Vite，按 M1/M2/M3/D 组织页面
 backend/                          一个 Go + Gin 应用
   cmd/server/                    应用入口与启动
-  internal/m1/                   座位预约业务
-  internal/m2/                   整室申请审批
-  internal/m3/                   物业报修
-  internal/common/               D 身份、资源、通知、审计等子域
+  internal/booking/              座位预约与现有资源仲裁
+  internal/classroom/            整室申请审批
+  internal/maintenance/domain/   物业报修领域规则
+  internal/identity/             登录、会话与权限
+  internal/dev/                  开发身份与主数据适配器
   migrations/                    版本化 MySQL 迁移
   go.mod / go.sum                Go 模块与依赖版本校验
   各包中的 *_test.go             后端行为与模块测试

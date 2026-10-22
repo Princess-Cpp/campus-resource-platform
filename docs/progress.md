@@ -44,4 +44,4 @@ M1/M2/M3/D 与跨模块验收已拆分到 docs/requirements/，机器可读索�
 
 ## M1 实现状态
 
-M1 初始代码已建立在 `backend/internal/m1` 和 `frontend`：座位查询、整点预约、同键幂等、取消、每日签到码、提醒/未签到取消任务、来源资源 HTTP 入口和最小 React 页面。M2 身份/主数据仍由显式开发 fixture 适配，不能用于生产；跨组 HTTP 客户端、真实并发、重启恢复和 MySQL 迁移全流程仍待验证。详见 [M1 代码说明](implementation/m1-code.md)。
+M1 初始代码已建立在 `backend/internal/booking` 和 `frontend`：座位查询、整点预约、同键幂等、取消、每日签到码、提醒/未签到取消任务、来源资源 HTTP 入口和最小 React 页面。M2 身份/主数据仍由显式开发 fixture 适配，不能用于生产；跨组 HTTP 客户端、真实并发、重启恢复和 MySQL 迁移全流程仍待验证。详见 [M1 代码说明](implementation/m1-code.md)。

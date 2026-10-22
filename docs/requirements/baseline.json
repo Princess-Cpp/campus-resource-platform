@@ -19,12 +19,12 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "frontend/src/main.jsx"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -55,12 +55,12 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "frontend/src/main.jsx"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -91,12 +91,12 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "frontend/src/main.jsx"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -127,12 +127,12 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "frontend/src/main.jsx"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -163,12 +163,12 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "frontend/src/main.jsx"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -199,12 +199,12 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "frontend/src/main.jsx"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -235,14 +235,14 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "backend/migrations/003_m1_hide_bookings.sql",
         "frontend/src/modules/m1"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
-        "backend/internal/m1/hide_integration_test.go",
+        "backend/internal/booking/service_test.go",
+        "backend/internal/booking/hide_integration_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -274,12 +274,12 @@
       "implementation_status": "partial_development",
       "verification_status": "unit_and_local_smoke_passed",
       "implementation_files": [
-        "backend/internal/m1",
+        "backend/internal/booking",
         "backend/migrations/001_m1.sql",
         "frontend/src/main.jsx"
       ],
       "verification_files": [
-        "backend/internal/m1/service_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m1-code.md"
       ],
       "evidence": [
@@ -306,14 +306,14 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "backend/migrations/004_m2_hide_applications.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -343,13 +343,13 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -377,13 +377,13 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -411,13 +411,13 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -445,13 +445,13 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -479,13 +479,13 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -513,13 +513,13 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -547,13 +547,13 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/m2",
+        "backend/internal/classroom",
         "backend/migrations/002_m2.sql",
         "frontend/src/modules/m2",
         "contracts/m2.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -581,10 +581,10 @@
       "implementation_status": "partial_development",
       "verification_status": "domain_unit_passed_integration_not_run",
       "implementation_files": [
-        "backend/internal/m3/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go"
       ],
       "verification_files": [
-        "backend/internal/m3/domain/workorder_test.go",
+        "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
@@ -610,10 +610,10 @@
       "implementation_status": "partial_development",
       "verification_status": "domain_unit_passed_integration_not_run",
       "implementation_files": [
-        "backend/internal/m3/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go"
       ],
       "verification_files": [
-        "backend/internal/m3/domain/workorder_test.go",
+        "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
@@ -639,10 +639,10 @@
       "implementation_status": "partial_development",
       "verification_status": "domain_unit_passed_integration_not_run",
       "implementation_files": [
-        "backend/internal/m3/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go"
       ],
       "verification_files": [
-        "backend/internal/m3/domain/workorder_test.go",
+        "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
@@ -668,10 +668,10 @@
       "implementation_status": "partial_development",
       "verification_status": "domain_unit_passed_integration_not_run",
       "implementation_files": [
-        "backend/internal/m3/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go"
       ],
       "verification_files": [
-        "backend/internal/m3/domain/workorder_test.go",
+        "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
@@ -697,10 +697,10 @@
       "implementation_status": "partial_development",
       "verification_status": "domain_unit_passed_integration_not_run",
       "implementation_files": [
-        "backend/internal/m3/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go"
       ],
       "verification_files": [
-        "backend/internal/m3/domain/workorder_test.go",
+        "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
@@ -726,10 +726,10 @@
       "implementation_status": "partial_development",
       "verification_status": "domain_unit_passed_integration_not_run",
       "implementation_files": [
-        "backend/internal/m3/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go"
       ],
       "verification_files": [
-        "backend/internal/m3/domain/workorder_test.go",
+        "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
@@ -776,10 +776,10 @@
       "implementation_status": "partial_development",
       "verification_status": "domain_unit_passed_integration_not_run",
       "implementation_files": [
-        "backend/internal/m3/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go"
       ],
       "verification_files": [
-        "backend/internal/m3/domain/workorder_test.go",
+        "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
@@ -826,7 +826,7 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/common/identity",
+        "backend/internal/identity",
         "backend/migrations/005_identity.sql",
         "backend/cmd/server/identity_adapters.go",
         "frontend/src/modules/auth",
@@ -835,7 +835,7 @@
         "contracts/identity.openapi.json"
       ],
       "verification_files": [
-        "backend/internal/common/identity/integration_test.go",
+        "backend/internal/identity/integration_test.go",
         "docs/implementation/identity-code.md"
       ],
       "evidence": [
@@ -865,15 +865,15 @@
       "implementation_status": "partial_development",
       "verification_status": "backend_integration_passed_manual_pending",
       "implementation_files": [
-        "backend/internal/common/identity",
+        "backend/internal/identity",
         "backend/cmd/server/identity_adapters.go",
-        "backend/internal/m1/http.go",
-        "backend/internal/m2/http.go",
+        "backend/internal/booking/http.go",
+        "backend/internal/classroom/http.go",
         "backend/migrations/005_identity.sql"
       ],
       "verification_files": [
-        "backend/internal/common/identity/integration_test.go",
-        "backend/internal/m2/integration_test.go",
+        "backend/internal/identity/integration_test.go",
+        "backend/internal/classroom/integration_test.go",
         "docs/implementation/identity-code.md"
       ],
       "evidence": [

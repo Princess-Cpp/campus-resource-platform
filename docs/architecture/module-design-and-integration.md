@@ -29,7 +29,7 @@ React 页面 → Go/Gin HTTP API → 对应模块业务逻辑 → 模块仓储 �
 
 各组自己维护本模块前后端、测试、SQL 迁移、业务审计和通知事件。公共能力由负责组实现和维护，调用组负责自己的接入。D 是按子域分配的公共能力，不成立第四组。牵头公共工作不意味着替其他组编写所有迁移和测试。
 
-建议目录：frontend/src/modules/{m1,m2,m3,common}；backend/internal/{m1,m2,m3,common}；backend/cmd/server；backend/migrations；contracts；tests；infra；scripts。实际脚手架尚未创建。公共子域在 common 下分别设 identity/resources/notifications/audit，禁止形成任意模块相互调用的杂物包。
+后端按业务职责组织为 `backend/internal/booking`（M1）、`classroom`（M2）、`maintenance/domain`（M3）和 `identity`（D-01，M2 维护）；`dev` 保存开发适配器，`cmd/server` 负责装配，迁移位于 `backend/migrations`。M1/M2/M3 是需求与维护组编号，不作为 Go 包名或接口版本。前端仍使用 `frontend/src/modules/{m1,m2,common}`，本次后端目录调整不改变前端目录、HTTP v1 路径、SQL 名称或来源标识。资源仲裁当前仍位于 `booking/resources.go`，与预约事务及维修取消共用逻辑；独立资源包需要另行明确事务和回调边界。尚未交付的公共子域不建立空目录。具体映射与验证见 [后端目录调整](../implementation/backend-package-layout.md)。
 
 ## 3. 所有模块一致使用的数据与命名
 

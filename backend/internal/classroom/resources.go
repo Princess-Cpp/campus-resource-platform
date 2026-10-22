@@ -1,4 +1,4 @@
-package m2
+package classroom
 
 import (
 	"bytes"

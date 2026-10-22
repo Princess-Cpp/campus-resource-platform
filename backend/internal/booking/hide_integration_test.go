@@ -1,4 +1,4 @@
-package m1_test
+package booking_test
 
 import (
 	"bytes"
@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"campus-resource-platform/backend/internal/booking"
 	"campus-resource-platform/backend/internal/dev"
-	"campus-resource-platform/backend/internal/m1"
 	"campus-resource-platform/backend/migrations"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -20,7 +20,7 @@ import (
 type hideHarness struct {
 	t      *testing.T
 	db     *sql.DB
-	s      *m1.Service
+	s      *booking.Service
 	server *httptest.Server
 	now    time.Time
 }
@@ -55,9 +55,9 @@ func setupHide(t *testing.T) *hideHarness {
 	if e != nil {
 		t.Fatal(e)
 	}
-	f.Tokens["student2"] = m1.Actor{ID: "student-2", Department: "CS", Role: "student"}
+	f.Tokens["student2"] = booking.Actor{ID: "student-2", Department: "CS", Role: "student"}
 	h := &hideHarness{t: t, db: db, now: time.Date(2030, 1, 10, 0, 0, 0, 0, time.UTC)}
-	h.s = m1.New(db, f, []byte("test-only-signing-secret-at-least-32"))
+	h.s = booking.New(db, f, []byte("test-only-signing-secret-at-least-32"))
 	h.s.Now = func() time.Time { return h.now }
 	h.server = httptest.NewServer(h.s.Router(f.Auth))
 	t.Cleanup(h.server.Close)
@@ -89,11 +89,11 @@ func (h *hideHarness) call(method, path, token, key string, body any) (int, []by
 func (h *hideHarness) book(seat string, startHour int, key string) string {
 	h.t.Helper()
 	start := time.Date(2030, 1, 10, startHour, 0, 0, 0, time.UTC)
-	status, raw := h.call("POST", "/m1/bookings", "student-demo", key, m1.BookRequest{RoomID: "room-101", SeatID: seat, StartAt: start, EndAt: start.Add(time.Hour)})
+	status, raw := h.call("POST", "/m1/bookings", "student-demo", key, booking.BookRequest{RoomID: "room-101", SeatID: seat, StartAt: start, EndAt: start.Add(time.Hour)})
 	if status != 200 {
 		h.t.Fatalf("book status %d: %s", status, raw)
 	}
-	var v struct{ Data m1.Booking }
+	var v struct{ Data booking.Booking }
 	json.Unmarshal(raw, &v)
 	return v.Data.ID
 }
@@ -104,7 +104,7 @@ func (h *hideHarness) listed(id string) bool {
 	if status != 200 {
 		h.t.Fatalf("list status %d: %s", status, raw)
 	}
-	var v struct{ Data []m1.Booking }
+	var v struct{ Data []booking.Booking }
 	json.Unmarshal(raw, &v)
 	for _, b := range v.Data {
 		if b.ID == id {

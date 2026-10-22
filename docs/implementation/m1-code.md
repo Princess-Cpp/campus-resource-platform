@@ -1,6 +1,6 @@
 # M1 首版代码说明
 
-状态：开发实现初稿，未完成跨组联调和生产认证。代码位于 `backend/internal/m1`，前端位于 `frontend`。
+状态：开发实现初稿，未完成跨组联调和生产认证。代码位于 `backend/internal/booking`，前端位于 `frontend`。
 
 ## 已实现
 
