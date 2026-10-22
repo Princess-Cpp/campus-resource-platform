@@ -1,4 +1,4 @@
-package m2_test
+package classroom_test
 
 import (
 	"bytes"
@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
+	"campus-resource-platform/backend/internal/booking"
+	"campus-resource-platform/backend/internal/classroom"
 	"campus-resource-platform/backend/internal/dev"
-	"campus-resource-platform/backend/internal/m1"
-	"campus-resource-platform/backend/internal/m2"
 	"campus-resource-platform/backend/migrations"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -23,13 +23,13 @@ import (
 type harness struct {
 	t         *testing.T
 	db        *sql.DB
-	s         *m2.Service
-	resource  *m1.Service
+	s         *classroom.Service
+	resource  *booking.Service
 	server    *httptest.Server
 	fixture   *dev.Fixture
-	directory *dev.M2Fixture
+	directory *dev.ClassroomFixture
 	now       time.Time
-	students  []m2.Actor
+	students  []classroom.Actor
 }
 
 func setup(t *testing.T) *harness {
@@ -65,24 +65,24 @@ func setup(t *testing.T) *harness {
 	if e != nil {
 		t.Fatal(e)
 	}
-	d, e := dev.LoadM2("../../dev-fixture.json")
+	d, e := dev.LoadClassroom("../../dev-fixture.json")
 	if e != nil {
 		t.Fatal(e)
 	}
 	now := time.Date(2030, 1, 10, 0, 0, 0, 0, time.UTC)
 	h := &harness{t: t, db: db, fixture: f, directory: d, now: now}
 	for _, v := range []struct{ token, id, department string }{{"student2", "student-2", "CS"}, {"outsider", "outsider", "EE"}} {
-		f.Tokens[v.token] = m1.Actor{ID: v.id, Department: v.department, Role: "student"}
-		d.Tokens[v.token] = m2.Actor{ID: v.id, Department: v.department, Permissions: []string{"classroom.apply"}, ContactRefs: []string{"campus-email"}}
+		f.Tokens[v.token] = booking.Actor{ID: v.id, Department: v.department, Role: "student"}
+		d.Tokens[v.token] = classroom.Actor{ID: v.id, Department: v.department, Permissions: []string{"classroom.apply"}, ContactRefs: []string{"campus-email"}}
 	}
-	d.Tokens["other-dept"] = m2.Actor{ID: "other-dept", Department: "EE", Permissions: []string{"approval.department"}}
-	d.Tokens["other-area"] = m2.Actor{ID: "other-area", Department: "CS", Permissions: []string{"approval.final", "classroom.stats"}, Areas: []string{"B楼"}}
-	h.resource = m1.New(db, f, []byte("test-only-signing-secret-at-least-32"))
+	d.Tokens["other-dept"] = classroom.Actor{ID: "other-dept", Department: "EE", Permissions: []string{"approval.department"}}
+	d.Tokens["other-area"] = classroom.Actor{ID: "other-area", Department: "CS", Permissions: []string{"approval.final", "classroom.stats"}, Areas: []string{"B楼"}}
+	h.resource = booking.New(db, f, []byte("test-only-signing-secret-at-least-32"))
 	h.resource.Now = func() time.Time { return h.now }
 	router := h.resource.Router(f.Auth)
 	h.server = httptest.NewServer(router)
 	t.Cleanup(h.server.Close)
-	h.s = m2.New(db, d, &m2.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"})
+	h.s = classroom.New(db, d, &classroom.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"})
 	h.s.Now = func() time.Time { return h.now }
 	h.s.Register(router)
 	return h
@@ -110,28 +110,28 @@ func (h *harness) request(method, path, token, key string, body any) (int, []byt
 	b.ReadFrom(res.Body)
 	return res.StatusCode, b.Bytes()
 }
-func (h *harness) application(method, path, token, key string, body any) m2.Application {
+func (h *harness) application(method, path, token, key string, body any) classroom.Application {
 	h.t.Helper()
 	status, raw := h.request(method, path, token, key, body)
 	if status != 200 {
 		h.t.Fatalf("%s %s: %d %s", method, path, status, raw)
 	}
-	var v struct{ Data m2.Application }
+	var v struct{ Data classroom.Application }
 	if e := json.Unmarshal(raw, &v); e != nil {
 		h.t.Fatal(e)
 	}
 	return v.Data
 }
-func (h *harness) input() m2.CreateRequest {
-	return m2.CreateRequest{RoomID: "room-101", StartAt: h.now.Add(25 * time.Hour), EndAt: h.now.Add(27 * time.Hour), Purpose: "计算机课程小组讨论与项目汇报", Attendees: 10, ContactRef: "campus-email"}
+func (h *harness) input() classroom.CreateRequest {
+	return classroom.CreateRequest{RoomID: "room-101", StartAt: h.now.Add(25 * time.Hour), EndAt: h.now.Add(27 * time.Hour), Purpose: "计算机课程小组讨论与项目汇报", Attendees: 10, ContactRef: "campus-email"}
 }
-func (h *harness) create(key string) m2.Application {
+func (h *harness) create(key string) classroom.Application {
 	return h.application("POST", "/m2/applications", "student-demo", key, h.input())
 }
-func (h *harness) action(b m2.Application, token, action, key string) m2.Application {
-	return h.application("POST", "/m2/applications/"+b.ID+"/actions", token, key, m2.ActionRequest{Action: action, ExpectedVersion: b.Version, Comment: "符合教室使用要求"})
+func (h *harness) action(b classroom.Application, token, action, key string) classroom.Application {
+	return h.application("POST", "/m2/applications/"+b.ID+"/actions", token, key, classroom.ActionRequest{Action: action, ExpectedVersion: b.Version, Comment: "符合教室使用要求"})
 }
-func (h *harness) get(id string) m2.Application {
+func (h *harness) get(id string) classroom.Application {
 	return h.application("GET", "/m2/applications/"+id, "student-demo", "", nil)
 }
 func (h *harness) code(status int, code, method, path, token, key string, body any) {
@@ -143,7 +143,7 @@ func (h *harness) code(status int, code, method, path, token, key string, body a
 		h.t.Fatalf("wanted %d %s got %d %s", status, code, got, raw)
 	}
 }
-func (h *harness) run(b m2.Application) m2.Application {
+func (h *harness) run(b classroom.Application) classroom.Application {
 	h.t.Helper()
 	if e := h.s.RunOperation(context.Background(), b.OperationID); e != nil {
 		h.t.Fatal(e)
@@ -167,9 +167,9 @@ func TestM2HTTPWorkflowAndScopes(t *testing.T) {
 	h.code(404, "NOT_FOUND", "GET", "/m2/applications/"+b.ID, "operator-demo", "", nil)
 	h.code(404, "NOT_FOUND", "DELETE", "/m2/applications/"+b.ID, "student2", "", nil)
 	h.code(409, "INVALID_STATE", "DELETE", "/m2/applications/"+b.ID, "student-demo", "", nil)
-	h.code(404, "NOT_FOUND", "POST", "/m2/applications/"+b.ID+"/actions", "other-area", "x", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
-	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "self", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
-	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "venue-demo", "skip", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+	h.code(404, "NOT_FOUND", "POST", "/m2/applications/"+b.ID+"/actions", "other-area", "x", classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "self", classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "venue-demo", "skip", classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 	b = h.action(b, "department-demo", "APPROVE", "department")
 	var sources int
 	h.db.QueryRow("SELECT COUNT(*) FROM m1_sources WHERE module='M2'").Scan(&sources)
@@ -180,14 +180,14 @@ func TestM2HTTPWorkflowAndScopes(t *testing.T) {
 	if b.Status != "DEPARTMENT_APPROVED" || b.SyncStatus != "PENDING" {
 		t.Fatal("approved before receipt")
 	}
-	h.code(409, "OPERATION_PENDING", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "cancel-pending", m2.ActionRequest{Action: "CANCEL", ExpectedVersion: b.Version})
+	h.code(409, "OPERATION_PENDING", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "cancel-pending", classroom.ActionRequest{Action: "CANCEL", ExpectedVersion: b.Version})
 	b = h.run(b)
 	if b.Status != "APPROVED" || b.SyncStatus != "IDLE" {
 		t.Fatalf("not approved: %+v", b)
 	}
 	h.code(409, "RESOURCE_CONFLICT", "POST", "/m1/bookings", "student2", "seat-conflict", map[string]any{"roomId": b.RoomID, "seatId": "seat-101-01", "startAt": b.StartAt, "endAt": b.EndAt})
 	// Another source must survive this application's release.
-	_, e := h.resource.Operate(context.Background(), m1.Actor{Service: "M3"}, m1.Operation{OperationID: "other-maintenance", Action: "BLOCK_ROOM_MAINTENANCE", SourceModule: "M3", SourceBusinessID: "workorder", SourceVersion: 1, RoomID: b.RoomID}, "other-maintenance", "test")
+	_, e := h.resource.Operate(context.Background(), booking.Actor{Service: "M3"}, booking.Operation{OperationID: "other-maintenance", Action: "BLOCK_ROOM_MAINTENANCE", SourceModule: "M3", SourceBusinessID: "workorder", SourceVersion: 1, RoomID: b.RoomID}, "other-maintenance", "test")
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -215,7 +215,7 @@ func TestM2HTTPWorkflowAndScopes(t *testing.T) {
 		}
 	}
 	status, raw := h.request("GET", "/m2/applications?page=1&pageSize=20", "student-demo", "", nil)
-	var page struct{ Data m2.Page }
+	var page struct{ Data classroom.Page }
 	json.Unmarshal(raw, &page)
 	if status != 200 || page.Data.Total != 0 || len(page.Data.Items) != 0 {
 		t.Fatalf("hidden application remained in owner list: %d %s", status, raw)
@@ -227,7 +227,7 @@ func TestM2HTTPWorkflowAndScopes(t *testing.T) {
 		t.Fatalf("application rows=%d hide events=%d, want 1 and 1", applicationRows, hideEvents)
 	}
 	status, raw = h.request("GET", "/m2/stats", "operator-demo", "", nil)
-	var stats struct{ Data m2.Statistics }
+	var stats struct{ Data classroom.Statistics }
 	json.Unmarshal(raw, &stats)
 	if status != 200 || stats.Data.Approved != 1 || stats.Data.Total != 1 || stats.Data.ApprovalRate == nil || *stats.Data.ApprovalRate != 1 {
 		t.Fatalf("statistics %d %s", status, raw)
@@ -259,14 +259,14 @@ func TestM2ValidationAndConcurrentDecisions(t *testing.T) {
 	h.code(400, "INVALID_INPUT", "POST", "/m2/applications", "student-demo", "contact", q)
 	b := h.create("concurrent")
 	path := "/m2/applications/" + b.ID + "/actions"
-	h.code(400, "INVALID_INPUT", "POST", path, "department-demo", "empty-reject", m2.ActionRequest{Action: "REJECT", ExpectedVersion: b.Version})
+	h.code(400, "INVALID_INPUT", "POST", path, "department-demo", "empty-reject", classroom.ActionRequest{Action: "REJECT", ExpectedVersion: b.Version})
 	var wg sync.WaitGroup
 	statuses := make(chan int, 2)
 	for i := 0; i < 2; i++ {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			status, _ := h.request("POST", path, "department-demo", fmt.Sprintf("concurrent-%d", i), m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+			status, _ := h.request("POST", path, "department-demo", fmt.Sprintf("concurrent-%d", i), classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 			statuses <- status
 		}(i)
 	}
@@ -289,7 +289,7 @@ func TestM2ValidationAndConcurrentDecisions(t *testing.T) {
 	if b.Status != "REJECTED" {
 		t.Fatal(b.Status)
 	}
-	h.code(403, "FORBIDDEN", "POST", path, "venue-demo", "resurrect", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+	h.code(403, "FORBIDDEN", "POST", path, "venue-demo", "resurrect", classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 }
 
 func TestM2ConflictExpiryAndRestart(t *testing.T) {
@@ -352,14 +352,14 @@ func TestM2LostResponseRecoversAfterRestart(t *testing.T) {
 		w.Write(buf.Bytes())
 	}))
 	defer proxy.Close()
-	h.s.Resources = &m2.HTTPResources{BaseURL: proxy.URL, Token: "m2-service"}
+	h.s.Resources = &classroom.HTTPResources{BaseURL: proxy.URL, Token: "m2-service"}
 	b = h.run(b)
 	if b.Status == "APPROVED" || b.SyncStatus != "UNKNOWN" {
 		t.Fatal("lost response reported success")
 	}
 	// Advance beyond deadline. Persisted pre-deadline receipt still decides approval.
 	h.now = b.DeadlineAt.Add(time.Hour)
-	restarted := m2.New(h.db, h.directory, &m2.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"})
+	restarted := classroom.New(h.db, h.directory, &classroom.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"})
 	restarted.Now = func() time.Time { return h.now }
 	if e := restarted.Tick(context.Background()); e != nil {
 		t.Fatal(e)
@@ -378,7 +378,7 @@ func TestM2LostResponseRecoversAfterRestart(t *testing.T) {
 func TestM2ConcurrentCreateAndBookingRace(t *testing.T) {
 	h := setup(t)
 	var wg sync.WaitGroup
-	results := make(chan m2.Application, 2)
+	results := make(chan classroom.Application, 2)
 	for i := 0; i < 2; i++ {
 		wg.Add(1)
 		go func() { defer wg.Done(); results <- h.create("same-key") }()
@@ -392,7 +392,7 @@ func TestM2ConcurrentCreateAndBookingRace(t *testing.T) {
 	if len(ids) != 1 {
 		t.Fatal("concurrent create duplicated application")
 	}
-	var b m2.Application
+	var b classroom.Application
 	for application := range ids {
 		b = h.get(application)
 	}
@@ -430,15 +430,15 @@ func TestM2SelfApprovalAndScopeAreServerEnforced(t *testing.T) {
 	owner.Areas = []string{"A楼"}
 	h.directory.Tokens["student-demo"] = owner
 	b := h.create("self-scope")
-	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "self", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+	h.code(403, "FORBIDDEN", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "self", classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 	h.code(404, "NOT_FOUND", "GET", "/m2/applications/"+b.ID, "other-dept", "", nil)
 	// A formerly valid approver loses current scope after assignment was frozen.
 	actor := h.directory.Tokens["department-demo"]
 	actor.Department = "EE"
 	h.directory.Tokens["department-demo"] = actor
-	h.code(404, "NOT_FOUND", "POST", "/m2/applications/"+b.ID+"/actions", "department-demo", "scope", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+	h.code(404, "NOT_FOUND", "POST", "/m2/applications/"+b.ID+"/actions", "department-demo", "scope", classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 	status, raw := h.request("GET", "/m2/approvals", "department-demo", "", nil)
-	var result struct{ Data m2.Page }
+	var result struct{ Data classroom.Page }
 	json.Unmarshal(raw, &result)
 	if status != 200 || result.Data.Total != 0 {
 		t.Fatalf("out-of-scope inbox: %d %s", status, raw)
@@ -454,7 +454,7 @@ func TestM2ReleaseUnavailableAndRetryLimit(t *testing.T) {
 	b = h.action(b, "student-demo", "CANCEL", "cancel")
 	unavailable := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(503) }))
 	defer unavailable.Close()
-	h.s.Resources = &m2.HTTPResources{BaseURL: unavailable.URL, Token: "m2-service"}
+	h.s.Resources = &classroom.HTTPResources{BaseURL: unavailable.URL, Token: "m2-service"}
 	for i := 0; i < 8; i++ {
 		b = h.run(b)
 	}
@@ -470,7 +470,7 @@ func TestM2ReleaseUnavailableAndRetryLimit(t *testing.T) {
 	if b.OperationID != original {
 		t.Fatal("retry changed operation identity")
 	}
-	h.s.Resources = &m2.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"}
+	h.s.Resources = &classroom.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"}
 	b = h.run(b)
 	if b.Status != "CANCELLED" {
 		t.Fatal("release did not recover")
@@ -482,7 +482,7 @@ func TestM2ApprovalDeadlineAndTermination(t *testing.T) {
 	b := h.create("deadline")
 	b = h.action(b, "department-demo", "APPROVE", "dep")
 	h.now = b.DeadlineAt
-	h.code(409, "DEADLINE_EXPIRED", "POST", "/m2/applications/"+b.ID+"/actions", "venue-demo", "late", m2.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
+	h.code(409, "DEADLINE_EXPIRED", "POST", "/m2/applications/"+b.ID+"/actions", "venue-demo", "late", classroom.ActionRequest{Action: "APPROVE", ExpectedVersion: b.Version})
 	if e := h.s.Tick(context.Background()); e != nil {
 		t.Fatal(e)
 	}
@@ -494,8 +494,8 @@ func TestM2ApprovalDeadlineAndTermination(t *testing.T) {
 	b = h.action(b, "venue-demo", "APPROVE", "final2")
 	b = h.run(b)
 	h.now = b.StartAt
-	h.code(409, "INVALID_STATE", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "late-cancel", m2.ActionRequest{Action: "CANCEL", ExpectedVersion: b.Version})
-	h.code(409, "INVALID_STATE", "POST", "/m2/applications/"+b.ID+"/actions", "venue-demo", "empty-terminate", m2.ActionRequest{Action: "TERMINATE", ExpectedVersion: b.Version})
+	h.code(409, "INVALID_STATE", "POST", "/m2/applications/"+b.ID+"/actions", "student-demo", "late-cancel", classroom.ActionRequest{Action: "CANCEL", ExpectedVersion: b.Version})
+	h.code(409, "INVALID_STATE", "POST", "/m2/applications/"+b.ID+"/actions", "venue-demo", "empty-terminate", classroom.ActionRequest{Action: "TERMINATE", ExpectedVersion: b.Version})
 	b = h.action(b, "venue-demo", "TERMINATE", "terminate")
 	b = h.run(b)
 	if b.Status != "TERMINATED" {

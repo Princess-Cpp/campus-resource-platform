@@ -1,7 +1,7 @@
-package m2
+package classroom
 
 import (
-	"campus-resource-platform/backend/internal/common/identity"
+	"campus-resource-platform/backend/internal/identity"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -36,11 +36,11 @@ func (s *Service) Register(r *gin.Engine) {
 			c.Abort()
 			return
 		}
-		c.Set("m2Actor", a)
+		c.Set("classroomActor", a)
 		c.Set("m2Token", token)
 		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 16<<10)
 	})
-	actor := func(c *gin.Context) Actor { return c.MustGet("m2Actor").(Actor) }
+	actor := func(c *gin.Context) Actor { return c.MustGet("classroomActor").(Actor) }
 	api.GET("/session", func(c *gin.Context) { reply(c, gin.H{"actor": actor(c), "policy": s.Policy, "development": true}, nil) })
 	api.GET("/rooms", func(c *gin.Context) {
 		start, e := time.Parse(time.RFC3339, c.Query("startAt"))

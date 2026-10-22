@@ -1,7 +1,7 @@
-package m1
+package booking
 
 import (
-	"campus-resource-platform/backend/internal/common/identity"
+	"campus-resource-platform/backend/internal/identity"
 	"context"
 	"database/sql"
 	"errors"

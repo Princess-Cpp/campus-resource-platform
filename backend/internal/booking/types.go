@@ -1,4 +1,4 @@
-package m1
+package booking
 
 import (
 	"context"
