@@ -47,6 +47,27 @@ func (s *Service) Register(r *gin.Engine, authenticate Authenticate) {
 		a := actor(c)
 		respond(c, 200, gin.H{"actor": gin.H{"id": a.ID, "permissions": a.Permissions}, "development": s.Development}, nil)
 	})
+	api.GET("/stats", func(c *gin.Context) {
+		f, ok := operationsHTTPFilters(c, false)
+		if !ok {
+			return
+		}
+		v, e := s.Stats(c.Request.Context(), actor(c), f)
+		respond(c, 200, v, e)
+	})
+	api.GET("/escalations", func(c *gin.Context) {
+		f, ok := operationsHTTPFilters(c, true)
+		if !ok {
+			return
+		}
+		active := c.DefaultQuery("active", "true")
+		if active != "true" && active != "false" {
+			respond(c, 0, nil, fault("INVALID_INPUT", 400))
+			return
+		}
+		v, e := s.Escalations(c.Request.Context(), actor(c), f, active == "true")
+		respond(c, 200, v, e)
+	})
 	api.GET("/rooms", func(c *gin.Context) { v, e := s.Rooms(c.Request.Context(), actor(c)); respond(c, 200, v, e) })
 	api.POST("/workorders", func(c *gin.Context) {
 		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 16<<10)
@@ -118,4 +139,34 @@ func (s *Service) Register(r *gin.Engine, authenticate Authenticate) {
 		v, e := s.Get(c.Request.Context(), actor(c), c.Param("id"))
 		respond(c, 200, v, e)
 	})
+}
+
+func operationsHTTPFilters(c *gin.Context, paged bool) (Filters, bool) {
+	allowed := map[string]bool{"from": true, "to": true, "category": true}
+	if paged {
+		allowed["page"] = true
+		allowed["pageSize"] = true
+		allowed["active"] = true
+	}
+	for k, v := range c.Request.URL.Query() {
+		if !allowed[k] || len(v) != 1 {
+			respond(c, 0, nil, fault("INVALID_INPUT", 400))
+			return Filters{}, false
+		}
+	}
+	f := Filters{From: c.Query("from"), To: c.Query("to"), Category: c.Query("category"), Page: 1, PageSize: 20}
+	var e error
+	if paged {
+		f.Page, e = strconv.Atoi(c.DefaultQuery("page", "1"))
+		if e != nil {
+			respond(c, 0, nil, fault("INVALID_INPUT", 400))
+			return f, false
+		}
+		f.PageSize, e = strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+		if e != nil {
+			respond(c, 0, nil, fault("INVALID_INPUT", 400))
+			return f, false
+		}
+	}
+	return f, true
 }

@@ -37,7 +37,11 @@ type Worker struct {
 type People interface {
 	Workers(context.Context) ([]Worker, error)
 }
+type SupervisorDirectory interface {
+	Supervisors(context.Context, string) ([]string, error)
+}
 type ActionInput struct {
+	Score           *int   `json:"score,omitempty"`
 	Action          string `json:"action"`
 	ExpectedVersion int64  `json:"expectedVersion"`
 	AssigneeID      string `json:"assigneeId,omitempty"`
@@ -59,32 +63,44 @@ type OperationSummary struct {
 	NextAttempt *time.Time `json:"nextAttempt,omitempty"`
 	LastError   string     `json:"lastError,omitempty"`
 }
+type Evaluation struct {
+	Score   int       `json:"score"`
+	Comment string    `json:"comment"`
+	At      time.Time `json:"at"`
+}
 type Order struct {
-	Result            string            `json:"result,omitempty"`
-	FirstStartedAt    *time.Time        `json:"firstStartedAt,omitempty"`
-	CompletedAt       *time.Time        `json:"completedAt,omitempty"`
-	LastResourceError string            `json:"lastResourceError,omitempty"`
-	Operation         *OperationSummary `json:"operation,omitempty"`
-	AssigneeID        string            `json:"assigneeId,omitempty"`
-	AssigneeName      string            `json:"assigneeName,omitempty"`
-	AcceptedAt        *time.Time        `json:"acceptedAt,omitempty"`
-	FirstAssignedAt   *time.Time        `json:"firstAssignedAt,omitempty"`
-	DeadlineAt        *time.Time        `json:"deadlineAt,omitempty"`
-	ID                string            `json:"id"`
-	ReporterID        string            `json:"reporterId"`
-	RoomID            string            `json:"roomId"`
-	RoomName          string            `json:"roomName"`
-	Area              string            `json:"area"`
-	SeatID            string            `json:"seatId,omitempty"`
-	SeatLabel         string            `json:"seatLabel,omitempty"`
-	Category          string            `json:"category"`
-	Description       string            `json:"description"`
-	Severity          string            `json:"severity"`
-	State             domain.State      `json:"state"`
-	SyncState         domain.SyncState  `json:"syncState"`
-	Version           int64             `json:"version"`
-	CreatedAt         time.Time         `json:"createdAt"`
-	UpdatedAt         time.Time         `json:"updatedAt"`
+	Evaluation           *Evaluation       `json:"evaluation,omitempty"`
+	EvaluationDeadlineAt *time.Time        `json:"evaluationDeadlineAt,omitempty"`
+	StageNumber          int64             `json:"stageNumber"`
+	Escalated            bool              `json:"escalated"`
+	PolicyVersion        string            `json:"policyVersion"`
+	RepairSeconds        float64           `json:"repairSeconds"`
+	AcceptanceSeconds    float64           `json:"acceptanceSeconds"`
+	Result               string            `json:"result,omitempty"`
+	FirstStartedAt       *time.Time        `json:"firstStartedAt,omitempty"`
+	CompletedAt          *time.Time        `json:"completedAt,omitempty"`
+	LastResourceError    string            `json:"lastResourceError,omitempty"`
+	Operation            *OperationSummary `json:"operation,omitempty"`
+	AssigneeID           string            `json:"assigneeId,omitempty"`
+	AssigneeName         string            `json:"assigneeName,omitempty"`
+	AcceptedAt           *time.Time        `json:"acceptedAt,omitempty"`
+	FirstAssignedAt      *time.Time        `json:"firstAssignedAt,omitempty"`
+	DeadlineAt           *time.Time        `json:"deadlineAt,omitempty"`
+	ID                   string            `json:"id"`
+	ReporterID           string            `json:"reporterId"`
+	RoomID               string            `json:"roomId"`
+	RoomName             string            `json:"roomName"`
+	Area                 string            `json:"area"`
+	SeatID               string            `json:"seatId,omitempty"`
+	SeatLabel            string            `json:"seatLabel,omitempty"`
+	Category             string            `json:"category"`
+	Description          string            `json:"description"`
+	Severity             string            `json:"severity"`
+	State                domain.State      `json:"state"`
+	SyncState            domain.SyncState  `json:"syncState"`
+	Version              int64             `json:"version"`
+	CreatedAt            time.Time         `json:"createdAt"`
+	UpdatedAt            time.Time         `json:"updatedAt"`
 }
 type Timeline struct {
 	ActorID string    `json:"actorId,omitempty"`
@@ -126,12 +142,13 @@ func ID() string {
 }
 
 type Service struct {
-	DB        *sql.DB
-	Resources Resources
-	People    People
-	Catalog   Catalog
-	Events    Events
-	Now       func() time.Time
+	DB          *sql.DB
+	Resources   Resources
+	People      People
+	Supervisors SupervisorDirectory
+	Catalog     Catalog
+	Events      Events
+	Now         func() time.Time
 	// These flags describe adapters, never an assertion of production readiness.
 	Development bool
 }
@@ -142,6 +159,15 @@ func New(db *sql.DB, catalog Catalog, events Events) *Service {
 func dto(o domain.Order, seatLabel string, name ...string) Order {
 	result := Order{ID: o.ID, ReporterID: o.ReporterID, RoomID: o.RoomID, RoomName: o.RoomName, Area: o.Area, SeatID: o.SeatID, SeatLabel: seatLabel, Category: o.Category, Description: o.Description, Severity: o.Severity, State: o.State, SyncState: o.Sync, Version: o.Version, CreatedAt: o.CreatedAt, UpdatedAt: o.UpdatedAt, AssigneeID: o.AssigneeID}
 	result.Result, result.LastResourceError = o.Result, o.LastResourceError
+	result.StageNumber, result.Escalated, result.PolicyVersion = o.Stage.Number, o.Stage.Escalated, o.Policy.Version
+	result.RepairSeconds, result.AcceptanceSeconds = o.RepairElapsed.Seconds(), o.AcceptanceElapsed.Seconds()
+	if o.Evaluation != nil {
+		result.Evaluation = &Evaluation{Score: o.Evaluation.Score, Comment: o.Evaluation.Comment, At: o.Evaluation.At}
+	}
+	if !o.CompletedAt.IsZero() {
+		deadline := o.CompletedAt.Add(o.Policy.EvaluationWindow)
+		result.EvaluationDeadlineAt = &deadline
+	}
 	if !o.FirstStartedAt.IsZero() {
 		t := o.FirstStartedAt
 		result.FirstStartedAt = &t

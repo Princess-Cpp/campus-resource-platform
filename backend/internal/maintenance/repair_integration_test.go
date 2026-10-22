@@ -43,7 +43,7 @@ func setupRepair(t *testing.T) *repairHarness {
 	}
 	f.RoomsData = []booking.Room{{ID: "room-a", Name: "A101", Area: "A楼", Active: true, OpenHour: 8, CloseHour: 22, Seats: []booking.Seat{{ID: "seat-a", Label: "A01", Active: true}}}}
 	s := booking.New(h.db, f, []byte("test-only-resource-secret-at-least32"))
-	s.Now = h.service.Now
+	s.Now = func() time.Time { return h.service.Now() }
 	router := s.Router(f.Auth)
 	r := &repairHarness{harness: h, m1catalog: f}
 	r.m1 = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

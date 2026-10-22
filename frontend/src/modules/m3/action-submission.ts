@@ -3,12 +3,14 @@ import type { ActionInput, ActionGateway, Order } from "./types.ts"
 type Pending = { key: string; input: ActionInput }
 export interface ActionStore { load(): Pending | undefined; save(value: Pending): void; clear(): void }
 function normalize(input: ActionInput): ActionInput {
- if (!["ASSIGN","ACCEPT_ASSIGNMENT","CANCEL","START","FINISH","REJECT_ACCEPTANCE","APPROVE_ACCEPTANCE","RETRY_RESOURCE"].includes(input.action) || !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion<1) throw new Error("操作或版本无效，请刷新工单")
+ if (!["ASSIGN","ACCEPT_ASSIGNMENT","CANCEL","START","FINISH","REJECT_ACCEPTANCE","APPROVE_ACCEPTANCE","RETRY_RESOURCE","EVALUATE"].includes(input.action) || !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion<1) throw new Error("操作或版本无效，请刷新工单")
  if (input.action==="ASSIGN" && !input.assigneeId) throw new Error("请选择维修人员")
  if (input.action!=="ASSIGN" && input.assigneeId) throw new Error("此操作不接受维修人员参数")
+ if(input.action==="EVALUATE"?(!Number.isInteger(input.score)||input.score!<1||input.score!>5):input.score!==undefined)throw new Error("评价须为 1–5 的整数评分，其他操作不能携带评分")
  const comment=(input.comment??"").trim()
+ if(input.action==="EVALUATE" && Array.from(comment).length>500)throw new Error("评价文字最多 500 字")
  if (Array.from(comment).length>1000 || (["ASSIGN","FINISH","REJECT_ACCEPTANCE"].includes(input.action) && !comment)) throw new Error("请填写 1–1000 字的处理建议、维修结果或驳回原因")
- return {action:input.action,expectedVersion:input.expectedVersion,...(input.assigneeId?{assigneeId:input.assigneeId}:{}),comment}
+ return {action:input.action,expectedVersion:input.expectedVersion,...(input.assigneeId?{assigneeId:input.assigneeId}:{}),...(input.action==="EVALUATE"?{score:input.score}:{}),comment}
 }
 export function actionStore(actor: string,id: string,storage: Pick<Storage,"getItem"|"setItem"|"removeItem">): ActionStore {
  if (!actor || !id) throw new Error("无法识别当前用户或工单")

@@ -202,6 +202,10 @@ func listScope(a domain.Actor, view string) ([]string, []any, error) {
 }
 func timelineText(action string) string {
 	switch action {
+	case "EVALUATE":
+		return "报修人已提交一次性评价"
+	case "ESCALATE":
+		return "当前阶段已超时，升级记录和通知意图已保存"
 	case "REPORT":
 		return "故障已上报，等待派单"
 	case "ASSIGN":

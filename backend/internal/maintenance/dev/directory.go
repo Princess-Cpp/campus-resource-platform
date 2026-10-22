@@ -44,7 +44,7 @@ func LoadStaff(path string) ([]StaffBinding, error) {
 		}
 		seen[b.UserID] = true
 		for _, p := range b.Permissions {
-			if p != "workorder.dispatch" && p != "workorder.repair" && p != "workorder.accept" {
+			if p != "workorder.dispatch" && p != "workorder.repair" && p != "workorder.accept" && p != "workorder.supervise" && p != "workorder.stats" && p != "workorder.escalation.read" {
 				return nil, fmt.Errorf("unsupported M3 development permission")
 			}
 		}
@@ -89,6 +89,21 @@ func (d *Directory) Workers(ctx context.Context) ([]maintenance.Worker, error) {
 		a := d.actor(p)
 		if a.Can("workorder.repair") {
 			out = append(out, maintenance.Worker{ID: p.ID, Name: p.Name, Actor: a})
+		}
+	}
+	return out, nil
+}
+
+func (d *Directory) Supervisors(ctx context.Context, area string) ([]string, error) {
+	principals, e := d.Store.Principals(ctx)
+	if e != nil {
+		return nil, e
+	}
+	out := []string{}
+	for _, p := range principals {
+		a := d.actor(p)
+		if a.Can("workorder.supervise") && a.InArea(area) {
+			out = append(out, a.ID)
 		}
 	}
 	return out, nil

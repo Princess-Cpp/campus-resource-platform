@@ -3,6 +3,7 @@ import test from "node:test"
 import { createHTTPGateway } from "./transport.ts"
 import { ActionSubmission, actionStore } from "./action-submission.ts"
 import type { ActionInput, Order } from "./types.ts"
+import {durationText,ratioText} from "./operations.ts"
 const input: ActionInput = { action: "ASSIGN", expectedVersion: 2, assigneeId: "worker-a", comment: "检查灯管并处理" }
 function storage() {
  const values=new Map<string,string>()
@@ -94,4 +95,36 @@ test("acceptance queue and resource retry stay within M3 HTTP contract",async()=
  assert.equal(new URLSearchParams(calls[0].path.split("?")[1]).get("view"),"acceptance")
  assert.equal(calls[1].path,"/m3/workorders/order/actions")
  assert.deepEqual(JSON.parse(calls[1].init!.body as string),{action:"RETRY_RESOURCE",expectedVersion:12})
+})
+
+test("rating inputs require an integer score and at most 500 Unicode characters",async()=>{
+ let calls=0;const controller=new ActionSubmission({act:async()=>{calls++;return {id:"order",version:9} as Order}},"order",actionStore("reporter","order",storage()))
+ for(const score of [undefined,0,6,2.5])await assert.rejects(controller.send({action:"EVALUATE",expectedVersion:8,score}),/整数评分/)
+ await assert.rejects(controller.send({action:"EVALUATE",expectedVersion:8,score:5,comment:"字".repeat(501)}),/500/)
+ await assert.rejects(controller.send({action:"CANCEL",expectedVersion:8,score:5}),/其他操作/)
+ assert.equal(calls,0)
+ await controller.send({action:"EVALUATE",expectedVersion:8,score:5,comment:"字".repeat(500)});assert.equal(calls,1)
+})
+
+test("lost rating keeps its score and original key across page reconstruction",async()=>{
+ const s=storage();const calls:{q:ActionInput;key:string}[]=[]
+ const api={act:async(_id:string,q:ActionInput,key:string):Promise<Order>=>{calls.push({q,key});if(calls.length===1)throw new Error("response lost");return {id:"order",version:9} as Order}}
+ const q:ActionInput={action:"EVALUATE",expectedVersion:8,score:4,comment:"使用正常"}
+ await assert.rejects(new ActionSubmission(api,"order",actionStore("reporter","order",s),()=>"rating-key").send(q))
+ const restored=new ActionSubmission(api,"order",actionStore("reporter","order",s))
+ await assert.rejects(restored.send({...q,score:5}),/原操作/)
+ await restored.send(q);assert.deepEqual(calls,[{q,key:"rating-key"},{q,key:"rating-key"}]);assert.equal(restored.locked,false)
+})
+
+test("operations adapter preserves date cohort, pagination and active=false",async()=>{
+ const calls:string[]=[];const api=createHTTPGateway(async<T>(path:string)=>{calls.push(path);return {} as T})
+ await api.stats({from:"2030-01-01T00:00:00+08:00",to:"2030-01-02T00:00:00+08:00",category:"LIGHTING"})
+ await api.escalations({page:2,pageSize:20,active:false})
+ const first=new URLSearchParams(calls[0].split("?")[1]);assert.equal(first.get("from"),"2030-01-01T00:00:00+08:00");assert.equal(first.get("category"),"LIGHTING")
+ assert.equal(calls[1],"/m3/escalations?page=2&pageSize=20&active=false")
+})
+
+test("empty metrics remain distinct from zero-duration and zero-overdue results",()=>{
+ assert.equal(durationText(null),"暂无样本");assert.equal(durationText(0),"0 秒");assert.equal(durationText(90),"1.5 分钟");assert.equal(durationText(5400),"1.5 小时")
+ assert.equal(ratioText(null),"暂无样本");assert.equal(ratioText(0),"0.0%");assert.equal(ratioText(1/3),"33.3%")
 })

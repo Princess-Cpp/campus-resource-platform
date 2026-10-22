@@ -82,6 +82,9 @@ func (Events) Append(ctx context.Context, tx *sql.Tx, c domain.Change, eventID, 
 	if e != nil {
 		return e
 	}
+	if c.Action == "ESCALATE" {
+		return nil
+	}
 	payload, e := json.Marshal(map[string]any{"workorderId": c.Order.ID, "roomName": c.Order.RoomName, "state": c.Order.State})
 	if e != nil {
 		return e

@@ -35,6 +35,7 @@ func registerMaintenance(router *gin.Engine, db *sql.DB, store *identity.Store) 
 	service := maintenance.New(db, catalog, maintenancedev.Events{})
 	service.Development = true
 	service.People = directory
+	service.Supervisors = directory
 	endpoint, token := os.Getenv("M3_RESOURCE_URL"), os.Getenv("M3_SERVICE_TOKEN")
 	if endpoint != "" || token != "" {
 		resource, err := maintenance.NewHTTPResources(endpoint, token)
@@ -42,18 +43,18 @@ func registerMaintenance(router *gin.Engine, db *sql.DB, store *identity.Store) 
 			return err
 		}
 		service.Resources = resource
-		go func() {
-			ticker := time.NewTicker(2 * time.Second)
-			defer ticker.Stop()
-			for range ticker.C {
-				ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
-				if err := service.Tick(ctx); err != nil {
-					log.Print("M3 resource reconciliation did not commit; persisted operation will be retried")
-				}
-				cancel()
-			}
-		}()
 	}
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+			if err := service.Sweep(ctx); err != nil {
+				log.Print("M3 background processing did not commit; persisted work will be retried")
+			}
+			cancel()
+		}
+	}()
 	service.Register(router, directory.Authenticate)
 	return nil
 }

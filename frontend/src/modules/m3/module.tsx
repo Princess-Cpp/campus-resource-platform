@@ -27,6 +27,8 @@ export function createM3Module(gateway: MaintenanceGateway, submission: ReportSu
 export const m3Module: ModuleDefinition = {
   id: "m3", label: "物业报修",
   nav: [
+    { title:"超时升级",url:"/m3/escalations",icon:<ClipboardListIcon/> },
+    { title:"报修统计",url:"/m3/stats",icon:<ClipboardListIcon/> },
     { title:"区域调度台",url:"/m3/dispatch",icon:<ClipboardListIcon/> },
     { title:"验收工作台",url:"/m3/acceptance",icon:<ClipboardListIcon/> },
     { title:"维修待办",url:"/m3/assigned",icon:<WrenchIcon/> },
@@ -34,6 +36,8 @@ export const m3Module: ModuleDefinition = {
     { title: "我的报修", url: "/m3/workorders", icon: <ClipboardListIcon /> },
   ],
   routes: [
+    {path:"m3/escalations",element:<LiveMaintenance page="escalations"/>,handle:{section:"物业报修",title:"超时升级"} satisfies RouteHandle},
+    {path:"m3/stats",element:<LiveMaintenance page="stats"/>,handle:{section:"物业报修",title:"报修统计"} satisfies RouteHandle},
     {path:"m3/dispatch",element:<LiveMaintenance page="dispatch"/>,handle:{section:"物业报修",title:"区域调度台"} satisfies RouteHandle},
     {path:"m3/acceptance",element:<LiveMaintenance page="acceptance"/>,handle:{section:"物业报修",title:"验收工作台"} satisfies RouteHandle},
     {path:"m3/assigned",element:<LiveMaintenance page="assigned"/>,handle:{section:"物业报修",title:"维修待办"} satisfies RouteHandle},

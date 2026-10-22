@@ -30,7 +30,7 @@ func canAct(o domain.Order, a domain.Actor, action string) bool {
 			return canAct(o, a, "START")
 		}
 		return canAct(o, a, "APPROVE_ACCEPTANCE")
-	case "CANCEL":
+	case "EVALUATE", "CANCEL":
 		return a.Enabled && a.ID == o.ReporterID
 	}
 	return false
@@ -64,6 +64,9 @@ func (s *Service) allowedActions(o domain.Order, a domain.Actor) []string {
 			out = append(out, "APPROVE_ACCEPTANCE")
 		}
 	}
+	if canAct(o, a, "EVALUATE") && o.State == domain.Completed && o.Evaluation == nil && s.Now().Before(o.CompletedAt.Add(o.Policy.EvaluationWindow)) {
+		out = append(out, "EVALUATE")
+	}
 	return out
 }
 func (s *Service) Assignees(ctx context.Context, a domain.Actor, id string) ([]Worker, error) {
@@ -96,7 +99,10 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 	if !a.Enabled || a.ID == "" {
 		return Order{}, fault("UNAUTHENTICATED", 401)
 	}
-	if !slices.Contains([]string{"ASSIGN", "ACCEPT_ASSIGNMENT", "CANCEL", "START", "FINISH", "REJECT_ACCEPTANCE", "APPROVE_ACCEPTANCE", "RETRY_RESOURCE"}, q.Action) || q.ExpectedVersion < 1 || len(id) == 0 || len(id) > 64 || !keyPattern.MatchString(key) || len(q.AssigneeID) > 64 || (q.Action == "ASSIGN" && q.AssigneeID == "") || (q.Action != "ASSIGN" && q.AssigneeID != "") {
+	if !slices.Contains([]string{"ASSIGN", "ACCEPT_ASSIGNMENT", "CANCEL", "START", "FINISH", "REJECT_ACCEPTANCE", "APPROVE_ACCEPTANCE", "RETRY_RESOURCE", "EVALUATE"}, q.Action) || q.ExpectedVersion < 1 || len(id) == 0 || len(id) > 64 || !keyPattern.MatchString(key) || len(q.AssigneeID) > 64 || (q.Action == "ASSIGN" && q.AssigneeID == "") || (q.Action != "ASSIGN" && q.AssigneeID != "") {
+		return Order{}, fault("INVALID_INPUT", 400)
+	}
+	if (q.Action == "EVALUATE" && q.Score == nil) || (q.Action != "EVALUATE" && q.Score != nil) {
 		return Order{}, fault("INVALID_INPUT", 400)
 	}
 	q.Comment = strings.TrimSpace(q.Comment)
@@ -203,7 +209,11 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 		if q.Action == "START" || q.Action == "APPROVE_ACCEPTANCE" {
 			opID = "M3OP-" + ID()
 		}
-		change, e = order.Apply(a, target, domain.Command{Action: q.Action, ExpectedVersion: q.ExpectedVersion, Comment: q.Comment, OperationID: opID}, now)
+		score := 0
+		if q.Score != nil {
+			score = *q.Score
+		}
+		change, e = order.Apply(a, target, domain.Command{Score: score, Action: q.Action, ExpectedVersion: q.ExpectedVersion, Comment: q.Comment, OperationID: opID}, now)
 	}
 	if e != nil {
 		status := 400

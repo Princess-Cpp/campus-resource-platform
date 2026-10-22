@@ -11,8 +11,8 @@ export type Room = {
   seats: { id: string; label: string }[]
 }
 export type ReportInput = { roomId: string; seatId?: string; category: Category; description: string; severity: Severity }
-export type ActionName = "ASSIGN" | "ACCEPT_ASSIGNMENT" | "CANCEL" | "START" | "FINISH" | "REJECT_ACCEPTANCE" | "APPROVE_ACCEPTANCE" | "RETRY_RESOURCE"
-export type ActionInput = {action:ActionName;expectedVersion:number;assigneeId?:string;comment?:string}
+export type ActionName = "ASSIGN" | "ACCEPT_ASSIGNMENT" | "CANCEL" | "START" | "FINISH" | "REJECT_ACCEPTANCE" | "APPROVE_ACCEPTANCE" | "RETRY_RESOURCE" | "EVALUATE"
+export type ActionInput = {action:ActionName;expectedVersion:number;assigneeId?:string;comment?:string;score?:number}
 export type Worker = {id:string;name:string}
 export interface ActionGateway {
  act(id:string,input:ActionInput,key:string):Promise<Order>
@@ -20,6 +20,13 @@ export interface ActionGateway {
 }
 export type ListView = "mine" | "dispatch" | "assigned" | "acceptance"
 export type Order = ReportInput & {
+ evaluation?:{score:number;comment:string;at:string}
+ evaluationDeadlineAt?:string
+ stageNumber?:number
+ escalated?:boolean
+ policyVersion?:string
+ repairSeconds?:number
+ acceptanceSeconds?:number
  result?:string
  firstStartedAt?:string
  completedAt?:string
@@ -51,3 +58,10 @@ export interface MaintenanceGateway {
   list(query: ListQuery): Promise<OrderPage>
   detail(id: string): Promise<OrderDetail>
 }
+
+export type Metric={count:number;averageSeconds:number|null}
+export type Statistics={asOf:string;total:number;byState:Partial<Record<OrderState,number>>;eligibleCount:number;recordedOverdueCount:number;recordedOverdueRate:number|null;resourceUnresolvedCount:number;ratedCount:number;averageScore:number|null;dispatch:Metric;firstRepair:Metric;repair:Metric;acceptance:Metric}
+export type Escalation={id:string;workorderId:string;roomName:string;area:string;stageNumber:number;level:number;policyVersion:string;stageState:OrderState;currentState:OrderState;deadlineAt:string;detectedAt:string;routingState:string;active:boolean;canOpen:boolean}
+export type EscalationPage={items:Escalation[];page:number;pageSize:number;total:number}
+export type OperationsQuery={from?:string;to?:string;category?:Category}
+export interface OperationsGateway {stats(query:OperationsQuery):Promise<Statistics>;escalations(query:OperationsQuery & {page:number;pageSize:number;active:boolean}):Promise<EscalationPage>}

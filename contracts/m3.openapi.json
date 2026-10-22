@@ -3,7 +3,7 @@
   "info": {
     "title": "M3 property maintenance",
     "version": "1.0.0",
-    "description": "Local reporting, scoped dispatch, repair and independent acceptance using existing M1 resource HTTP v1. Resource requests are durable before HTTP, receipts gate business state, unknown outcomes retain their operation identity. Shared catalog/identity mapping/events remain development adapters; team review and notification delivery are pending.",
+    "description": "Local reporting, scoped dispatch, repair and independent acceptance using existing M1 resource HTTP v1. Resource requests are durable before HTTP, receipts gate business state, unknown outcomes retain their operation identity. Shared catalog/identity mapping/events remain development adapters; team review and notification delivery are pending. Round 4 adds one-time evaluation, durable stage escalation/routing exceptions and scoped basic statistics; real notification delivery remains pending.",
     "x-review-status": "pending-team-review"
   },
   "servers": [
@@ -935,6 +935,239 @@
           }
         }
       }
+    },
+    "/m3/stats": {
+      "get": {
+        "operationId": "maintenanceStatistics",
+        "description": "Requires workorder.stats and authorized areas. Aggregated output only; no reporter identity or comments.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LIGHTING",
+                "POWER",
+                "FURNITURE",
+                "DOOR_WINDOW",
+                "OTHER"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Statistics"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/m3/escalations": {
+      "get": {
+        "operationId": "maintenanceEscalations",
+        "description": "Requires workorder.supervise or explicit workorder.escalation.read within current areas. Metadata only. Exception permission does not grant order details or business actions; canOpen is checked separately.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LIGHTING",
+                "POWER",
+                "FURNITURE",
+                "DOOR_WINDOW",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/EscalationPage"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1152,6 +1385,31 @@
           },
           "operation": {
             "$ref": "#/components/schemas/ResourceOperation"
+          },
+          "evaluation": {
+            "$ref": "#/components/schemas/Evaluation"
+          },
+          "evaluationDeadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stageNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "escalated": {
+            "type": "boolean"
+          },
+          "policyVersion": {
+            "type": "string"
+          },
+          "repairSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "acceptanceSeconds": {
+            "type": "number",
+            "minimum": 0
           }
         },
         "required": [
@@ -1315,7 +1573,8 @@
                 "FINISH",
                 "REJECT_ACCEPTANCE",
                 "APPROVE_ACCEPTANCE",
-                "RETRY_RESOURCE"
+                "RETRY_RESOURCE",
+                "EVALUATE"
               ]
             }
           },
@@ -1335,6 +1594,31 @@
           },
           "operation": {
             "$ref": "#/components/schemas/ResourceOperation"
+          },
+          "evaluation": {
+            "$ref": "#/components/schemas/Evaluation"
+          },
+          "evaluationDeadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stageNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "escalated": {
+            "type": "boolean"
+          },
+          "policyVersion": {
+            "type": "string"
+          },
+          "repairSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "acceptanceSeconds": {
+            "type": "number",
+            "minimum": 0
           }
         },
         "required": [
@@ -1453,7 +1737,8 @@
               "FINISH",
               "REJECT_ACCEPTANCE",
               "APPROVE_ACCEPTANCE",
-              "RETRY_RESOURCE"
+              "RETRY_RESOURCE",
+              "EVALUATE"
             ]
           },
           "expectedVersion": {
@@ -1467,6 +1752,11 @@
           "comment": {
             "type": "string",
             "maxLength": 1000
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
           }
         },
         "required": [
@@ -1474,7 +1764,7 @@
           "expectedVersion"
         ],
         "additionalProperties": false,
-        "description": "ASSIGN requires assigneeId and a nonblank comment. FINISH and REJECT_ACCEPTANCE require a nonblank comment. Other actions omit assigneeId. First execution checks expectedVersion; replay reuses identical input/key and current authority. START/APPROVE_ACCEPTANCE queue resource operations; RETRY_RESOURCE resumes a PAUSED unknown operation with its original operation ID."
+        "description": "ASSIGN requires assigneeId and a nonblank comment. FINISH and REJECT_ACCEPTANCE require a nonblank comment. Other actions omit assigneeId. First execution checks expectedVersion; replay reuses identical input/key and current authority. START/APPROVE_ACCEPTANCE queue resource operations; RETRY_RESOURCE resumes a PAUSED unknown operation with its original operation ID. EVALUATE requires score (integer 1..5), optional comment <=500 characters, completed owner-only order within its saved evaluation window. Other actions do not accept a score value. Same-key committed rating replays even after expiry; it never changes resources."
       },
       "Worker": {
         "type": "object",
@@ -1531,6 +1821,234 @@
           "action",
           "state",
           "attempts"
+        ],
+        "additionalProperties": false
+      },
+      "Evaluation": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "score",
+          "comment",
+          "at"
+        ],
+        "additionalProperties": false
+      },
+      "Metric": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "averageSeconds": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          }
+        },
+        "required": [
+          "count",
+          "averageSeconds"
+        ],
+        "additionalProperties": false
+      },
+      "Statistics": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "byState": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "eligibleCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "recordedOverdueCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resourceUnresolvedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "ratedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "recordedOverdueRate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "averageScore": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "dispatch": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "firstRepair": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "repair": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "acceptance": {
+            "$ref": "#/components/schemas/Metric"
+          }
+        },
+        "required": [
+          "asOf",
+          "byState",
+          "total",
+          "eligibleCount",
+          "recordedOverdueCount",
+          "resourceUnresolvedCount",
+          "ratedCount",
+          "recordedOverdueRate",
+          "averageScore",
+          "dispatch",
+          "firstRepair",
+          "repair",
+          "acceptance"
+        ],
+        "additionalProperties": false,
+        "description": "Created-at cohort within current authorized areas; cancelled separate/excluded. First-event timings use available samples; repair/acceptance only completed orders. Rating denominator excludes unrated. Recorded overdue rate counts persisted escalation history divided by noncancelled orders; unresolved resources separate. Acceptance time excludes resource synchronization after approval request."
+      },
+      "Escalation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workorderId": {
+            "type": "string"
+          },
+          "roomName": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "type": "string"
+          },
+          "stageState": {
+            "type": "string"
+          },
+          "currentState": {
+            "type": "string"
+          },
+          "stageNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "detectedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "canOpen": {
+            "type": "boolean"
+          },
+          "routingState": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "NO_SUPERVISOR",
+              "DIRECTORY_UNAVAILABLE",
+              "QUEUED",
+              "OBSOLETE"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "workorderId",
+          "roomName",
+          "area",
+          "policyVersion",
+          "stageState",
+          "currentState",
+          "stageNumber",
+          "level",
+          "deadlineAt",
+          "detectedAt",
+          "active",
+          "canOpen",
+          "routingState"
+        ],
+        "additionalProperties": false
+      },
+      "EscalationPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Escalation"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
         ],
         "additionalProperties": false
       }
