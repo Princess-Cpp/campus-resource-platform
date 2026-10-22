@@ -11,14 +11,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import type { ModuleDefinition } from "@/modules/common/navigation"
+import { hasAnyPermission, type ModuleDefinition } from "@/modules/common/navigation"
+import { useSession } from "@/modules/common/session"
 
 export function NavMain({ modules }: { modules: ModuleDefinition[] }) {
   const { pathname } = useLocation()
+  const session = useSession()
+  const canBook = hasAnyPermission(session.data?.actor.permissions, ["booking.create"])
   return (
     <>
       <SidebarGroup>
         <SidebarGroupContent className="flex flex-col gap-2">
+          {canBook && (
           <SidebarMenu>
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
@@ -40,6 +44,7 @@ export function NavMain({ modules }: { modules: ModuleDefinition[] }) {
               </Button>
             </SidebarMenuItem>
           </SidebarMenu>
+          )}
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="工作台" isActive={pathname === "/"} render={<NavLink to="/" end />}>
