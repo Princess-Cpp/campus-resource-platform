@@ -8,24 +8,29 @@ import { formatDateTime } from "@/modules/common/time"
 import { useRequest } from "@/modules/common/use-request"
 import { categories } from "../reporting"
 import { ErrorBox, Status } from "../components/shared"
-import type { MaintenanceGateway } from "../types"
+import { OrderActions } from "../components/order-actions"
+import type { ActionGateway,MaintenanceGateway } from "../types"
 
-export function DetailPage({ gateway }: { gateway: MaintenanceGateway }) {
+export function DetailPage({ gateway,actions,actorId }: { gateway: MaintenanceGateway;actions?:ActionGateway;actorId?:string }) {
   const { id = "" } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
   const result = useRequest(() => gateway.detail(id), [gateway, id])
   const order = result.data
-  return <Page title="报修详情" description={order?.id} actions={<Button variant="outline" onClick={() => navigate("/m3/workorders")}><ArrowLeftIcon />返回列表</Button>}>
+  const backTo=["/m3/dispatch","/m3/assigned"].includes(location.state?.backTo)?location.state.backTo:"/m3/workorders"
+  return <Page title="报修详情" description={order?.id} actions={<Button variant="outline" onClick={() => navigate(backTo)}><ArrowLeftIcon />返回列表</Button>}>
     <div className="space-y-4 px-4 lg:px-6">
       {result.error !== undefined ? <div className="space-y-3"><ErrorBox error={result.error} /><Button variant="outline" onClick={result.reload}>重新加载详情</Button></div> : result.loading || !order ? <p role="status" className="py-8 text-sm text-muted-foreground">正在加载报修详情…</p> : <>
         {location.state?.created && <Alert><CheckIcon /><AlertTitle>{gateway.mode === "preview" ? "已创建示例报修" : "报修已提交"}</AlertTitle><AlertDescription>{gateway.mode === "preview" ? "这条记录只用于界面预览，未发送至物业，刷新页面后会清空。" : "可在此查看后续处理进展。"}</AlertDescription></Alert>}
         <Card><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><CardTitle className="text-lg">{order.roomName}</CardTitle><Status order={order} /></div></CardHeader><CardContent className="space-y-6">
           <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-4">{[["故障类别", categories.find(item => item.value === order.category)?.label ?? order.category], ["紧急程度", order.severity === "URGENT" ? "紧急（待复核）" : "一般"], ["上报时间", formatDateTime(order.createdAt)], ["座位", order.seatLabel ? `${order.seatLabel} 号座位` : order.seatId ? "已指定座位" : "整个教室 / 未指定"]].map(([label, value]) => <div key={label} className="space-y-1"><dt className="text-muted-foreground">{label}</dt><dd className="break-words font-medium">{value}</dd></div>)}</dl>
+          {order.assigneeId && <div className="space-y-2 border-t pt-4 text-sm"><p>{order.state==="CANCELLED"?"取消前维修人员：":"当前维修人员："}<span className="font-medium">{order.assigneeName??order.assigneeId}</span></p><p className="text-muted-foreground">{order.state==="CANCELLED"?"工单已取消，无需接单":order.acceptedAt?`已接单 · ${formatDateTime(order.acceptedAt)}`:"等待维修人员接单"}</p>{order.firstAssignedAt && <p className="text-muted-foreground">首次派单：{formatDateTime(order.firstAssignedAt)}</p>}</div>}
           <div className="space-y-2 border-t pt-4"><h3 className="text-sm font-medium">故障描述</h3><p className="whitespace-pre-wrap break-words text-sm leading-7">{order.description}</p></div>
           {order.syncState !== "IDLE" && <Alert><AlertTitle>正在核对资源状态</AlertTitle><AlertDescription>处理结果尚未确认，请稍后刷新。当前状态不代表教室已恢复可预约。</AlertDescription></Alert>}
         </CardContent></Card>
-        <Card><CardHeader><CardTitle>处理记录</CardTitle></CardHeader><CardContent><ol className="space-y-0">{order.timeline.map((entry, index) => <li key={entry.id} className={`relative ml-1 border-l pl-6 ${index < order.timeline.length - 1 ? "pb-6" : "pb-1"}`}><span className="absolute -left-1 top-1 size-2 rounded-full bg-foreground" /><p className="break-words text-sm leading-6">{entry.text}</p><time className="text-xs text-muted-foreground" dateTime={entry.at}>{formatDateTime(entry.at)}</time></li>)}</ol></CardContent></Card>
+        {actions && actorId && <OrderActions gateway={actions} actorId={actorId} order={order} changed={result.reload}/>}
+        <Button variant="outline" onClick={result.reload}>刷新详情</Button>
+        <Card><CardHeader><CardTitle>处理记录</CardTitle></CardHeader><CardContent><ol className="space-y-0">{order.timeline.map((entry, index) => <li key={entry.id} className={`relative ml-1 border-l pl-6 ${index < order.timeline.length - 1 ? "pb-6" : "pb-1"}`}><span className="absolute -left-1 top-1 size-2 rounded-full bg-foreground" /><p className="break-words text-sm leading-6">{entry.text}</p>{entry.comment && <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">{entry.comment}</p>}<time className="text-xs text-muted-foreground" dateTime={entry.at}>{formatDateTime(entry.at)}</time></li>)}</ol></CardContent></Card>
       </>}
     </div>
   </Page>

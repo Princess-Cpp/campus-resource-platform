@@ -11,7 +11,20 @@ export type Room = {
   seats: { id: string; label: string }[]
 }
 export type ReportInput = { roomId: string; seatId?: string; category: Category; description: string; severity: Severity }
+export type ActionName = "ASSIGN" | "ACCEPT_ASSIGNMENT" | "CANCEL"
+export type ActionInput = {action:ActionName;expectedVersion:number;assigneeId?:string;comment?:string}
+export type Worker = {id:string;name:string}
+export interface ActionGateway {
+ act(id:string,input:ActionInput,key:string):Promise<Order>
+ assignees(id:string):Promise<Worker[]>
+}
+export type ListView = "mine" | "dispatch" | "assigned"
 export type Order = ReportInput & {
+ assigneeId?:string
+ assigneeName?:string
+ acceptedAt?:string
+ firstAssignedAt?:string
+ deadlineAt?:string
   id: string
   roomName: string
   seatLabel?: string
@@ -22,9 +35,9 @@ export type Order = ReportInput & {
   createdAt: string
   updatedAt: string
 }
-export type TimelineEntry = { id: string; action: string; text: string; at: string }
-export type OrderDetail = Order & { timeline: TimelineEntry[] }
-export type ListQuery = { page: number; pageSize: number; state?: OrderState; category?: Category; from?: string; to?: string }
+export type TimelineEntry = { id: string; action: string; text: string; at: string; actorId?:string; comment?:string }
+export type OrderDetail = Order & { timeline: TimelineEntry[]; allowedActions?:ActionName[] }
+export type ListQuery = { view?:ListView; page: number; pageSize: number; state?: OrderState; category?: Category; from?: string; to?: string }
 export type OrderPage = { items: Order[]; page: number; pageSize: number; total: number }
 export interface MaintenanceGateway {
   readonly mode: "preview" | "api"

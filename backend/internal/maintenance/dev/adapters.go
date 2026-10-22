@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"slices"
 	"unicode/utf8"
@@ -70,18 +69,7 @@ func LoadCatalog(path string) (*Catalog, error) {
 // current disable/revocation checks. The optional student mapping is explicit
 // development policy; it never writes D roles or accepts roles from JSON.
 func Authenticator(store *identity.Store, studentReporting bool) maintenance.Authenticate {
-	return func(ctx context.Context, r *http.Request) (domain.Actor, error) {
-		session, e := store.AuthenticateRequest(ctx, r)
-		if e != nil {
-			return domain.Actor{}, e
-		}
-		p := session.Principal
-		permissions := append([]string{}, p.Permissions...)
-		if studentReporting && slices.Contains(p.Roles, "student") && !p.Can("workorder.report") {
-			permissions = append(permissions, "workorder.report")
-		}
-		return domain.Actor{ID: p.ID, Enabled: true, Department: p.Department, Permissions: permissions, Areas: append([]string{}, p.Areas...)}, nil
-	}
+	return (&Directory{Store: store, StudentReporting: studentReporting}).Authenticate
 }
 
 // Events stores audit facts and pending notification intent in the *business*
@@ -90,7 +78,7 @@ func Authenticator(store *identity.Store, studentReporting bool) maintenance.Aut
 type Events struct{}
 
 func (Events) Append(ctx context.Context, tx *sql.Tx, c domain.Change, eventID, trace string) error {
-	_, e := tx.ExecContext(ctx, `INSERT INTO m3_events(event_id,workorder_id,business_version,actor_id,action,old_state,new_state,occurred_at,correlation_id) VALUES (?,?,?,?,?,?,?,?,?)`, eventID, c.Order.ID, c.Order.Version, c.ActorID, c.Action, c.From, c.Order.State, c.At, trace)
+	_, e := tx.ExecContext(ctx, `INSERT INTO m3_events(event_id,workorder_id,business_version,actor_id,action,old_state,new_state,occurred_at,correlation_id,comment) VALUES (?,?,?,?,?,?,?,?,?,?)`, eventID, c.Order.ID, c.Order.Version, c.ActorID, c.Action, c.From, c.Order.State, c.At, trace, c.Comment)
 	if e != nil {
 		return e
 	}
@@ -98,6 +86,34 @@ func (Events) Append(ctx context.Context, tx *sql.Tx, c domain.Change, eventID, 
 	if e != nil {
 		return e
 	}
-	_, e = tx.ExecContext(ctx, `INSERT INTO m3_outbox(event_id,workorder_id,recipient_id,kind,payload,created_at) VALUES (?,?,?,?,?,?)`, eventID, c.Order.ID, c.Order.ReporterID, "WORKORDER_REPORTED", payload, c.At)
-	return e
+	kind := "WORKORDER_" + c.Action
+	switch c.Action {
+	case "REPORT":
+		kind = "WORKORDER_REPORTED"
+	case "ASSIGN":
+		kind = "WORKORDER_ASSIGNED"
+	case "ACCEPT_ASSIGNMENT":
+		kind = "WORKORDER_ACCEPTED"
+	case "CANCEL":
+		kind = "WORKORDER_CANCELLED"
+	}
+	recipients := map[string]string{c.Order.ReporterID: kind}
+	if c.Action != "REPORT" && c.Order.AssigneeID != "" {
+		recipients[c.Order.AssigneeID] = kind
+	}
+	if c.Action == "ASSIGN" {
+		var old string
+		if e = tx.QueryRowContext(ctx, "SELECT previous_assignee_id FROM m3_assignment_history WHERE id=?", eventID).Scan(&old); e != nil {
+			return e
+		}
+		if old != "" && old != c.Order.AssigneeID {
+			recipients[old] = "WORKORDER_HANDOVER"
+		}
+	}
+	for recipient, notification := range recipients {
+		if _, e = tx.ExecContext(ctx, `INSERT INTO m3_outbox(event_id,workorder_id,recipient_id,kind,payload,created_at) VALUES (?,?,?,?,?,?)`, eventID, c.Order.ID, recipient, notification, payload, c.At); e != nil {
+			return e
+		}
+	}
+	return nil
 }

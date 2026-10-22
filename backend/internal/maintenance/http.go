@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"campus-resource-platform/backend/internal/maintenance/domain"
@@ -71,7 +72,7 @@ func (s *Service) Register(r *gin.Engine, authenticate Authenticate) {
 				return
 			}
 		}
-		if view := c.Query("view"); view != "" && view != "mine" {
+		if view := c.Query("view"); view != "" && !slices.Contains([]string{"mine", "dispatch", "assigned"}, view) {
 			respond(c, 0, nil, fault("INVALID_INPUT", 400))
 			return
 		}
@@ -85,9 +86,30 @@ func (s *Service) Register(r *gin.Engine, authenticate Authenticate) {
 			respond(c, 0, nil, fault("INVALID_INPUT", 400))
 			return
 		}
-		v, e := s.List(c.Request.Context(), actor(c), Filters{Page: page, PageSize: size, State: c.Query("state"), Category: c.Query("category"), From: c.Query("from"), To: c.Query("to")})
+		v, e := s.List(c.Request.Context(), actor(c), Filters{View: c.Query("view"), Page: page, PageSize: size, State: c.Query("state"), Category: c.Query("category"), From: c.Query("from"), To: c.Query("to")})
 		respond(c, 200, v, e)
 	})
+	api.GET("/workorders/:id/assignees", func(c *gin.Context) {
+		v, e := s.Assignees(c.Request.Context(), actor(c), c.Param("id"))
+		respond(c, 200, v, e)
+	})
+	api.POST("/workorders/:id/actions", func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 16<<10)
+		var q ActionInput
+		d := json.NewDecoder(c.Request.Body)
+		d.DisallowUnknownFields()
+		if e := d.Decode(&q); e != nil {
+			respond(c, 0, nil, fault("INVALID_INPUT", 400))
+			return
+		}
+		if e := d.Decode(new(any)); e != io.EOF {
+			respond(c, 0, nil, fault("INVALID_INPUT", 400))
+			return
+		}
+		v, e := s.Act(c.Request.Context(), actor(c), c.Param("id"), q, c.GetHeader("Idempotency-Key"), c.GetString("trace"))
+		respond(c, 200, v, e)
+	})
+
 	api.GET("/workorders/:id", func(c *gin.Context) {
 		v, e := s.Get(c.Request.Context(), actor(c), c.Param("id"))
 		respond(c, 200, v, e)

@@ -29,6 +29,20 @@ type Catalog interface {
 type Events interface {
 	Append(context.Context, *sql.Tx, domain.Change, string, string) error
 }
+type Worker struct {
+	ID    string       `json:"id"`
+	Name  string       `json:"name"`
+	Actor domain.Actor `json:"-"`
+}
+type People interface {
+	Workers(context.Context) ([]Worker, error)
+}
+type ActionInput struct {
+	Action          string `json:"action"`
+	ExpectedVersion int64  `json:"expectedVersion"`
+	AssigneeID      string `json:"assigneeId,omitempty"`
+	Comment         string `json:"comment,omitempty"`
+}
 type Authenticate func(context.Context, *http.Request) (domain.Actor, error)
 type ReportInput struct {
 	RoomID      string `json:"roomId"`
@@ -38,33 +52,42 @@ type ReportInput struct {
 	Severity    string `json:"severity"`
 }
 type Order struct {
-	ID          string           `json:"id"`
-	ReporterID  string           `json:"reporterId"`
-	RoomID      string           `json:"roomId"`
-	RoomName    string           `json:"roomName"`
-	Area        string           `json:"area"`
-	SeatID      string           `json:"seatId,omitempty"`
-	SeatLabel   string           `json:"seatLabel,omitempty"`
-	Category    string           `json:"category"`
-	Description string           `json:"description"`
-	Severity    string           `json:"severity"`
-	State       domain.State     `json:"state"`
-	SyncState   domain.SyncState `json:"syncState"`
-	Version     int64            `json:"version"`
-	CreatedAt   time.Time        `json:"createdAt"`
-	UpdatedAt   time.Time        `json:"updatedAt"`
+	AssigneeID      string           `json:"assigneeId,omitempty"`
+	AssigneeName    string           `json:"assigneeName,omitempty"`
+	AcceptedAt      *time.Time       `json:"acceptedAt,omitempty"`
+	FirstAssignedAt *time.Time       `json:"firstAssignedAt,omitempty"`
+	DeadlineAt      *time.Time       `json:"deadlineAt,omitempty"`
+	ID              string           `json:"id"`
+	ReporterID      string           `json:"reporterId"`
+	RoomID          string           `json:"roomId"`
+	RoomName        string           `json:"roomName"`
+	Area            string           `json:"area"`
+	SeatID          string           `json:"seatId,omitempty"`
+	SeatLabel       string           `json:"seatLabel,omitempty"`
+	Category        string           `json:"category"`
+	Description     string           `json:"description"`
+	Severity        string           `json:"severity"`
+	State           domain.State     `json:"state"`
+	SyncState       domain.SyncState `json:"syncState"`
+	Version         int64            `json:"version"`
+	CreatedAt       time.Time        `json:"createdAt"`
+	UpdatedAt       time.Time        `json:"updatedAt"`
 }
 type Timeline struct {
-	ID     string    `json:"id"`
-	Action string    `json:"action"`
-	Text   string    `json:"text"`
-	At     time.Time `json:"at"`
+	ActorID string    `json:"actorId,omitempty"`
+	Comment string    `json:"comment,omitempty"`
+	ID      string    `json:"id"`
+	Action  string    `json:"action"`
+	Text    string    `json:"text"`
+	At      time.Time `json:"at"`
 }
 type Detail struct {
+	AllowedActions []string `json:"allowedActions"`
 	Order
 	Timeline []Timeline `json:"timeline"`
 }
 type Filters struct {
+	View                      string
 	Page, PageSize            int
 	State, Category, From, To string
 }
@@ -91,6 +114,7 @@ func ID() string {
 
 type Service struct {
 	DB      *sql.DB
+	People  People
 	Catalog Catalog
 	Events  Events
 	Now     func() time.Time
@@ -101,6 +125,22 @@ type Service struct {
 func New(db *sql.DB, catalog Catalog, events Events) *Service {
 	return &Service{DB: db, Catalog: catalog, Events: events, Now: time.Now}
 }
-func dto(o domain.Order, seatLabel string) Order {
-	return Order{ID: o.ID, ReporterID: o.ReporterID, RoomID: o.RoomID, RoomName: o.RoomName, Area: o.Area, SeatID: o.SeatID, SeatLabel: seatLabel, Category: o.Category, Description: o.Description, Severity: o.Severity, State: o.State, SyncState: o.Sync, Version: o.Version, CreatedAt: o.CreatedAt, UpdatedAt: o.UpdatedAt}
+func dto(o domain.Order, seatLabel string, name ...string) Order {
+	result := Order{ID: o.ID, ReporterID: o.ReporterID, RoomID: o.RoomID, RoomName: o.RoomName, Area: o.Area, SeatID: o.SeatID, SeatLabel: seatLabel, Category: o.Category, Description: o.Description, Severity: o.Severity, State: o.State, SyncState: o.Sync, Version: o.Version, CreatedAt: o.CreatedAt, UpdatedAt: o.UpdatedAt, AssigneeID: o.AssigneeID}
+	if len(name) > 0 {
+		result.AssigneeName = name[0]
+	}
+	if !o.AcceptedAt.IsZero() {
+		t := o.AcceptedAt
+		result.AcceptedAt = &t
+	}
+	if !o.FirstAssignedAt.IsZero() {
+		t := o.FirstAssignedAt
+		result.FirstAssignedAt = &t
+	}
+	if !o.Stage.DeadlineAt.IsZero() {
+		t := o.Stage.DeadlineAt
+		result.DeadlineAt = &t
+	}
+	return result
 }

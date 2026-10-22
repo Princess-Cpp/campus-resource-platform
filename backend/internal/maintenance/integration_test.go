@@ -56,7 +56,7 @@ func setup(t *testing.T) *harness {
 	if e = migrations.Apply(context.Background(), db); e != nil {
 		t.Fatal(e)
 	}
-	for _, table := range []string{"m3_commands", "m3_outbox", "m3_events", "m3_workorders"} {
+	for _, table := range []string{"m3_commands", "m3_outbox", "m3_events", "m3_assignment_history", "m3_workorders"} {
 		if _, e = db.Exec("DELETE FROM " + table); e != nil {
 			t.Fatal(e)
 		}
@@ -80,6 +80,7 @@ func setup(t *testing.T) *harness {
 func (h *harness) start() {
 	h.service = maintenance.New(h.db, h.catalog, maintenancedev.Events{})
 	h.service.Development = true
+	h.service.People = &maintenancedev.Directory{Store: h.auth, StudentReporting: true}
 	h.service.Now = func() time.Time { return time.Date(2030, 1, 1, 2, 0, 0, 0, time.UTC) }
 	h.router = gin.New()
 	h.router.Use((&identity.HTTP{Store: h.auth}).CSRFMiddleware())
@@ -298,7 +299,7 @@ func TestOwnerQueriesFiltersAndPagination(t *testing.T) {
 			t.Fatal(path)
 		}
 	}
-	for _, path := range []string{"/workorders?userId=someone", "/workorders?view=dispatch", "/workorders?page=0", "/workorders?pageSize=101", "/workorders?state=INVALID", "/workorders?from=tomorrow", "/workorders?page=1&page=2"} {
+	for _, path := range []string{"/workorders?userId=someone", "/workorders?view=unknown", "/workorders?page=0", "/workorders?pageSize=101", "/workorders?state=INVALID", "/workorders?from=tomorrow", "/workorders?page=1&page=2"} {
 		code, _ = h.request("GET", path, "", h.a, nil)
 		if code != 400 {
 			t.Fatal(path, code)

@@ -627,19 +627,31 @@
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
       "implementation_status": "partial_development",
-      "verification_status": "domain_unit_passed_integration_not_run",
+      "verification_status": "local_dispatch_sql_http_passed_development_adapters_manual_pending",
       "implementation_files": [
-        "backend/internal/maintenance/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go",
+        "backend/internal/maintenance/actions.go",
+        "backend/internal/maintenance/queries.go",
+        "backend/internal/maintenance/dev/directory.go",
+        "backend/migrations/007_m3_dispatch.sql",
+        "frontend/src/modules/m3/components/order-actions.tsx",
+        "frontend/src/modules/m3/action-submission.ts"
       ],
       "verification_files": [
         "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md",
-        "docs/local-review/2026-10-22-m3-alignment.md"
+        "docs/local-review/2026-10-22-m3-alignment.md",
+        "backend/internal/maintenance/dispatch_integration_test.go",
+        "frontend/src/modules/m3/actions.test.ts",
+        "contracts/m3.openapi.json",
+        "docs/implementation/m3-dispatch.md",
+        "docs/local-review/2026-10-22-m3-round2-prepublish.md"
       ],
       "evidence": [
         "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
         "尚缺分派历史持久化、事务并发与幂等命令、实际身份撤权及工作台。",
-        "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。"
+        "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。",
+        "2026-10-22第二轮：基于a994d3f，后端51顶层+18子测试通过，0失败/跳过；前端22测试、构建通过。区域/版本保护的副本破坏验证均失败，恢复通过。真实浏览器完成上报→派单→接单并刷新查询。派单/接单/重派已接SQL/API/页面；正式目录与维修中资源阻塞重派联合验收待完成。 开发映射保持显式，人工验收和组内评审未完成；见 docs/implementation/m3-dispatch.md。"
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -720,19 +732,33 @@
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
       "implementation_status": "partial_development",
-      "verification_status": "domain_unit_passed_integration_not_run",
+      "verification_status": "local_dispatch_sql_http_passed_development_adapters_manual_pending",
       "implementation_files": [
-        "backend/internal/maintenance/domain/workorder.go"
+        "backend/internal/maintenance/domain/workorder.go",
+        "backend/internal/maintenance/actions.go",
+        "backend/internal/maintenance/queries.go",
+        "backend/internal/maintenance/dev/directory.go",
+        "backend/migrations/007_m3_dispatch.sql",
+        "frontend/src/modules/m3/components/order-actions.tsx",
+        "frontend/src/modules/m3/action-submission.ts",
+        "frontend/src/modules/m3/pages/detail-page.tsx"
       ],
       "verification_files": [
         "backend/internal/maintenance/domain/workorder_test.go",
         "docs/implementation/m3-plan.md",
-        "docs/local-review/2026-10-22-m3-alignment.md"
+        "docs/local-review/2026-10-22-m3-alignment.md",
+        "backend/internal/maintenance/dispatch_integration_test.go",
+        "frontend/src/modules/m3/actions.test.ts",
+        "contracts/m3.openapi.json",
+        "docs/implementation/m3-dispatch.md",
+        "docs/local-review/2026-10-22-m3-round2-prepublish.md"
       ],
       "evidence": [
         "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
         "仅测试普通取消与未知结果保护；SQL 并发、真实结果核对 not_run；异常关闭 postponed。",
-        "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。"
+        "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。",
+        "2026-10-22第二轮：基于a994d3f，后端51顶层+18子测试通过，0失败/跳过；前端22测试、构建通过。区域/版本保护的副本破坏验证均失败，恢复通过。真实浏览器完成上报→派单→接单并刷新查询。仅本人早期取消及取消/派单竞争已接SQL/API/页面；维修准备与资源未知竞争尚未执行，异常关闭postponed。 开发映射保持显式，人工验收和组内评审未完成；见 docs/implementation/m3-dispatch.md。",
+        "2026-10-22提交前复查：修正已取消工单仍显示等待接单的文案；真实HTTP取消及浏览器显示验证通过，51顶层+18子测试、前端22测试和构建复跑通过；见 docs/local-review/2026-10-22-m3-round2-prepublish.md。"
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -782,7 +808,7 @@
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
       "implementation_status": "partial_development",
-      "verification_status": "local_sql_http_passed_development_adapters_manual_pending",
+      "verification_status": "local_dispatch_sql_http_passed_development_adapters_manual_pending",
       "implementation_files": [
         "frontend/src/modules/m3/pages/orders-page.tsx",
         "frontend/src/modules/m3/module.tsx",
@@ -792,7 +818,12 @@
         "backend/migrations/006_m3_reporting.sql",
         "frontend/src/modules/m3/live.tsx",
         "frontend/src/modules/m3/transport.ts",
-        "backend/internal/maintenance/queries.go"
+        "backend/internal/maintenance/queries.go",
+        "backend/internal/maintenance/actions.go",
+        "backend/internal/maintenance/dev/directory.go",
+        "backend/migrations/007_m3_dispatch.sql",
+        "frontend/src/modules/m3/components/order-actions.tsx",
+        "frontend/src/modules/m3/action-submission.ts"
       ],
       "verification_files": [
         "frontend/src/modules/m3/reporting.test.ts",
@@ -800,11 +831,16 @@
         "backend/internal/maintenance/integration_test.go",
         "frontend/src/modules/m3/transport.test.ts",
         "contracts/m3.openapi.json",
-        "docs/implementation/m3-reporting.md"
+        "docs/implementation/m3-reporting.md",
+        "backend/internal/maintenance/dispatch_integration_test.go",
+        "frontend/src/modules/m3/actions.test.ts",
+        "docs/implementation/m3-dispatch.md",
+        "docs/local-review/2026-10-22-m3-round2-prepublish.md"
       ],
       "evidence": [
         "2026-10-22：新增报修/本人查询前端及显式示例适配器；M3前端11测试通过，浏览器预览操作和构建通过。无SQL/API/权限接入，真实业务集成not_run；组内schema/公共接口仍待评审。见 docs/local-review/2026-10-22-m3-round1-frontend.md。",
-        "2026-10-22后续：基于main@aff197a，后端39顶层+18子测试通过，0失败/跳过，前端17测试及构建通过；归属/幂等破坏测试如期失败并恢复通过。本人列表/详情、归属隔离、日期/状态/类别过滤及稳定分页通过；区域/待办/统计仍未接SQL/API/页面。 浏览器实际提交、刷新和筛选通过，人工验收待进行；见 docs/implementation/m3-reporting.md。"
+        "2026-10-22后续：基于main@aff197a，后端39顶层+18子测试通过，0失败/跳过，前端17测试及构建通过；归属/幂等破坏测试如期失败并恢复通过。本人列表/详情、归属隔离、日期/状态/类别过滤及稳定分页通过；区域/待办/统计仍未接SQL/API/页面。 浏览器实际提交、刷新和筛选通过，人工验收待进行；见 docs/implementation/m3-reporting.md。",
+        "2026-10-22第二轮：基于a994d3f，后端51顶层+18子测试通过，0失败/跳过；前端22测试、构建通过。区域/版本保护的副本破坏验证均失败，恢复通过。真实浏览器完成上报→派单→接单并刷新查询。本人/区域调度/当前维修待办及权限详情已接SQL/API/页面；验收/主管待办及耗时评分统计未实现。 开发映射保持显式，人工验收和组内评审未完成；见 docs/implementation/m3-dispatch.md。"
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -854,19 +890,30 @@
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
       "implementation_status": "partial_development",
-      "verification_status": "local_transaction_passed_common_delivery_not_run",
+      "verification_status": "local_participant_outbox_transaction_passed_delivery_not_run",
       "implementation_files": [
         "backend/internal/maintenance/dev/adapters.go",
-        "backend/migrations/006_m3_reporting.sql"
+        "backend/migrations/006_m3_reporting.sql",
+        "backend/internal/maintenance/actions.go",
+        "backend/internal/maintenance/queries.go",
+        "backend/internal/maintenance/dev/directory.go",
+        "backend/migrations/007_m3_dispatch.sql",
+        "frontend/src/modules/m3/components/order-actions.tsx",
+        "frontend/src/modules/m3/action-submission.ts"
       ],
       "verification_files": [
         "backend/internal/maintenance/integration_test.go",
         "frontend/src/modules/m3/transport.test.ts",
         "contracts/m3.openapi.json",
-        "docs/implementation/m3-reporting.md"
+        "docs/implementation/m3-reporting.md",
+        "backend/internal/maintenance/dispatch_integration_test.go",
+        "frontend/src/modules/m3/actions.test.ts",
+        "docs/implementation/m3-dispatch.md",
+        "docs/local-review/2026-10-22-m3-round2-prepublish.md"
       ],
       "evidence": [
-        "2026-10-22后续：基于main@aff197a，后端39顶层+18子测试通过，0失败/跳过，前端17测试及构建通过；归属/幂等破坏测试如期失败并恢复通过。仅本地M3审计事实与PENDING通知意图同事务，真实MySQL故障触发器验证整笔回滚；公共库、收件人完整规则、真实投递及重试not_run。 浏览器实际提交、刷新和筛选通过，人工验收待进行；见 docs/implementation/m3-reporting.md。"
+        "2026-10-22后续：基于main@aff197a，后端39顶层+18子测试通过，0失败/跳过，前端17测试及构建通过；归属/幂等破坏测试如期失败并恢复通过。仅本地M3审计事实与PENDING通知意图同事务，真实MySQL故障触发器验证整笔回滚；公共库、收件人完整规则、真实投递及重试not_run。 浏览器实际提交、刷新和筛选通过，人工验收待进行；见 docs/implementation/m3-reporting.md。",
+        "2026-10-22第二轮：基于a994d3f，后端51顶层+18子测试通过，0失败/跳过；前端22测试、构建通过。区域/版本保护的副本破坏验证均失败，恢复通过。真实浏览器完成上报→派单→接单并刷新查询。动作事实及按参与人的PENDING通知意图同事务，旧维修人仅交接意图；公共审计、站内和外部投递/重试not_run。 开发映射保持显式，人工验收和组内评审未完成；见 docs/implementation/m3-dispatch.md。"
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",

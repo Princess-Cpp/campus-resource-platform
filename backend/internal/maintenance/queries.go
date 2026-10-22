@@ -20,8 +20,10 @@ func (s *Service) List(ctx context.Context, a domain.Actor, f Filters) (Page, er
 	if f.Page < 1 || f.Page > 100000 || f.PageSize < 1 || f.PageSize > 100 {
 		return out, fault("INVALID_INPUT", 400)
 	}
-	where := []string{"reporter_id=?"}
-	args := []any{a.ID}
+	where, args, e := listScope(a, f.View)
+	if e != nil {
+		return out, e
+	}
 	if f.State != "" {
 		if !slices.Contains([]string{"REPORTED", "ASSIGNED", "IN_PROGRESS", "AWAITING_ACCEPTANCE", "COMPLETED", "CANCELLED"}, f.State) {
 			return out, fault("INVALID_INPUT", 400)
@@ -37,7 +39,6 @@ func (s *Service) List(ctx context.Context, a domain.Actor, f Filters) (Page, er
 		args = append(args, f.Category)
 	}
 	var from, to time.Time
-	var e error
 	if f.From != "" {
 		from, e = time.Parse(time.RFC3339Nano, f.From)
 		if e != nil {
@@ -67,15 +68,15 @@ func (s *Service) List(ctx context.Context, a domain.Actor, f Filters) (Page, er
 		return out, e
 	}
 	params := append(append([]any{}, args...), f.PageSize, (f.Page-1)*f.PageSize)
-	rows, e := tx.QueryContext(ctx, "SELECT snapshot,seat_label FROM m3_workorders WHERE "+condition+" ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?", params...)
+	rows, e := tx.QueryContext(ctx, "SELECT snapshot,seat_label,assignee_name FROM m3_workorders WHERE "+condition+" ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?", params...)
 	if e != nil {
 		return out, e
 	}
 	for rows.Next() {
 		var raw []byte
-		var label string
+		var label, name string
 		var o domain.Order
-		if e = rows.Scan(&raw, &label); e != nil {
+		if e = rows.Scan(&raw, &label, &name); e != nil {
 			rows.Close()
 			return out, e
 		}
@@ -83,7 +84,7 @@ func (s *Service) List(ctx context.Context, a domain.Actor, f Filters) (Page, er
 			rows.Close()
 			return out, e
 		}
-		out.Items = append(out.Items, dto(o, label))
+		out.Items = append(out.Items, dto(o, label, name))
 	}
 	e = rows.Err()
 	rows.Close()
@@ -101,8 +102,13 @@ func (s *Service) Get(ctx context.Context, a domain.Actor, id string) (Detail, e
 		return out, fault("NOT_FOUND", 404)
 	}
 	var raw []byte
-	var label string
-	e := s.DB.QueryRowContext(ctx, "SELECT snapshot,seat_label FROM m3_workorders WHERE id=? AND reporter_id=?", id, a.ID).Scan(&raw, &label)
+	var label, name string
+	tx, e := s.DB.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true})
+	if e != nil {
+		return out, e
+	}
+	defer tx.Rollback()
+	e = tx.QueryRowContext(ctx, "SELECT snapshot,seat_label,assignee_name FROM m3_workorders WHERE id=?", id).Scan(&raw, &label, &name)
 	if errors.Is(e, sql.ErrNoRows) {
 		return out, fault("NOT_FOUND", 404)
 	}
@@ -113,19 +119,67 @@ func (s *Service) Get(ctx context.Context, a domain.Actor, id string) (Detail, e
 	if e = json.Unmarshal(raw, &order); e != nil {
 		return out, e
 	}
-	out.Order = dto(order, label)
-	rows, e := s.DB.QueryContext(ctx, "SELECT event_id,action,occurred_at FROM m3_events WHERE workorder_id=? ORDER BY business_version,event_id", id)
+	if !order.CanRead(a) {
+		return out, fault("NOT_FOUND", 404)
+	}
+	out.Order = dto(order, label, name)
+	out.AllowedActions = allowedActions(order, a)
+	rows, e := tx.QueryContext(ctx, "SELECT event_id,action,occurred_at,actor_id,comment FROM m3_events WHERE workorder_id=? ORDER BY business_version,event_id", id)
 	if e != nil {
 		return out, e
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var entry Timeline
-		if e = rows.Scan(&entry.ID, &entry.Action, &entry.At); e != nil {
+		if e = rows.Scan(&entry.ID, &entry.Action, &entry.At, &entry.ActorID, &entry.Comment); e != nil {
 			return out, e
 		}
-		entry.Text = "故障已上报，等待派单"
+		entry.Text = timelineText(entry.Action)
 		out.Timeline = append(out.Timeline, entry)
 	}
-	return out, rows.Err()
+	if e = rows.Err(); e != nil {
+		return out, e
+	}
+	rows.Close()
+	return out, tx.Commit()
+}
+
+func listScope(a domain.Actor, view string) ([]string, []any, error) {
+	switch view {
+	case "", "mine":
+		return []string{"reporter_id=?"}, []any{a.ID}, nil
+	case "assigned":
+		if !a.Can("workorder.repair") {
+			return nil, nil, fault("FORBIDDEN", 403)
+		}
+		return []string{"assignee_id=?", "state IN ('ASSIGNED','IN_PROGRESS')"}, []any{a.ID}, nil
+	case "dispatch":
+		if !a.Can("workorder.dispatch") || len(a.Areas) == 0 {
+			return nil, nil, fault("FORBIDDEN", 403)
+		}
+		if a.InArea("*") {
+			return []string{"1=1"}, nil, nil
+		}
+		marks := []string{}
+		args := []any{}
+		for _, area := range a.Areas {
+			marks = append(marks, "?")
+			args = append(args, area)
+		}
+		return []string{"area COLLATE utf8mb4_bin IN (" + strings.Join(marks, ",") + ")"}, args, nil
+	}
+	return nil, nil, fault("INVALID_INPUT", 400)
+}
+func timelineText(action string) string {
+	switch action {
+	case "REPORT":
+		return "故障已上报，等待派单"
+	case "ASSIGN":
+		return "调度员已派单或交接重派"
+	case "ACCEPT_ASSIGNMENT":
+		return "维修人员已接单，尚未开始维修"
+	case "CANCEL":
+		return "报修人已取消工单"
+	}
+	return "工单状态已更新"
 }

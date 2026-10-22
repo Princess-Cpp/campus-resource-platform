@@ -24,8 +24,14 @@ func registerMaintenance(router *gin.Engine, db *sql.DB, store *identity.Store) 
 	if e != nil {
 		return e
 	}
+	staff, e := maintenancedev.LoadStaff(os.Getenv("M3_DEV_STAFF_FIXTURE"))
+	if e != nil {
+		return e
+	}
+	directory := &maintenancedev.Directory{Store: store, StudentReporting: os.Getenv("M3_DEV_STUDENT_REPORTING") == "true", Staff: staff}
 	service := maintenance.New(db, catalog, maintenancedev.Events{})
 	service.Development = true
-	service.Register(router, maintenancedev.Authenticator(store, os.Getenv("M3_DEV_STUDENT_REPORTING") == "true"))
+	service.People = directory
+	service.Register(router, directory.Authenticate)
 	return nil
 }
