@@ -188,10 +188,12 @@ func (o Order) CanRead(a Actor) bool {
 	if !a.Enabled || a.ID == "" {
 		return false
 	}
-	return a.ID == o.ReporterID || (a.ID == o.AssigneeID && a.Can("workorder.repair")) || (a.InArea(o.Area) && (a.Can("workorder.dispatch") || a.Can("workorder.accept") || a.Can("workorder.supervise")))
+	return a.ID == o.ReporterID || (a.ID == o.AssigneeID && a.Can("workorder.repair") && a.InArea(o.Area)) || (a.InArea(o.Area) && (a.Can("workorder.dispatch") || a.Can("workorder.accept") || a.Can("workorder.supervise")))
 }
 
-func (o Order) canRepair(a Actor) bool { return a.Can("workorder.repair") && a.ID == o.AssigneeID }
+func (o Order) canRepair(a Actor) bool {
+	return a.Can("workorder.repair") && a.ID == o.AssigneeID && a.InArea(o.Area)
+}
 
 // Apply validates one command. target is a current trusted directory lookup for
 // ASSIGN, not a client-provided role. SQL row locking/version checks remain required.

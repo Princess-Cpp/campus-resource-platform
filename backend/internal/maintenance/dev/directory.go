@@ -5,12 +5,25 @@ import (
 	"campus-resource-platform/backend/internal/maintenance"
 	"campus-resource-platform/backend/internal/maintenance/domain"
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"slices"
 )
+
+func (d *Directory) Recipient(ctx context.Context, id string) (domain.Actor, error) {
+	p, e := d.Store.Principal(ctx, id)
+	if errors.Is(e, sql.ErrNoRows) {
+		return domain.Actor{}, nil
+	}
+	if e != nil {
+		return domain.Actor{}, e
+	}
+	return d.actor(p), nil
+}
 
 // StaffBinding is local development policy for explicitly provisioned user IDs.
 // No school-number pattern, registration input or browser field grants roles.

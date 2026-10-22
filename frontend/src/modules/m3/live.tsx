@@ -12,9 +12,10 @@ import { ReportPage } from "./pages/report-page"
 import { OrdersPage } from "./pages/orders-page"
 import { OperationsPage } from "./pages/operations-page"
 import { DetailPage } from "./pages/detail-page"
+import { NotificationsPage } from "./pages/notifications-page"
 
 const gateway = createHTTPGateway(request)
-export function LiveMaintenance({ page }: { page: "report" | "orders" | "detail" | "dispatch" | "assigned" | "acceptance" | "stats" | "escalations" }) {
+export function LiveMaintenance({ page }: { page: "notifications" | "report" | "orders" | "detail" | "dispatch" | "assigned" | "acceptance" | "stats" | "escalations" }) {
   const auth = useSession()
   const current = useRequest(() => gateway.session(), [auth.data?.actor.id])
   const submission = useMemo(() => {
@@ -26,7 +27,7 @@ export function LiveMaintenance({ page }: { page: "report" | "orders" | "detail"
   if (current.loading || !auth.data) return <p role="status" className="p-6 text-sm text-muted-foreground">正在加载报修服务…</p>
   if (current.data?.actor.id !== auth.data.actor.id) return <Page title="物业报修"><p className="px-4 text-sm text-destructive">登录身份已变化，请刷新后继续。</p></Page>
   return <>
-    {current.data.development && <div className="mx-4 mt-4 lg:mx-6"><Alert><AlertTitle>本地开发环境</AlertTitle><AlertDescription>工单保存到本地 MySQL。场地目录、报修权限映射和通知事件仍使用开发适配器；尚未向真实物业或外部渠道投递。</AlertDescription></Alert></div>}
-    {page==="stats"||page==="escalations"?<OperationsPage key={page} gateway={gateway} view={page}/>:page === "report" ? submission ? <ReportPage gateway={gateway} submission={submission} /> : <Page title="故障报修"><p className="px-4 text-sm text-destructive">浏览器会话存储不可用，请允许后刷新。当前不会发送新报修。</p></Page> : ["orders","dispatch","assigned","acceptance"].includes(page) ? <OrdersPage key={page} gateway={gateway} view={page==="dispatch"?"dispatch":page==="assigned"?"assigned":page==="acceptance"?"acceptance":"mine"} /> : <DetailPage gateway={gateway} actions={gateway} actorId={current.data.actor.id} />}
+    {current.data.development && <div className="mx-4 mt-4 lg:mx-6"><Alert><AlertTitle>本地开发环境</AlertTitle><AlertDescription>工单保存到本地 MySQL。场地目录、报修权限映射和通知路由仍使用开发适配器；邮件仅支持本地测试接收器，尚未向真实物业或公网邮箱投递。</AlertDescription></Alert></div>}
+    {page==="notifications"?<NotificationsPage gateway={gateway}/>:page==="stats"||page==="escalations"?<OperationsPage key={page} gateway={gateway} view={page}/>:page === "report" ? submission ? <ReportPage gateway={gateway} submission={submission} /> : <Page title="故障报修"><p className="px-4 text-sm text-destructive">浏览器会话存储不可用，请允许后刷新。当前不会发送新报修。</p></Page> : ["orders","dispatch","assigned","acceptance"].includes(page) ? <OrdersPage key={page} gateway={gateway} view={page==="dispatch"?"dispatch":page==="assigned"?"assigned":page==="acceptance"?"acceptance":"mine"} /> : <DetailPage gateway={gateway} actions={gateway} actorId={current.data.actor.id} />}
   </>
 }

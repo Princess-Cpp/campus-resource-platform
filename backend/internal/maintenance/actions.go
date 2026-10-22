@@ -19,7 +19,7 @@ func canAct(o domain.Order, a domain.Actor, action string) bool {
 	case "ASSIGN":
 		return a.Can("workorder.dispatch") && a.InArea(o.Area)
 	case "ACCEPT_ASSIGNMENT", "START", "FINISH":
-		return a.Can("workorder.repair") && a.ID == o.AssigneeID
+		return a.Can("workorder.repair") && a.ID == o.AssigneeID && a.InArea(o.Area)
 	case "APPROVE_ACCEPTANCE", "REJECT_ACCEPTANCE":
 		return a.Can("workorder.accept") && a.InArea(o.Area) && !slices.Contains(o.RepairParticipants, a.ID)
 	case "RETRY_RESOURCE":

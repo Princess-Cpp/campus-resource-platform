@@ -142,13 +142,15 @@ func ID() string {
 }
 
 type Service struct {
-	DB          *sql.DB
-	Resources   Resources
-	People      People
-	Supervisors SupervisorDirectory
-	Catalog     Catalog
-	Events      Events
-	Now         func() time.Time
+	NotificationRecipients NotificationDirectory
+	NotificationSender     NotificationSender
+	DB                     *sql.DB
+	Resources              Resources
+	People                 People
+	Supervisors            SupervisorDirectory
+	Catalog                Catalog
+	Events                 Events
+	Now                    func() time.Time
 	// These flags describe adapters, never an assertion of production readiness.
 	Development bool
 }

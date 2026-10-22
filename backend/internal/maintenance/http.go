@@ -43,6 +43,7 @@ func (s *Service) Register(r *gin.Engine, authenticate Authenticate) {
 		c.Set("maintenanceActor", a)
 	})
 	actor := func(c *gin.Context) domain.Actor { return c.MustGet("maintenanceActor").(domain.Actor) }
+	s.registerNotifications(api, actor)
 	api.GET("/session", func(c *gin.Context) {
 		a := actor(c)
 		respond(c, 200, gin.H{"actor": gin.H{"id": a.ID, "permissions": a.Permissions}, "development": s.Development}, nil)

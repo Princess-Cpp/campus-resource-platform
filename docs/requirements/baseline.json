@@ -655,14 +655,17 @@
         "docs/implementation/m3-dispatch.md",
         "docs/local-review/2026-10-22-m3-round2-prepublish.md",
         "backend/internal/maintenance/repair_integration_test.go",
-        "docs/implementation/m3-repair-recovery.md"
+        "docs/implementation/m3-repair-recovery.md",
+        "backend/internal/maintenance/notification_delivery_integration_test.go",
+        "docs/implementation/m3-notifications.md"
       ],
       "evidence": [
         "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
         "尚缺分派历史持久化、事务并发与幂等命令、实际身份撤权及工作台。",
         "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。",
         "2026-10-22第二轮：基于a994d3f，后端51顶层+18子测试通过，0失败/跳过；前端22测试、构建通过。区域/版本保护的副本破坏验证均失败，恢复通过。真实浏览器完成上报→派单→接单并刷新查询。派单/接单/重派已接SQL/API/页面；正式目录与维修中资源阻塞重派联合验收待完成。 开发映射保持显式，人工验收和组内评审未完成；见 docs/implementation/m3-dispatch.md。",
-        "2026-10-22 round 3, base 359f0b7: Go race 67 top-level + 18 subtests passed, zero failures/skips; frontend 26 tests and build passed. Wrong-business receipt and wrong-source release mutations failed as expected; restored 16 repair integration tests passed. In-progress reassignment and historical repair-participant separation verified; shared directory/role acceptance pending. Browser completed a fictional workflow. Manual acceptance and team review pending; local changes only, no commit/push. See docs/implementation/m3-repair-recovery.md."
+        "2026-10-22 round 3, base 359f0b7: Go race 67 top-level + 18 subtests passed, zero failures/skips; frontend 26 tests and build passed. Wrong-business receipt and wrong-source release mutations failed as expected; restored 16 repair integration tests passed. In-progress reassignment and historical repair-participant separation verified; shared directory/role acceptance pending. Browser completed a fictional workflow. Manual acceptance and team review pending; local changes only, no commit/push. See docs/implementation/m3-repair-recovery.md.",
+        "2026-10-23 round 5: reproduced and repaired current repairer-area revocation in M3 assigned list/detail/actions and inbox link. TestNotificationRevokedAreaAlsoRemovesBusinessAccess passed with actual Cookie/MySQL after failing against old behavior. See docs/implementation/m3-notifications.md; manual acceptance pending."
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -923,7 +926,9 @@
         "backend/internal/maintenance/repair_integration_test.go",
         "docs/implementation/m3-repair-recovery.md",
         "backend/internal/maintenance/operations_integration_test.go",
-        "docs/implementation/m3-evaluation-operations.md"
+        "docs/implementation/m3-evaluation-operations.md",
+        "backend/internal/maintenance/notification_delivery_integration_test.go",
+        "docs/implementation/m3-notifications.md"
       ],
       "evidence": [
         "2026-10-22：新增报修/本人查询前端及显式示例适配器；M3前端11测试通过，浏览器预览操作和构建通过。无SQL/API/权限接入，真实业务集成not_run；组内schema/公共接口仍待评审。见 docs/local-review/2026-10-22-m3-round1-frontend.md。",
@@ -931,7 +936,8 @@
         "2026-10-22第二轮：基于a994d3f，后端51顶层+18子测试通过，0失败/跳过；前端22测试、构建通过。区域/版本保护的副本破坏验证均失败，恢复通过。真实浏览器完成上报→派单→接单并刷新查询。本人/区域调度/当前维修待办及权限详情已接SQL/API/页面；验收/主管待办及耗时评分统计未实现。 开发映射保持显式，人工验收和组内评审未完成；见 docs/implementation/m3-dispatch.md。",
         "2026-10-22 round 3, base 359f0b7: Go race 67 top-level + 18 subtests passed, zero failures/skips; frontend 26 tests and build passed. Wrong-business receipt and wrong-source release mutations failed as expected; restored 16 repair integration tests passed. Area-scoped acceptance queue and resource progress implemented; supervisor queue and basic elapsed/rating statistics not implemented. Browser completed a fictional workflow. Manual acceptance and team review pending; local changes only, no commit/push. See docs/implementation/m3-repair-recovery.md.",
         "2026-10-22 round 4, base f968b8f: Go race 77 top-level +18 subtests passed, zero failures/skips; frontend 30 tests, TypeScript/Vite build, go vet and backend build passed. Rating-owner and stage-duplication mutations failed as expected, restored 10 new integration tests passed. Scoped basic aggregate metrics and escalation page implemented. Explicit timing samples, completed-order accumulated repair/acceptance, unrated exclusion, cancelled separation and recorded-overdue denominator verified; advanced reporting postponed. Browser verified fictional rating, supervisor escalation and aggregates. Development adapters, policy/schema team review and manual acceptance remain pending; no commit/push/merge. See docs/implementation/m3-evaluation-operations.md.",
-        "2026-10-22 subsequent delivery: user authorized checking and uploading round 4 to the existing team feat/m3-reporting branch. Reviewed product-source hashes match the tested snapshot; only publication documentation/evidence changed. No merge/deployment or team-policy approval is implied. See docs/local-review/2026-10-22-m3-round4-prepublish.md."
+        "2026-10-22 subsequent delivery: user authorized checking and uploading round 4 to the existing team feat/m3-reporting branch. Reviewed product-source hashes match the tested snapshot; only publication documentation/evidence changed. No merge/deployment or team-policy approval is implied. See docs/local-review/2026-10-22-m3-round4-prepublish.md.",
+        "2026-10-23 round 5: reproduced and repaired current repairer-area revocation in M3 assigned list/detail/actions and inbox link. TestNotificationRevokedAreaAlsoRemovesBusinessAccess passed with actual Cookie/MySQL after failing against old behavior. See docs/implementation/m3-notifications.md; manual acceptance pending."
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -1001,7 +1007,7 @@
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
       "implementation_status": "partial_development",
-      "verification_status": "local_escalation_rating_outbox_transaction_passed_delivery_not_run",
+      "verification_status": "local_m3_inbox_and_smtp_passed_shared_integration_pending",
       "implementation_files": [
         "backend/internal/maintenance/dev/adapters.go",
         "backend/migrations/006_m3_reporting.sql",
@@ -1024,7 +1030,17 @@
         "backend/migrations/009_m3_escalations.sql",
         "frontend/src/modules/m3/pages/operations-page.tsx",
         "frontend/src/modules/m3/operations.ts",
-        "frontend/src/modules/m3/transport.ts"
+        "frontend/src/modules/m3/transport.ts",
+        "backend/internal/maintenance/notifications.go",
+        "backend/internal/maintenance/notifications_http.go",
+        "backend/internal/maintenance/notification_delivery.go",
+        "backend/internal/maintenance/dev/notifications.go",
+        "backend/internal/notification/smtp.go",
+        "backend/migrations/010_m3_notifications.sql",
+        "frontend/src/modules/m3/pages/notifications-page.tsx",
+        "frontend/src/modules/m3/types.ts",
+        "frontend/src/modules/m3/module.tsx",
+        "frontend/src/modules/m3/live.tsx"
       ],
       "verification_files": [
         "backend/internal/maintenance/integration_test.go",
@@ -1038,14 +1054,22 @@
         "backend/internal/maintenance/repair_integration_test.go",
         "docs/implementation/m3-repair-recovery.md",
         "backend/internal/maintenance/operations_integration_test.go",
-        "docs/implementation/m3-evaluation-operations.md"
+        "docs/implementation/m3-evaluation-operations.md",
+        "backend/internal/maintenance/notifications_integration_test.go",
+        "backend/internal/maintenance/notification_delivery_integration_test.go",
+        "backend/internal/maintenance/notification_smtp_integration_test.go",
+        "backend/internal/notification/smtp_test.go",
+        "docs/implementation/m3-notifications.md",
+        "docs/local-review/2026-10-23-m3-round5-prepublish.md"
       ],
       "evidence": [
         "2026-10-22后续：基于main@aff197a，后端39顶层+18子测试通过，0失败/跳过，前端17测试及构建通过；归属/幂等破坏测试如期失败并恢复通过。仅本地M3审计事实与PENDING通知意图同事务，真实MySQL故障触发器验证整笔回滚；公共库、收件人完整规则、真实投递及重试not_run。 浏览器实际提交、刷新和筛选通过，人工验收待进行；见 docs/implementation/m3-reporting.md。",
         "2026-10-22第二轮：基于a994d3f，后端51顶层+18子测试通过，0失败/跳过；前端22测试、构建通过。区域/版本保护的副本破坏验证均失败，恢复通过。真实浏览器完成上报→派单→接单并刷新查询。动作事实及按参与人的PENDING通知意图同事务，旧维修人仅交接意图；公共审计、站内和外部投递/重试not_run。 开发映射保持显式，人工验收和组内评审未完成；见 docs/implementation/m3-dispatch.md。",
         "2026-10-22 round 3, base 359f0b7: Go race 67 top-level + 18 subtests passed, zero failures/skips; frontend 26 tests and build passed. Wrong-business receipt and wrong-source release mutations failed as expected; restored 16 repair integration tests passed. Resource intent/result, original command progress, audit and outbox share local transactions; real notification delivery and shared event adapter not implemented. Browser completed a fictional workflow. Manual acceptance and team review pending; local changes only, no commit/push. See docs/implementation/m3-repair-recovery.md.",
         "2026-10-22 round 4, base f968b8f: Go race 77 top-level +18 subtests passed, zero failures/skips; frontend 30 tests, TypeScript/Vite build, go vet and backend build passed. Rating-owner and stage-duplication mutations failed as expected, restored 10 new integration tests passed. Rating and escalation audit/outbox facts plus supervisor routing intents persist transactionally; directory/outbox failures remain recoverable. Actual notification delivery and shared events adapter still not implemented. Browser verified fictional rating, supervisor escalation and aggregates. Development adapters, policy/schema team review and manual acceptance remain pending; no commit/push/merge. See docs/implementation/m3-evaluation-operations.md.",
-        "2026-10-22 subsequent delivery: user authorized checking and uploading round 4 to the existing team feat/m3-reporting branch. Reviewed product-source hashes match the tested snapshot; only publication documentation/evidence changed. No merge/deployment or team-policy approval is implied. See docs/local-review/2026-10-22-m3-round4-prepublish.md."
+        "2026-10-22 subsequent delivery: user authorized checking and uploading round 4 to the existing team feat/m3-reporting branch. Reviewed product-source hashes match the tested snapshot; only publication documentation/evidence changed. No merge/deployment or team-policy approval is implied. See docs/local-review/2026-10-22-m3-round4-prepublish.md.",
+        "2026-10-23 round 5, base 5fd6cc7: Go race 90 top-level +18 subtests passed, zero failures/skips; frontend 30 tests/build, go vet and backend build passed. Real loopback SMTP accepted DATA; lost acceptance reply retries used the same Message-ID without replaying business. Inbox owner/read isolation, bounded retries, leases/restart, reassignment, disabled/revoked area and obsolete escalation tested. Owner-filter and late-lease-ack mutations failed for expected business behavior; restored 12 M3 notification tests passed. Browser marked one fictional supervisor message read (2 to 1 unread) and filtered it. Only M3 inbox and development SMTP/recipient/job adapters; shared M2 outbox/runner/audit, M1/M2 shared notification integration, production verified email, INT-04 and manual/team acceptance remain open. Local only, no commit/push/merge/deploy. See docs/implementation/m3-notifications.md.",
+        "2026-10-23 subsequent authorized publication: user requested checking and uploading to the existing team feat/m3-reporting branch. Review reproduced premature START notification success before resource confirmation; summaries now describe pending block/release, with a new real M1 HTTP/MySQL regression. Latest full race: 91 top-level +18 subtests passed, zero failures/skips, M3 application 81.3% coverage; vet/build passed. Two behavior mutations failed as expected, restored 13 notification tests passed. Frontend source hashes match prior 30-test/build snapshot. Team/schema/public-policy approval, formal human business acceptance, remote CI and deployment are not implied. See docs/local-review/2026-10-23-m3-round5-prepublish.md."
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -1224,11 +1248,36 @@
       "acceptance_section": "D-03.1 通知投递",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "local_m3_inbox_and_smtp_passed_shared_integration_pending",
+      "implementation_files": [
+        "backend/internal/maintenance/notifications.go",
+        "backend/internal/maintenance/notifications_http.go",
+        "backend/internal/maintenance/notification_delivery.go",
+        "backend/internal/maintenance/dev/notifications.go",
+        "backend/internal/maintenance/dev/directory.go",
+        "backend/internal/notification/smtp.go",
+        "backend/migrations/010_m3_notifications.sql",
+        "backend/cmd/server/maintenance.go",
+        "frontend/src/modules/m3/pages/notifications-page.tsx",
+        "frontend/src/modules/m3/transport.ts",
+        "frontend/src/modules/m3/types.ts",
+        "frontend/src/modules/m3/module.tsx",
+        "frontend/src/modules/m3/live.tsx"
+      ],
+      "verification_files": [
+        "backend/internal/maintenance/notifications_integration_test.go",
+        "backend/internal/maintenance/notification_delivery_integration_test.go",
+        "backend/internal/maintenance/notification_smtp_integration_test.go",
+        "backend/internal/notification/smtp_test.go",
+        "contracts/m3.openapi.json",
+        "docs/implementation/m3-notifications.md",
+        "docs/local-review/2026-10-23-m3-round5-prepublish.md"
+      ],
+      "evidence": [
+        "2026-10-23 round 5, base 5fd6cc7: Go race 90 top-level +18 subtests passed, zero failures/skips; frontend 30 tests/build, go vet and backend build passed. Real loopback SMTP accepted DATA; lost acceptance reply retries used the same Message-ID without replaying business. Inbox owner/read isolation, bounded retries, leases/restart, reassignment, disabled/revoked area and obsolete escalation tested. Owner-filter and late-lease-ack mutations failed for expected business behavior; restored 12 M3 notification tests passed. Browser marked one fictional supervisor message read (2 to 1 unread) and filtered it. Only M3 inbox and development SMTP/recipient/job adapters; shared M2 outbox/runner/audit, M1/M2 shared notification integration, production verified email, INT-04 and manual/team acceptance remain open. Local only, no commit/push/merge/deploy. See docs/implementation/m3-notifications.md.",
+        "2026-10-23 subsequent authorized publication: user requested checking and uploading to the existing team feat/m3-reporting branch. Review reproduced premature START notification success before resource confirmation; summaries now describe pending block/release, with a new real M1 HTTP/MySQL regression. Latest full race: 91 top-level +18 subtests passed, zero failures/skips, M3 application 81.3% coverage; vet/build passed. Two behavior mutations failed as expected, restored 13 notification tests passed. Frontend source hashes match prior 30-test/build snapshot. Team/schema/public-policy approval, formal human business acceptance, remote CI and deployment are not implied. See docs/local-review/2026-10-23-m3-round5-prepublish.md."
+      ],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1245,11 +1294,36 @@
       "acceptance_section": "D-03.2 站内通知与偏好",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "local_m3_inbox_and_smtp_passed_shared_integration_pending",
+      "implementation_files": [
+        "backend/internal/maintenance/notifications.go",
+        "backend/internal/maintenance/notifications_http.go",
+        "backend/internal/maintenance/notification_delivery.go",
+        "backend/internal/maintenance/dev/notifications.go",
+        "backend/internal/maintenance/dev/directory.go",
+        "backend/internal/notification/smtp.go",
+        "backend/migrations/010_m3_notifications.sql",
+        "backend/cmd/server/maintenance.go",
+        "frontend/src/modules/m3/pages/notifications-page.tsx",
+        "frontend/src/modules/m3/transport.ts",
+        "frontend/src/modules/m3/types.ts",
+        "frontend/src/modules/m3/module.tsx",
+        "frontend/src/modules/m3/live.tsx"
+      ],
+      "verification_files": [
+        "backend/internal/maintenance/notifications_integration_test.go",
+        "backend/internal/maintenance/notification_delivery_integration_test.go",
+        "backend/internal/maintenance/notification_smtp_integration_test.go",
+        "backend/internal/notification/smtp_test.go",
+        "contracts/m3.openapi.json",
+        "docs/implementation/m3-notifications.md",
+        "docs/local-review/2026-10-23-m3-round5-prepublish.md"
+      ],
+      "evidence": [
+        "2026-10-23 round 5, base 5fd6cc7: Go race 90 top-level +18 subtests passed, zero failures/skips; frontend 30 tests/build, go vet and backend build passed. Real loopback SMTP accepted DATA; lost acceptance reply retries used the same Message-ID without replaying business. Inbox owner/read isolation, bounded retries, leases/restart, reassignment, disabled/revoked area and obsolete escalation tested. Owner-filter and late-lease-ack mutations failed for expected business behavior; restored 12 M3 notification tests passed. Browser marked one fictional supervisor message read (2 to 1 unread) and filtered it. Only M3 inbox and development SMTP/recipient/job adapters; shared M2 outbox/runner/audit, M1/M2 shared notification integration, production verified email, INT-04 and manual/team acceptance remain open. Local only, no commit/push/merge/deploy. See docs/implementation/m3-notifications.md.",
+        "2026-10-23 subsequent authorized publication: user requested checking and uploading to the existing team feat/m3-reporting branch. Review reproduced premature START notification success before resource confirmation; summaries now describe pending block/release, with a new real M1 HTTP/MySQL regression. Latest full race: 91 top-level +18 subtests passed, zero failures/skips, M3 application 81.3% coverage; vet/build passed. Two behavior mutations failed as expected, restored 13 notification tests passed. Frontend source hashes match prior 30-test/build snapshot. Team/schema/public-policy approval, formal human business acceptance, remote CI and deployment are not implied. See docs/local-review/2026-10-23-m3-round5-prepublish.md."
+      ],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",

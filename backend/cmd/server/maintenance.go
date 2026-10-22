@@ -36,6 +36,14 @@ func registerMaintenance(router *gin.Engine, db *sql.DB, store *identity.Store) 
 	service.Development = true
 	service.People = directory
 	service.Supervisors = directory
+	service.NotificationRecipients = directory
+	mail, e := maintenancedev.LoadNotificationMail(os.Getenv("M3_DEV_SMTP_ADDR"), os.Getenv("M3_DEV_NOTIFICATION_RECIPIENTS"))
+	if e != nil {
+		return e
+	}
+	if mail != nil {
+		service.NotificationSender = mail
+	}
 	endpoint, token := os.Getenv("M3_RESOURCE_URL"), os.Getenv("M3_SERVICE_TOKEN")
 	if endpoint != "" || token != "" {
 		resource, err := maintenance.NewHTTPResources(endpoint, token)
@@ -51,6 +59,9 @@ func registerMaintenance(router *gin.Engine, db *sql.DB, store *identity.Store) 
 			ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 			if err := service.Sweep(ctx); err != nil {
 				log.Print("M3 background processing did not commit; persisted work will be retried")
+			}
+			if err := service.DispatchNotifications(ctx); err != nil {
+				log.Print("M3 notification processing incomplete; persisted work will be retried")
 			}
 			cancel()
 		}

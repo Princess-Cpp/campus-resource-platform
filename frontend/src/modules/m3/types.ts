@@ -65,3 +65,14 @@ export type Escalation={id:string;workorderId:string;roomName:string;area:string
 export type EscalationPage={items:Escalation[];page:number;pageSize:number;total:number}
 export type OperationsQuery={from?:string;to?:string;category?:Category}
 export interface OperationsGateway {stats(query:OperationsQuery):Promise<Statistics>;escalations(query:OperationsQuery & {page:number;pageSize:number;active:boolean}):Promise<EscalationPage>}
+
+export type WorkorderNotification = {
+ eventId:string;workorderId:string;kind:string;summary:string;createdAt:string;readAt?:string
+ deliveryState:"PENDING"|"SENDING"|"UNCONFIGURED"|"DELIVERED"|"FAILED"|"SUPPRESSED"
+ attempts:number;nextAttempt?:string;lastError?:string;canOpen:boolean
+}
+export type NotificationPage={items:WorkorderNotification[];total:number;unreadCount:number;page:number;pageSize:number}
+export interface NotificationsGateway {
+ notifications(query:{page:number;pageSize:number;unread:boolean}):Promise<NotificationPage>
+ readNotification(eventId:string,kind:string):Promise<{read:boolean}>
+}

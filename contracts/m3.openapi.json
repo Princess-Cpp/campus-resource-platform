@@ -3,7 +3,7 @@
   "info": {
     "title": "M3 property maintenance",
     "version": "1.0.0",
-    "description": "Local reporting, scoped dispatch, repair and independent acceptance using existing M1 resource HTTP v1. Resource requests are durable before HTTP, receipts gate business state, unknown outcomes retain their operation identity. Shared catalog/identity mapping/events remain development adapters; team review and notification delivery are pending. Round 4 adds one-time evaluation, durable stage escalation/routing exceptions and scoped basic statistics; real notification delivery remains pending.",
+    "description": "M3 reporting, scoped dispatch, repair and independent acceptance over existing M1 resource HTTP v1; one-time evaluation, durable stage escalation and scoped basic statistics. M3-owned inbox/read isolation and bounded leased SMTP delivery are implemented for explicit local development adapters. Resource operations persist before HTTP and confirmed receipts gate business state. Shared identity/catalog policy, audit/outbox/runner integration, production verified mail, INT-04 and team/manual acceptance remain pending; local SMTP acceptance is not production delivery.",
     "x-review-status": "pending-team-review"
   },
   "servers": [
@@ -1168,6 +1168,231 @@
           }
         }
       }
+    },
+    "/m3/notifications": {
+      "get": {
+        "operationId": "maintenanceNotifications",
+        "description": "Current authenticated recipient only; rejects unknown/duplicate query parameters. Fixed historical summaries only; no raw event payload, identities, contacts or comments. canOpen reflects current business authorization. Mail delivery is independent of inbox/read state. UNCONFIGURED means the local test channel is missing; DELIVERED means the SMTP receiver accepted DATA, not that a person read the email.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "unread",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationPage"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/m3/notifications/{eventId}/read": {
+      "post": {
+        "operationId": "maintenanceReadNotification",
+        "description": "Cookie and CSRF required. Natural idempotency by eventId/current recipient/kind; no new business action or Idempotency-Key. Another user gets 404 even when the event exists.",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "read": {
+                          "type": "boolean",
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "read"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input, unauthenticated, forbidden or internal error as applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2049,6 +2274,104 @@
           "page",
           "pageSize",
           "total"
+        ],
+        "additionalProperties": false
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "workorderId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deliveryState": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENDING",
+              "UNCONFIGURED",
+              "DELIVERED",
+              "FAILED",
+              "SUPPRESSED"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "nextAttempt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "canOpen": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "eventId",
+          "workorderId",
+          "kind",
+          "summary",
+          "createdAt",
+          "deliveryState",
+          "attempts",
+          "canOpen"
+        ],
+        "additionalProperties": false
+      },
+      "NotificationPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unreadCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total",
+          "unreadCount"
         ],
         "additionalProperties": false
       }

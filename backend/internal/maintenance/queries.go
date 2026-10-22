@@ -169,7 +169,20 @@ func listScope(a domain.Actor, view string) ([]string, []any, error) {
 		if !a.Can("workorder.repair") {
 			return nil, nil, fault("FORBIDDEN", 403)
 		}
-		return []string{"assignee_id=?", "state IN ('ASSIGNED','IN_PROGRESS')"}, []any{a.ID}, nil
+		where := []string{"assignee_id=?", "state IN ('ASSIGNED','IN_PROGRESS')"}
+		args := []any{a.ID}
+		if !a.InArea("*") {
+			if len(a.Areas) == 0 {
+				return append(where, "1=0"), args, nil
+			}
+			marks := make([]string, len(a.Areas))
+			for i, area := range a.Areas {
+				marks[i] = "?"
+				args = append(args, area)
+			}
+			where = append(where, "area COLLATE utf8mb4_bin IN ("+strings.Join(marks, ",")+")")
+		}
+		return where, args, nil
 	case "dispatch", "acceptance":
 		permission := "workorder.dispatch"
 		if view == "acceptance" {
