@@ -1,6 +1,6 @@
 # 模块设计与集成总约定
 
-版本：0.2。状态：三组共同使用的设计初稿，待组内评审；不是已实现接口或已经通过的验收。前端 React + Vite、后端 Go + Gin、数据库 MySQL、同仓库单应用部署已由用户确认；D 分配、具体接口与业务参数仍为提案。
+版本：0.2。状态：三组共同使用的设计初稿，待组内评审；本文不是接口验收结论，部分接口已在代码中实现。前端 React + Vite、后端 Go + Gin、数据库 MySQL、同仓库单应用部署已由用户确认；D 分配、具体接口与业务参数仍为提案。
 
 ## 1. 如何让三组和 AI 使用同一份约定
 
@@ -11,7 +11,7 @@
 | 原始课程要求 | [任务书 PDF](../source/Pj-任务书.pdf) | 保留原文，不把项目提案改写进去 |
 | 模块业务需求与验收 | [M1](../requirements/m1.md)、[M2](../requirements/m2.md)、[M3](../requirements/m3.md)、[D](../requirements/d.md) | 各组维护，涉及其他组时共同评审 |
 | 公共边界、接口与集成 | 本文 | 双方评审后同步版本、调用方和提供方 |
-| 正式机器可读接口 | 后续 contracts/ 中的 OpenAPI | 与本文同一变更维护；目前尚未建立 |
+| 正式机器可读接口 | [contracts/](../../contracts) 中的 OpenAPI | 与本文同一变更维护；已有身份和 M2 契约，资源契约待建立 |
 | 已确认业务决策 | [决策清单](../requirements/integration-and-decisions.md) | 填真实结论，不将提案当决定 |
 | 责任与协作流程 | [分工](../process/module-ownership.md)、[联调流程](../process/module-collaboration.md) | 与本文一致，不能口头改变负责人 |
 
@@ -29,7 +29,7 @@ React 页面 → Go/Gin HTTP API → 对应模块业务逻辑 → 模块仓储 �
 
 各组自己维护本模块前后端、测试、SQL 迁移、业务审计和通知事件。公共能力由负责组实现和维护，调用组负责自己的接入。D 是按子域分配的公共能力，不成立第四组。牵头公共工作不意味着替其他组编写所有迁移和测试。
 
-建议目录：frontend/src/modules/{m1,m2,m3,common}；backend/internal/{m1,m2,m3,common}；backend/cmd/server；backend/migrations；contracts；tests；infra；scripts。实际脚手架尚未创建。公共子域在 common 下分别设 identity/resources/notifications/audit，禁止形成任意模块相互调用的杂物包。
+后端按业务职责组织为 `backend/internal/booking`（M1）、`classroom`（M2）、`maintenance/domain`（M3）和 `identity`（D-01，M2 维护）；`dev` 保存开发适配器，`cmd/server` 负责装配，迁移位于 `backend/migrations`。M1/M2/M3 是需求与维护组编号，不作为 Go 包名或接口版本。前端仍使用 `frontend/src/modules/{m1,m2,common}`，本次后端目录调整不改变前端目录、HTTP v1 路径、SQL 名称或来源标识。资源仲裁当前仍位于 `booking/resources.go`，与预约事务及维修取消共用逻辑；独立资源包需要另行明确事务和回调边界。尚未交付的公共子域不建立空目录。具体映射与验证见 [后端目录调整](../implementation/backend-package-layout.md)。
 
 ## 3. 所有模块一致使用的数据与命名
 
@@ -64,7 +64,7 @@ React 页面 → Go/Gin HTTP API → 对应模块业务逻辑 → 模块仓储 �
 
 ## 4. 资源公开接口：M1 提供，M2/M3 调用
 
-路径和字段为共同评审提案，不声称服务已经运行。所有写操作在 /api/v1/internal/resources 下，不能被学生直接调用。可用性用户接口另按权限过滤。
+路径和字段为共同评审提案，尚未完成组内评审。所有写操作已实现在 /api/v1/internal/resources 下，不能被学生直接调用；可用性用户接口另按权限过滤。
 
 | 接口 | 作用 | 调用者 |
 | --- | --- | --- |

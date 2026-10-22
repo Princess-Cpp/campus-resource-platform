@@ -1,4 +1,4 @@
-import { getDevToken } from "@/modules/common/session"
+import { clearSession, getCSRFToken } from "@/modules/common/session"
 
 // 统一 API 客户端：后端成功返回 {data, correlationId}，失败返回 {error: {code}, correlationId}。
 export class ApiError extends Error {
@@ -15,7 +15,7 @@ export class ApiError extends Error {
 }
 
 const MESSAGES: Record<string, string> = {
-  UNAUTHENTICATED: "身份无效，请在左下角切换开发令牌",
+  UNAUTHENTICATED: "登录已失效，请重新登录",
   FORBIDDEN: "没有权限执行该操作",
   INVALID_INPUT: "输入不符合要求，请检查时间和参数",
   NOT_FOUND: "记录不存在或无权查看",
@@ -26,6 +26,8 @@ const MESSAGES: Record<string, string> = {
   INVALID_IDEMPOTENCY_KEY: "请求标识无效，请重试",
   INVALID_STATE: "当前状态或时间不允许该操作",
   INVALID_CODE: "签到码不正确",
+  CSRF_INVALID: "页面会话已失效，请刷新后重试",
+  RATE_LIMITED: "尝试次数过多，请稍后再试",
   VERSION_CONFLICT: "数据已变化，请刷新后重试",
   DEPENDENCY_UNAVAILABLE: "场地服务暂不可用，请稍后核对或重试原操作",
   OPERATION_PENDING: "场地操作尚未确认，请刷新后查看进度",
@@ -44,9 +46,12 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   try {
     response = await fetch("/api/v1" + path, {
       ...init,
+      credentials: "same-origin",
       headers: {
-        Authorization: "Bearer " + getDevToken(),
         "Content-Type": "application/json",
+        ...(!["GET", "HEAD", "OPTIONS"].includes((init.method ?? "GET").toUpperCase()) && getCSRFToken()
+          ? { "X-CSRF-Token": getCSRFToken()! }
+          : {}),
         ...init.headers,
       },
     })
@@ -55,6 +60,7 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   }
   const body = await response.json().catch(() => null)
   if (!response.ok) {
+    if (response.status === 401) clearSession()
     throw new ApiError(body?.error?.code ?? `HTTP_${response.status}`, response.status, body?.correlationId)
   }
   return body?.data as T

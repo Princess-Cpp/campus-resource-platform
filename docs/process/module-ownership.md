@@ -50,3 +50,7 @@
 原方案：M1 同时承担主数据与资源仲裁；存在关键路径和过载风险。候选：一组独占 D、按原子域分摊、按本表重新分摊。本表减轻 M1 主数据工作，集中单应用基础库并明确空缺职责；M2 的新负担须先估算，不能宣称已实现均衡。
 
 状态：修订提案；参与者、日期、实际估算、异议、最终采用范围和负责人姓名待真实评审后记录。评审处理详见 [Issue #1 调整记录](review-1-response.md)。
+
+## 后端代码位置
+
+维护组与包名分开：M1 维护 `backend/internal/booking`（含当前资源仲裁）；M2 维护 `backend/internal/classroom` 与 `backend/internal/identity`；M3 维护 `backend/internal/maintenance/domain`。开发适配器位于 `backend/internal/dev`，组合入口位于 `backend/cmd/server`。目录调整不变更需求 ID、组别或来源标识；公共职责的评审状态保持原样。见 [目录调整与验证](../implementation/backend-package-layout.md)。

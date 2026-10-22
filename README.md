@@ -2,7 +2,7 @@
 
 软件过程管理与工程伦理课程实践项目。以自习座位预约为核心，提供整教室申请审批和物业报修服务，关注需求追踪、人机协作、跨模块集成和可验证的工程交付。
 
-> 当前阶段：M1 初始开发实现。M2/M3、正式身份系统、跨模块联调、全系统业务测试和远程部署仍未完成；具体业务政策与 D 分工提案仍待组内评审。
+> 当前阶段：开发实现与局部验证。M1、M2 已有后端和前端初稿并通过部分真实 MySQL/HTTP 测试，D-01 身份已接入 SQL 会话；M3 仅完成领域规则；整体尚未人工验收、未做跨组完整联调、未部署服务器。具体业务政策与 D 分工提案仍待组内评审。
 
 ## 技术栈
 
@@ -13,7 +13,7 @@
 | 数据库 | MySQL |
 | 组织与部署 | 同仓库、单应用部署；Go 后端提供前端构建产物，MySQL 独立运行 |
 
-依赖版本、工具配套和构建脚本见仓库现有配置；本地演示和第一次讨论入口见 [第一次项目讨论](docs/process/first-discussion.md)。详细设计见 [架构文档](docs/architecture/proposal.md)。
+依赖版本已在 `go.mod`、`package.json` 和锁文件中固定。本地启动脚本为 `scripts/dev.sh`（M1）和 `scripts/dev-m2.sh`（M1+M2），构建脚本为 `scripts/build.sh`，MySQL 由 `docker-compose.yml` 启动；运行前提和开发账号见 [身份实现记录](docs/implementation/identity-code.md) 和 [M2 代码说明](docs/implementation/m2-code.md)。详细设计见 [架构文档](docs/architecture/proposal.md)。
 
 ## 模块与责任
 
@@ -61,6 +61,7 @@ D 不单设第四组，各公共子域指定负责组，其他组负责各自接
 ### 5. 追踪与验收：完成了什么、证据在哪
 
 [M1 代码说明](docs/implementation/m1-code.md)说明当前实现和适配边界；[进度](docs/progress.md)展示当前阶段和阻塞；[需求索引](docs/requirements/baseline.json)将每项需求关联到负责组、实现、测试和真实证据。它们跟踪前述要求，不另立一套需求。当前只有 M1 初始实现，不能据此宣称全系统已完成。
+[M1 代码说明](docs/implementation/m1-code.md)、[M2 代码说明](docs/implementation/m2-code.md)、[M3 方案与证据](docs/implementation/m3-plan.md)和[身份实现记录](docs/implementation/identity-code.md)分别说明各模块当前实现与边界；[进度](docs/progress.md)展示当前阶段和阻塞；[需求索引](docs/requirements/baseline.json)将每项需求关联到负责组、实现、测试和真实证据。它们跟踪前述要求，不另立一套需求。目前已有 M1/M2 开发实现和自动测试证据，但人工业务验收、完整跨组联调和远程部署仍未完成。
 
 ## 开发与验收原则
 
@@ -70,7 +71,7 @@ D 不单设第四组，各公共子域指定负责组，其他组负责各自接
 - AI 变更经人工验收后提交，公共层、跨模块与 schema 变更共同评审；代码冲突由人处理。
 - 构建测试失败阻止后续部署；生产人工审批并保留可追溯版本与回滚方案。
 
-下一阶段先评审待定业务政策和公共层分工，补齐 M1 的完整验收证据，再推进 M2/M3 最小业务闭环和真实跨模块联调。当前本地演示命令记录在 [第一次项目讨论](docs/process/first-discussion.md)。
+下一阶段先评审待定业务政策、公共层分工和资源契约差异，再补 M3 持久化/API/页面、跨组联调与人工验收。已实现模块的启动方式和测试记录见各模块实现文档；未执行的验证继续按需求索引保持 `not_run`，不以开发 fixture 结果替代生产验收。
 
 ## DeepSeek Harness 业务代理（附加交付）
 

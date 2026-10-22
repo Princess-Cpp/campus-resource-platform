@@ -1,7 +1,7 @@
 package dev
 
 import (
-	"campus-resource-platform/backend/internal/m1"
+	"campus-resource-platform/backend/internal/booking"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -10,9 +10,9 @@ import (
 )
 
 type Fixture struct {
-	Tokens    map[string]m1.Actor `json:"tokens"`
-	RoomsData []m1.Room           `json:"rooms"`
-	Emails    map[string]string   `json:"emails"`
+	Tokens    map[string]booking.Actor `json:"tokens"`
+	RoomsData []booking.Room           `json:"rooms"`
+	Emails    map[string]string        `json:"emails"`
 }
 
 func Load(path string) (*Fixture, error) {
@@ -43,11 +43,14 @@ func Load(path string) (*Fixture, error) {
 	}
 	return &f, nil
 }
-func (f *Fixture) Rooms(context.Context, *sql.Tx) ([]m1.Room, error) { return f.RoomsData, nil }
-func (f *Fixture) Auth(_ context.Context, t string) (m1.Actor, error) {
+func (f *Fixture) Rooms(context.Context, *sql.Tx) ([]booking.Room, error) { return f.RoomsData, nil }
+func (f *Fixture) Auth(_ context.Context, t string) (booking.Actor, error) {
 	a, ok := f.Tokens[t]
 	if !ok {
-		return m1.Actor{}, errors.New("unauthenticated")
+		return booking.Actor{}, errors.New("unauthenticated")
+	}
+	if a.Service == "" && a.Role == "student" && len(a.Permissions) == 0 {
+		a.Permissions = []string{"booking.create"}
 	}
 	return a, nil
 }

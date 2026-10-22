@@ -1,26 +1,26 @@
 package dev
 
 import (
-	"campus-resource-platform/backend/internal/m2"
+	"campus-resource-platform/backend/internal/classroom"
 	"context"
 	"encoding/json"
 	"errors"
 	"os"
 )
 
-// M2Fixture is a development adapter, not production D-01/D-02.
-type M2Fixture struct {
-	Tokens   map[string]m2.Actor `json:"m2Tokens"`
-	Policy   m2.Policy           `json:"m2Policy"`
-	RoomData []m2.Room           `json:"m2Rooms"`
+// ClassroomFixture is a development adapter, not production D-01/D-02.
+type ClassroomFixture struct {
+	Tokens   map[string]classroom.Actor `json:"m2Tokens"`
+	Policy   classroom.Policy           `json:"m2Policy"`
+	RoomData []classroom.Room           `json:"m2Rooms"`
 }
 
-func LoadM2(path string) (*M2Fixture, error) {
+func LoadClassroom(path string) (*ClassroomFixture, error) {
 	raw, e := os.ReadFile(path)
 	if e != nil {
 		return nil, e
 	}
-	var f M2Fixture
+	var f ClassroomFixture
 	if e = json.Unmarshal(raw, &f); e != nil {
 		return nil, e
 	}
@@ -32,16 +32,16 @@ func LoadM2(path string) (*M2Fixture, error) {
 	}
 	return &f, nil
 }
-func (f *M2Fixture) Authenticate(_ context.Context, token string) (m2.Actor, error) {
+func (f *ClassroomFixture) Authenticate(_ context.Context, token string) (classroom.Actor, error) {
 	a, ok := f.Tokens[token]
 	if !ok {
 		return a, errors.New("unauthenticated")
 	}
 	return a, nil
 }
-func (f *M2Fixture) Rooms(context.Context) ([]m2.Room, error) { return f.RoomData, nil }
-func (f *M2Fixture) Actors(context.Context) ([]m2.Actor, error) {
-	out := []m2.Actor{}
+func (f *ClassroomFixture) Rooms(context.Context) ([]classroom.Room, error) { return f.RoomData, nil }
+func (f *ClassroomFixture) Actors(context.Context) ([]classroom.Actor, error) {
+	out := []classroom.Actor{}
 	seen := map[string]bool{}
 	for _, a := range f.Tokens {
 		if !seen[a.ID] {
