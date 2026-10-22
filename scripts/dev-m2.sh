@@ -6,7 +6,8 @@ project_root=$(cd "$(dirname "$0")/.." && pwd)
 export M1_DEV_MODE=true
 export M1_DEV_FIXTURE=${M1_DEV_FIXTURE:-$project_root/backend/dev-fixture.json}
 export M2_ENABLED=true
-export M2_SERVICE_TOKEN=${M2_SERVICE_TOKEN:-m2-service}
+: "${M2_SERVICE_TOKEN:?Set M2_SERVICE_TOKEN (at least 32 bytes)}"
+export M2_SERVICE_TOKEN
 export AUTH_DEV_SEED=${AUTH_DEV_SEED:-true}
 : "${AUTH_DEV_PASSWORD:?Set AUTH_DEV_PASSWORD (10-72 bytes) for fictional local accounts}"
 export LISTEN_ADDR=${LISTEN_ADDR:-127.0.0.1:8081}

@@ -13,7 +13,7 @@
 | 数据库 | MySQL |
 | 组织与部署 | 同仓库、单应用部署；Go 后端提供前端构建产物，MySQL 独立运行 |
 
-依赖版本已在 `go.mod`、`package.json` 和锁文件中固定。本地启动脚本为 `scripts/dev.sh`（M1）和 `scripts/dev-m2.sh`（M1+M2），构建脚本为 `scripts/build.sh`，MySQL 由 `docker-compose.yml` 启动；运行前提和开发账号见 [身份实现记录](docs/implementation/identity-code.md) 和 [M2 代码说明](docs/implementation/m2-code.md)。详细设计见 [架构文档](docs/architecture/proposal.md)。
+依赖版本已在 `go.mod`、`package.json` 和锁文件中固定。本地启动脚本为 `scripts/dev.sh`（M1）和 `scripts/dev-m2.sh`（M1+M2），构建脚本为 `scripts/build.sh`，MySQL 由 `docker-compose.yml` 启动。首次启动先复制 `.env.example` 为 `.env` 并设置数据库密码，再设置 `MYSQL_DSN`、`M1_CODE_SECRET`（M1）或 `M2_SERVICE_TOKEN`（M1+M2）；具体见 [身份实现记录](docs/implementation/identity-code.md) 和 [M2 代码说明](docs/implementation/m2-code.md)。详细设计见 [架构文档](docs/architecture/proposal.md)。
 
 ## 模块与责任
 

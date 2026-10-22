@@ -21,6 +21,6 @@
 
 ## 验证
 
-`go test ./...` 已通过；本地 MySQL 启动后，健康检查、可用性查询、预约和同键幂等重试已通过 smoke 验证（包含 M1 时间边界和每日编码单元测试）；该次记录中前端构建、MySQL 迁移、并发预约、真实 HTTP 写回和重启恢复尚未运行，后续进展见下段与 [进度](../progress.md)。运行命令与环境变量见 `scripts/dev.sh` 和 [身份实现记录](identity-code.md)；不要把开发 fixture 运行结果描述为生产就绪。
+`go test ./...` 已通过；本地 MySQL 启动后，健康检查、可用性查询、预约和同键幂等重试已通过 smoke 验证（包含 M1 时间边界和每日编码单元测试）；该次记录中前端构建、MySQL 迁移、并发预约、真实 HTTP 写回和重启恢复尚未运行，后续进展见下段与 [进度](../progress.md)。运行命令与环境变量见 `scripts/dev.sh` 和 [身份实现记录](identity-code.md)（需先设置 `MYSQL_DSN` 与至少 32 字节的 `M1_CODE_SECRET`）；不要把开发 fixture 运行结果描述为生产就绪。
 
 2026-10-15：`M1_TEST_DSN=…/campus_m1_check go test -count=1 ./...` 与 `go vet ./...` 通过；删除集成测试经真实 HTTP 和 MySQL 运行，覆盖他人 404、待签到拒绝、重复删除幂等、记录与审计保留、违约拒绝。临时移除违约保护后该测试失败，恢复后通过。该次运行未设置 `M2_TEST_DSN`，M2 集成测试为跳过状态。前端 `npm run build` 通过；页面提示和删除按钮尚待人工验收。

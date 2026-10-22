@@ -10,14 +10,6 @@
       "department": "CS",
       "role": "operator"
     },
-    "m2-service": {
-      "id": "m2-service",
-      "service": "M2"
-    },
-    "m3-service": {
-      "id": "m3-service",
-      "service": "M3"
-    },
     "department-demo": {
       "id": "department-1",
       "department": "CS",

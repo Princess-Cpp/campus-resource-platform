@@ -28,7 +28,7 @@
 
 ## 运行与人工验收
 
-预览使用独立数据库 campus_m2_preview，后端 127.0.0.1:8081，Vite 127.0.0.1:5175；不会复用此前 M1 验证库。正式重启时，先创建独立 MySQL 空库（schema 由迁移入口执行），配置 MYSQL_DSN（包含 parseTime=true）、至少 32 字节 M1_CODE_SECRET 和至少 10 字节的本地 AUTH_DEV_PASSWORD，然后执行 `scripts/dev-m2.sh`。另开终端执行：
+预览使用独立数据库 campus_m2_preview，后端 127.0.0.1:8081，Vite 127.0.0.1:5175；不会复用此前 M1 验证库。正式重启时，先复制 `.env.example` 为 `.env` 并填入数据库密码，创建独立 MySQL 空库（schema 由迁移入口执行），再配置 MYSQL_DSN（包含 parseTime=true）、至少 32 字节 M1_CODE_SECRET、至少 32 字节 M2_SERVICE_TOKEN 和至少 10 字节的本地 AUTH_DEV_PASSWORD，然后执行 `scripts/dev-m2.sh`。另开终端执行：
 
 ```sh
 cd frontend
@@ -36,7 +36,7 @@ npm ci
 VITE_BACKEND_URL=http://127.0.0.1:8081 npm run dev -- --host 127.0.0.1 --port 5175 --strictPort
 ```
 
-M2_ENABLED 默认关闭，避免改变已有 M1 启动配置；dev-m2.sh 显式打开。M2_RESOURCE_URL 与 LISTEN_ADDR 必须对应，M2_SERVICE_TOKEN 由环境传入（脚本仅默认公开开发 fixture 标识）。新迁移沿用已有迁移锁和校验表，并按文件名顺序执行；001 文件内容未改动。
+M2_ENABLED 默认关闭，避免改变已有 M1 启动配置；dev-m2.sh 显式打开。M2_RESOURCE_URL 与 LISTEN_ADDR 必须对应，M2_SERVICE_TOKEN 必须由环境传入，脚本不再提供默认值，服务端也会拒绝短于 32 字节的令牌。新迁移沿用已有迁移锁和校验表，并按文件名顺序执行；001 文件内容未改动。
 
 学生可使用任意学工号和姓名注册并提交、查询本人申请；审批和运营账号使用 `AUTH_DEV_PASSWORD` 登录：`DEV-DEP-001` 处理 CS 院系第一步，`DEV-VENUE-001` 处理 A楼最终批准/开始后紧急终止，`DEV-OP-001` 查看 A楼聚合统计。用真实表单提交未来整点申请，再退出并登录两名审批人，最后回申请人查看/撤销。最终批准与撤销后等待约 2 秒或刷新详情，确认状态由“确认中”收敛。统计对学生拒绝访问属于预期行为。
 
