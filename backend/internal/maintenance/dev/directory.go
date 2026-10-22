@@ -44,7 +44,7 @@ func LoadStaff(path string) ([]StaffBinding, error) {
 		}
 		seen[b.UserID] = true
 		for _, p := range b.Permissions {
-			if p != "workorder.dispatch" && p != "workorder.repair" {
+			if p != "workorder.dispatch" && p != "workorder.repair" && p != "workorder.accept" {
 				return nil, fmt.Errorf("unsupported M3 development permission")
 			}
 		}

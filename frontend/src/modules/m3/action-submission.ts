@@ -3,11 +3,11 @@ import type { ActionInput, ActionGateway, Order } from "./types.ts"
 type Pending = { key: string; input: ActionInput }
 export interface ActionStore { load(): Pending | undefined; save(value: Pending): void; clear(): void }
 function normalize(input: ActionInput): ActionInput {
- if (!["ASSIGN","ACCEPT_ASSIGNMENT","CANCEL"].includes(input.action) || !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion<1) throw new Error("操作或版本无效，请刷新工单")
+ if (!["ASSIGN","ACCEPT_ASSIGNMENT","CANCEL","START","FINISH","REJECT_ACCEPTANCE","APPROVE_ACCEPTANCE","RETRY_RESOURCE"].includes(input.action) || !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion<1) throw new Error("操作或版本无效，请刷新工单")
  if (input.action==="ASSIGN" && !input.assigneeId) throw new Error("请选择维修人员")
  if (input.action!=="ASSIGN" && input.assigneeId) throw new Error("此操作不接受维修人员参数")
  const comment=(input.comment??"").trim()
- if (Array.from(comment).length>1000 || (input.action==="ASSIGN" && !comment)) throw new Error("请填写 1–1000 字的处理建议")
+ if (Array.from(comment).length>1000 || (["ASSIGN","FINISH","REJECT_ACCEPTANCE"].includes(input.action) && !comment)) throw new Error("请填写 1–1000 字的处理建议、维修结果或驳回原因")
  return {action:input.action,expectedVersion:input.expectedVersion,...(input.assigneeId?{assigneeId:input.assigneeId}:{}),comment}
 }
 export function actionStore(actor: string,id: string,storage: Pick<Storage,"getItem"|"setItem"|"removeItem">): ActionStore {

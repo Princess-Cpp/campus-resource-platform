@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "M3 property maintenance, reporting and own queries",
+    "title": "M3 property maintenance",
     "version": "1.0.0",
-    "description": "Local first-round implementation based on shared design v0.2 and requirements v0.4. Does not assert team approval or completion of maintenance/assignment/notification delivery. Round 2 adds scoped dispatch/repair queries, assignment/reassignment, acceptance and early cancellation. Development providers remain pending team review; notification delivery and M1 resource integration are not complete.",
+    "description": "Local reporting, scoped dispatch, repair and independent acceptance using existing M1 resource HTTP v1. Resource requests are durable before HTTP, receipts gate business state, unknown outcomes retain their operation identity. Shared catalog/identity mapping/events remain development adapters; team review and notification delivery are pending.",
     "x-review-status": "pending-team-review"
   },
   "servers": [
@@ -487,11 +487,12 @@
               "enum": [
                 "mine",
                 "dispatch",
-                "assigned"
+                "assigned",
+                "acceptance"
               ],
               "default": "mine"
             },
-            "description": "mine: own records; dispatch: currently authorized dispatch areas; assigned: own current ASSIGNED/IN_PROGRESS work."
+            "description": "Acceptance queue requires current area permission and excludes historical repair participants."
           },
           {
             "name": "state",
@@ -661,7 +662,7 @@
     "/m3/workorders/{id}/actions": {
       "post": {
         "operationId": "workorderAction",
-        "description": "Current authority is checked before historical command replay. Command key is scoped by actor across create and all action endpoints. Same key with another order or content returns 409. Atomic business/history/audit/outbox transaction; no resource start or release in this endpoint.",
+        "description": "Current authority is checked before historical command replay. Durable operation, workorder, command, audit and outbox commit together; actual M1 HTTP runs after this transaction. Matching terminal receipt commits the business transition. 202 means resource reconciliation is pending/unknown, never confirmed start/completion. Terminal release failure requires coordination and keeps safety.",
         "parameters": [
           {
             "name": "id",
@@ -790,6 +791,29 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Command durably accepted; resource effect unconfirmed. Read current detail for progress; original command replay returns its latest reconciliation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "correlationId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "correlationId"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -1111,6 +1135,23 @@
           "deadlineAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "firstStartedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result": {
+            "type": "string"
+          },
+          "lastResourceError": {
+            "type": "string"
+          },
+          "operation": {
+            "$ref": "#/components/schemas/ResourceOperation"
           }
         },
         "required": [
@@ -1269,9 +1310,31 @@
               "enum": [
                 "ASSIGN",
                 "ACCEPT_ASSIGNMENT",
-                "CANCEL"
+                "CANCEL",
+                "START",
+                "FINISH",
+                "REJECT_ACCEPTANCE",
+                "APPROVE_ACCEPTANCE",
+                "RETRY_RESOURCE"
               ]
             }
+          },
+          "firstStartedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result": {
+            "type": "string"
+          },
+          "lastResourceError": {
+            "type": "string"
+          },
+          "operation": {
+            "$ref": "#/components/schemas/ResourceOperation"
           }
         },
         "required": [
@@ -1385,7 +1448,12 @@
             "enum": [
               "ASSIGN",
               "ACCEPT_ASSIGNMENT",
-              "CANCEL"
+              "CANCEL",
+              "START",
+              "FINISH",
+              "REJECT_ACCEPTANCE",
+              "APPROVE_ACCEPTANCE",
+              "RETRY_RESOURCE"
             ]
           },
           "expectedVersion": {
@@ -1406,7 +1474,7 @@
           "expectedVersion"
         ],
         "additionalProperties": false,
-        "description": "ASSIGN requires assigneeId and a nonblank comment. Other actions must omit assigneeId. Expected version applies only to first execution; retries reuse the identical input and key."
+        "description": "ASSIGN requires assigneeId and a nonblank comment. FINISH and REJECT_ACCEPTANCE require a nonblank comment. Other actions omit assigneeId. First execution checks expectedVersion; replay reuses identical input/key and current authority. START/APPROVE_ACCEPTANCE queue resource operations; RETRY_RESOURCE resumes a PAUSED unknown operation with its original operation ID."
       },
       "Worker": {
         "type": "object",
@@ -1421,6 +1489,48 @@
         "required": [
           "id",
           "name"
+        ],
+        "additionalProperties": false
+      },
+      "ResourceOperation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "BLOCK_ROOM_MAINTENANCE",
+              "RELEASE_SOURCE"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PAUSED",
+              "CONFIRMED",
+              "FAILED"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nextAttempt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastError": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "state",
+          "attempts"
         ],
         "additionalProperties": false
       }

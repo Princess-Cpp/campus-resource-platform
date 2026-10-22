@@ -54,3 +54,44 @@ test("malformed success and forbidden replay retain an earlier unknown command",
  const controller=new ActionSubmission(api,"order",actionStore("actor","order",storage()))
  await assert.rejects(controller.send(input),/核对/);await assert.rejects(controller.send(input));assert.equal(controller.locked,true)
 })
+
+test("repair finish and rejection require real comments before HTTP",async()=>{
+ let calls=0
+ const api={act:async():Promise<Order>=>{calls++;return {id:"order",version:5} as Order}}
+ const controller=new ActionSubmission(api,"order",actionStore("actor","order",storage()))
+ for(const action of ["FINISH","REJECT_ACCEPTANCE"] as const){await assert.rejects(controller.send({action,expectedVersion:4,comment:"  "}),/维修结果或驳回原因/)}
+ await assert.rejects(controller.send({action:"FINISH",expectedVersion:4,comment:"x".repeat(1001)}),/1000/)
+ assert.equal(calls,0)
+ await controller.send({action:"FINISH",expectedVersion:4,comment:" 已更换灯管并测试照明正常 "})
+ assert.equal(calls,1)
+})
+
+test("durable pending start is accepted without claiming repair has started",async()=>{
+ const s=storage();let calls=0
+ const result={id:"order",version:5,state:"ASSIGNED",syncState:"PENDING",operation:{id:"original-op",action:"BLOCK_ROOM_MAINTENANCE",state:"PENDING",attempts:0}} as Order
+ const controller=new ActionSubmission({act:async()=>{calls++;return result}},"order",actionStore("actor","order",s))
+ assert.deepEqual(await controller.send({action:"START",expectedVersion:4}),result)
+ assert.equal(controller.locked,false);assert.equal(calls,1)
+ assert.equal(new ActionSubmission({act:async()=>result},"order",actionStore("actor","order",s)).draft,undefined)
+})
+
+test("lost approval response retains approval and cannot become rejection",async()=>{
+ const s=storage();const calls:{q:ActionInput;key:string}[]=[]
+ const api={act:async(_id:string,q:ActionInput,key:string):Promise<Order>=>{calls.push({q,key});if(calls.length===1)throw new Error("lost");return {id:"order",version:8,state:"AWAITING_ACCEPTANCE",syncState:"UNKNOWN"} as Order}}
+ const q:ActionInput={action:"APPROVE_ACCEPTANCE",expectedVersion:6,comment:"验收检查合格"}
+ await assert.rejects(new ActionSubmission(api,"order",actionStore("actor","order",s),()=>"approval-key").send(q))
+ const restored=new ActionSubmission(api,"order",actionStore("actor","order",s))
+ await assert.rejects(restored.send({...q,action:"REJECT_ACCEPTANCE"}),/原操作/)
+ await restored.send(q)
+ assert.equal(calls.length,2);assert.equal(calls[1].key,"approval-key");assert.deepEqual(calls[1].q,q)
+})
+
+test("acceptance queue and resource retry stay within M3 HTTP contract",async()=>{
+ const calls:{path:string;init?:RequestInit}[]=[]
+ const api=createHTTPGateway(async<T>(path:string,init?:RequestInit)=>{calls.push({path,init});return {} as T})
+ await api.list({view:"acceptance",page:1,pageSize:20})
+ await api.act("order",{action:"RETRY_RESOURCE",expectedVersion:12},"retry-command")
+ assert.equal(new URLSearchParams(calls[0].path.split("?")[1]).get("view"),"acceptance")
+ assert.equal(calls[1].path,"/m3/workorders/order/actions")
+ assert.deepEqual(JSON.parse(calls[1].init!.body as string),{action:"RETRY_RESOURCE",expectedVersion:12})
+})

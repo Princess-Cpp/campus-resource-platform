@@ -11,22 +11,36 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 func canAct(o domain.Order, a domain.Actor, action string) bool {
 	switch action {
 	case "ASSIGN":
 		return a.Can("workorder.dispatch") && a.InArea(o.Area)
-	case "ACCEPT_ASSIGNMENT":
+	case "ACCEPT_ASSIGNMENT", "START", "FINISH":
 		return a.Can("workorder.repair") && a.ID == o.AssigneeID
+	case "APPROVE_ACCEPTANCE", "REJECT_ACCEPTANCE":
+		return a.Can("workorder.accept") && a.InArea(o.Area) && !slices.Contains(o.RepairParticipants, a.ID)
+	case "RETRY_RESOURCE":
+		if o.Operation == nil {
+			return false
+		}
+		if o.Operation.Action == "BLOCK_ROOM_MAINTENANCE" {
+			return canAct(o, a, "START")
+		}
+		return canAct(o, a, "APPROVE_ACCEPTANCE")
 	case "CANCEL":
 		return a.Enabled && a.ID == o.ReporterID
 	}
 	return false
 }
-func allowedActions(o domain.Order, a domain.Actor) []string {
+func (s *Service) allowedActions(o domain.Order, a domain.Actor) []string {
 	out := []string{}
 	if o.Sync != domain.Idle {
+		if s.Resources != nil && o.Sync == domain.NeedsAttention && canAct(o, a, "RETRY_RESOURCE") {
+			out = append(out, "RETRY_RESOURCE")
+		}
 		return out
 	}
 	if canAct(o, a, "ASSIGN") && (o.State == domain.Reported || o.State == domain.Assigned || o.State == domain.InProgress) {
@@ -37,6 +51,18 @@ func allowedActions(o domain.Order, a domain.Actor) []string {
 	}
 	if canAct(o, a, "CANCEL") && (o.State == domain.Reported || o.State == domain.Assigned) {
 		out = append(out, "CANCEL")
+	}
+	if s.Resources != nil && canAct(o, a, "START") && o.State == domain.Assigned && !o.AcceptedAt.IsZero() {
+		out = append(out, "START")
+	}
+	if canAct(o, a, "FINISH") && o.State == domain.InProgress && !o.AcceptedAt.IsZero() {
+		out = append(out, "FINISH")
+	}
+	if canAct(o, a, "APPROVE_ACCEPTANCE") && o.State == domain.AwaitingAcceptance {
+		out = append(out, "REJECT_ACCEPTANCE")
+		if s.Resources != nil {
+			out = append(out, "APPROVE_ACCEPTANCE")
+		}
 	}
 	return out
 }
@@ -70,10 +96,13 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 	if !a.Enabled || a.ID == "" {
 		return Order{}, fault("UNAUTHENTICATED", 401)
 	}
-	if !slices.Contains([]string{"ASSIGN", "ACCEPT_ASSIGNMENT", "CANCEL"}, q.Action) || q.ExpectedVersion < 1 || len(id) == 0 || len(id) > 64 || !keyPattern.MatchString(key) || len(q.AssigneeID) > 64 || (q.Action == "ASSIGN" && q.AssigneeID == "") || (q.Action != "ASSIGN" && q.AssigneeID != "") {
+	if !slices.Contains([]string{"ASSIGN", "ACCEPT_ASSIGNMENT", "CANCEL", "START", "FINISH", "REJECT_ACCEPTANCE", "APPROVE_ACCEPTANCE", "RETRY_RESOURCE"}, q.Action) || q.ExpectedVersion < 1 || len(id) == 0 || len(id) > 64 || !keyPattern.MatchString(key) || len(q.AssigneeID) > 64 || (q.Action == "ASSIGN" && q.AssigneeID == "") || (q.Action != "ASSIGN" && q.AssigneeID != "") {
 		return Order{}, fault("INVALID_INPUT", 400)
 	}
 	q.Comment = strings.TrimSpace(q.Comment)
+	if !utf8.ValidString(q.Comment) || utf8.RuneCountInString(q.Comment) > 1000 {
+		return Order{}, fault("INVALID_INPUT", 400)
+	}
 	canonical, _ := json.Marshal(struct {
 		Kind, ID string
 		Input    ActionInput
@@ -127,6 +156,9 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 	if q.ExpectedVersion != order.Version {
 		return Order{}, fault("VERSION_CONFLICT", 409)
 	}
+	if now.Before(order.UpdatedAt) {
+		return Order{}, fault("INVALID_INPUT", 400)
+	}
 	var target domain.Actor
 	if q.Action == "ASSIGN" {
 		people, e := s.workersInArea(ctx, order.Area)
@@ -144,7 +176,35 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 			return Order{}, fault("FORBIDDEN", 403)
 		}
 	}
-	change, e := order.Apply(a, target, domain.Command{Action: q.Action, ExpectedVersion: q.ExpectedVersion, Comment: q.Comment}, now)
+	var change domain.Change
+	if q.Action == "RETRY_RESOURCE" {
+		if s.Resources == nil {
+			return Order{}, fault("DEPENDENCY_UNAVAILABLE", 503)
+		}
+		if order.Operation == nil || order.Sync != domain.NeedsAttention {
+			return Order{}, fault("INVALID_STATE", 409)
+		}
+		var state string
+		if e = tx.QueryRowContext(ctx, "SELECT state FROM m3_resource_operations WHERE id=? FOR UPDATE", order.Operation.ID).Scan(&state); e != nil {
+			return Order{}, e
+		}
+		if state != "PAUSED" {
+			return Order{}, fault("INVALID_STATE", 409)
+		}
+		next := order
+		next.Sync = domain.Pending
+		next.LastResourceError = ""
+		next.Version++
+		next.UpdatedAt = now
+		change = domain.Change{Order: next, Action: q.Action, ActorID: a.ID, Comment: q.Comment, From: order.State, At: now}
+		_, e = tx.ExecContext(ctx, "UPDATE m3_resource_operations SET state='PENDING',attempts=0,next_attempt=?,last_error='',updated_at=? WHERE id=?", now, now, order.Operation.ID)
+	} else {
+		opID := ""
+		if q.Action == "START" || q.Action == "APPROVE_ACCEPTANCE" {
+			opID = "M3OP-" + ID()
+		}
+		change, e = order.Apply(a, target, domain.Command{Action: q.Action, ExpectedVersion: q.ExpectedVersion, Comment: q.Comment, OperationID: opID}, now)
+	}
 	if e != nil {
 		status := 400
 		switch {
@@ -154,6 +214,20 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 			status = 409
 		}
 		return Order{}, fault(e.Error(), status)
+	}
+	if q.Action == "START" || q.Action == "APPROVE_ACCEPTANCE" {
+		if s.Resources == nil {
+			return Order{}, fault("DEPENDENCY_UNAVAILABLE", 503)
+		}
+		op := change.Order.Operation
+		req := ResourceRequest{OperationID: op.ID, Action: op.Action, SourceModule: "M3", SourceBusinessID: id, SourceVersion: op.SourceVersion, RoomID: op.RoomID, Reason: "M3 workorder " + id + " " + op.Action}
+		request, err := json.Marshal(req)
+		if err != nil {
+			return Order{}, err
+		}
+		if _, e = tx.ExecContext(ctx, `INSERT INTO m3_resource_operations(id,workorder_id,source_version,request,actor_id,idem_key,correlation_id,next_attempt,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)`, op.ID, id, op.SourceVersion, request, a.ID, key, trace, now, now, now); e != nil {
+			return Order{}, e
+		}
 	}
 	next := change.Order
 	raw, e = json.Marshal(next)

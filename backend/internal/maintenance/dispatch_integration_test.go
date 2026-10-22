@@ -296,7 +296,7 @@ func TestEarlyCancellationTerminalAndForgery(t *testing.T) {
 	if code != 409 {
 		t.Fatal("terminal dispatch", code)
 	}
-	for _, q := range []map[string]any{action("START", 3, ""), {"action": "CANCEL", "expectedVersion": 3, "userId": h.a.Principal.ID}, {"action": "CANCEL", "expectedVersion": 3, "assigneeId": w.Principal.ID}} {
+	for _, q := range []map[string]any{action("UNSUPPORTED_ACTION", 3, ""), {"action": "CANCEL", "expectedVersion": 3, "userId": h.a.Principal.ID}, {"action": "CANCEL", "expectedVersion": 3, "assigneeId": w.Principal.ID}} {
 		code, _ = h.act(o.ID, maintenance.ID(), h.a, q)
 		if code != 400 {
 			t.Fatal("unsupported/forged action", code)

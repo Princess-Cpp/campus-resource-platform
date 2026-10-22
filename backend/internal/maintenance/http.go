@@ -72,7 +72,7 @@ func (s *Service) Register(r *gin.Engine, authenticate Authenticate) {
 				return
 			}
 		}
-		if view := c.Query("view"); view != "" && !slices.Contains([]string{"mine", "dispatch", "assigned"}, view) {
+		if view := c.Query("view"); view != "" && !slices.Contains([]string{"mine", "dispatch", "assigned", "acceptance"}, view) {
 			respond(c, 0, nil, fault("INVALID_INPUT", 400))
 			return
 		}
@@ -107,7 +107,11 @@ func (s *Service) Register(r *gin.Engine, authenticate Authenticate) {
 			return
 		}
 		v, e := s.Act(c.Request.Context(), actor(c), c.Param("id"), q, c.GetHeader("Idempotency-Key"), c.GetString("trace"))
-		respond(c, 200, v, e)
+		status := 200
+		if e == nil && v.SyncState != domain.Idle {
+			status = 202
+		}
+		respond(c, status, v, e)
 	})
 
 	api.GET("/workorders/:id", func(c *gin.Context) {

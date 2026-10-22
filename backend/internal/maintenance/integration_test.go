@@ -56,7 +56,7 @@ func setup(t *testing.T) *harness {
 	if e = migrations.Apply(context.Background(), db); e != nil {
 		t.Fatal(e)
 	}
-	for _, table := range []string{"m3_commands", "m3_outbox", "m3_events", "m3_assignment_history", "m3_workorders"} {
+	for _, table := range []string{"m3_resource_operations", "m3_commands", "m3_outbox", "m3_events", "m3_assignment_history", "m3_workorders"} {
 		if _, e = db.Exec("DELETE FROM " + table); e != nil {
 			t.Fatal(e)
 		}
