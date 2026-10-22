@@ -3,6 +3,7 @@ package main
 import (
 	"campus-resource-platform/backend/internal/dev"
 	"campus-resource-platform/backend/internal/m1"
+	"campus-resource-platform/backend/internal/m2"
 	"campus-resource-platform/backend/migrations"
 	"context"
 	"database/sql"
@@ -48,6 +49,28 @@ func main() {
 	}
 	s := m1.New(db, f, []byte(secret))
 	r := s.Router(f.Auth)
+	if os.Getenv("M2_ENABLED") == "true" {
+		directory, err := dev.LoadM2(os.Getenv("M1_DEV_FIXTURE"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		base, token := os.Getenv("M2_RESOURCE_URL"), os.Getenv("M2_SERVICE_TOKEN")
+		if base == "" || token == "" {
+			log.Fatal("M2_RESOURCE_URL and M2_SERVICE_TOKEN are required")
+		}
+		classroom := m2.New(db, directory, &m2.HTTPResources{BaseURL: base, Token: token})
+		classroom.Policy = directory.Policy
+		classroom.Register(r)
+		go func() {
+			ticker := time.NewTicker(2 * time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				if err := classroom.Tick(ctx); err != nil {
+					log.Printf("M2 task error: %v", err)
+				}
+			}
+		}()
+	}
 	webRoot, e := fs.Sub(web, "webdist")
 	if e != nil {
 		log.Fatal(e)
