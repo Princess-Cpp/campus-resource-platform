@@ -21,7 +21,7 @@
       "implementation_files": [
         "backend/internal/booking",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "frontend/src/main.tsx"
       ],
       "verification_files": [
         "backend/internal/booking/service_test.go",
@@ -57,7 +57,7 @@
       "implementation_files": [
         "backend/internal/booking",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "frontend/src/main.tsx"
       ],
       "verification_files": [
         "backend/internal/booking/service_test.go",
@@ -93,7 +93,7 @@
       "implementation_files": [
         "backend/internal/booking",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "frontend/src/main.tsx"
       ],
       "verification_files": [
         "backend/internal/booking/service_test.go",
@@ -129,7 +129,7 @@
       "implementation_files": [
         "backend/internal/booking",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "frontend/src/main.tsx"
       ],
       "verification_files": [
         "backend/internal/booking/service_test.go",
@@ -165,7 +165,7 @@
       "implementation_files": [
         "backend/internal/booking",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "frontend/src/main.tsx"
       ],
       "verification_files": [
         "backend/internal/booking/service_test.go",
@@ -201,7 +201,7 @@
       "implementation_files": [
         "backend/internal/booking",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "frontend/src/main.tsx"
       ],
       "verification_files": [
         "backend/internal/booking/service_test.go",
@@ -276,7 +276,7 @@
       "implementation_files": [
         "backend/internal/booking",
         "backend/migrations/001_m1.sql",
-        "frontend/src/main.jsx"
+        "frontend/src/main.tsx"
       ],
       "verification_files": [
         "backend/internal/booking/service_test.go",
@@ -322,7 +322,7 @@
         "2026-10-15: M1/M2 real MySQL integration tests passed with go test -race -count=1 ./...; M2 owner-only hide kept application/statistics and one HIDE event, active application rejected",
         "Removing CANCELLED from the deletable terminal states caused TestM2HTTPWorkflowAndScopes to fail with 409; restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -356,7 +356,7 @@
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -390,7 +390,7 @@
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -424,7 +424,7 @@
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -458,7 +458,7 @@
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -492,7 +492,7 @@
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -526,7 +526,7 @@
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -560,7 +560,7 @@
         "2026-10-14: 10 M2 real MySQL/HTTP integration tests passed with go test -race -count=1 ./...; go vet ./... passed",
         "Read-scope mutation caused TestM2HTTPWorkflowAndScopes to fail (expected 404, got 200); restored implementation passed",
         "Frontend build passed; no frontend automated tests run, manual acceptance pending",
-        "Formal identity/catalog, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; see m2-code.md"
+        "Formal catalog/master data, approver reassignment, M3 impact integration and external notification delivery remain unimplemented; SQL identity/login is integrated; see m2-code.md"
       ],
       "owner_module_group": "M2",
       "ownership_status": "user_stated_module_assignment",
@@ -588,7 +588,7 @@
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
-        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only; directory later moved to internal/maintenance/domain).",
         "尚缺 MySQL 幂等建单、可信目录接入、HTTP 和页面；图片保持 postponed。"
       ],
       "owner_module_group": "M3",
@@ -617,7 +617,7 @@
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
-        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only; directory later moved to internal/maintenance/domain).",
         "尚缺分派历史持久化、事务并发与幂等命令、实际身份撤权及工作台。"
       ],
       "owner_module_group": "M3",
@@ -646,7 +646,7 @@
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
-        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only; directory later moved to internal/maintenance/domain).",
         "仅测试准备/回执规则；真实 M1 HTTP、MySQL、多来源、进程重启与影响补偿 not_run。"
       ],
       "owner_module_group": "M3",
@@ -675,7 +675,7 @@
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
-        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only; directory later moved to internal/maintenance/domain).",
         "仅测试验收规则；处理/验收历史持久化、真实来源释放及重复 HTTP 命令 not_run。"
       ],
       "owner_module_group": "M3",
@@ -704,7 +704,7 @@
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
-        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only; directory later moved to internal/maintenance/domain).",
         "仅测试普通取消与未知结果保护；SQL 并发、真实结果核对 not_run；异常关闭 postponed。"
       ],
       "owner_module_group": "M3",
@@ -733,7 +733,7 @@
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
-        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only; directory later moved to internal/maintenance/domain).",
         "仅测试归属、评分、窗口和一次评价规则；数据库唯一约束、HTTP 幂等、统计 not_run。"
       ],
       "owner_module_group": "M3",
@@ -783,7 +783,7 @@
         "docs/implementation/m3-plan.md"
       ],
       "evidence": [
-        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
+        "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only; directory later moved to internal/maintenance/domain).",
         "仅测试阶段阈值与状态规则；公共任务、持久化去重、主管异常、通知失败和重启补扫 not_run。"
       ],
       "owner_module_group": "M3",
@@ -1047,11 +1047,20 @@
       "acceptance_section": "D-04.1 可用性判定",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/booking/resources.go",
+        "backend/internal/booking/http.go"
+      ],
+      "verification_files": [
+        "backend/internal/classroom/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "Search, conflict checks and room hold/block/release are implemented in booking/resources.go; M2 integration tests exercise hold conflict and source release.",
+        "Availability reason sets, M3 blocking integration and manual acceptance remain incomplete."
+      ],
       "owner_module_group": "M1",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1068,11 +1077,20 @@
       "acceptance_section": "D-04.2 占用、阻塞与释放",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/booking/resources.go",
+        "backend/internal/booking/http.go"
+      ],
+      "verification_files": [
+        "backend/internal/classroom/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "Resource operations implement source-scoped hold/block/release, idempotency keys and version fences.",
+        "M2 real-MySQL/HTTP tests cover room hold conflict, release and response-loss recovery; M3 caller integration is not implemented."
+      ],
       "owner_module_group": "M1",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1089,11 +1107,15 @@
       "acceptance_section": "D-04.3 对账与异常恢复",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
+      "implementation_status": "partial_development",
       "verification_status": "not_run",
-      "implementation_files": [],
+      "implementation_files": [
+        "backend/internal/booking/resources.go"
+      ],
       "verification_files": [],
-      "evidence": [],
+      "evidence": [
+        "Receipt and source listing endpoints exist; restart reconciliation, exception queue and source compensation remain unimplemented, so the requirement is not verified."
+      ],
       "owner_module_group": "M1",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1110,11 +1132,21 @@
       "acceptance_section": "D-05.1 公开接口与错误语义",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "contracts/identity.openapi.json",
+        "contracts/m2.openapi.json",
+        "backend/internal/booking/http.go"
+      ],
+      "verification_files": [
+        "backend/internal/identity/integration_test.go",
+        "backend/internal/classroom/integration_test.go"
+      ],
+      "evidence": [
+        "Identity and M2 OpenAPI contracts exist and integration tests exercise their error semantics.",
+        "Resource OpenAPI, M3 contract and full cross-group contract review remain open."
+      ],
       "owner_module_group": "M1",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1131,11 +1163,27 @@
       "acceptance_section": "D-05.2 SQL 迁移、种子与运行配置",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/migrations/migrate.go",
+        "backend/migrations/001_m1.sql",
+        "backend/migrations/002_m2.sql",
+        "backend/migrations/003_m1_hide_bookings.sql",
+        "backend/migrations/004_m2_hide_applications.sql",
+        "backend/migrations/005_identity.sql",
+        "backend/internal/identity/seed.go",
+        "scripts/dev.sh",
+        "scripts/dev-m2.sh"
+      ],
+      "verification_files": [
+        "docs/implementation/backend-package-layout.md",
+        "docs/implementation/identity-code.md"
+      ],
+      "evidence": [
+        "Versioned migrations 001-005 with lock and checksum are applied at startup; identity seed is idempotent; local dev scripts exist.",
+        "Empty-environment replay, production config separation and backup/rollback drills remain not run."
+      ],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1152,11 +1200,21 @@
       "acceptance_section": "D-05.3 健康、任务与数据治理",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "unit_and_local_smoke_passed",
+      "implementation_files": [
+        "backend/internal/booking/http.go",
+        "backend/internal/booking/tasks.go",
+        "backend/cmd/server/main.go"
+      ],
+      "verification_files": [
+        "backend/internal/booking/service_test.go",
+        "docs/implementation/m1-code.md"
+      ],
+      "evidence": [
+        "/health/ready and background Tick tasks exist and were exercised in local smoke runs.",
+        "Shared task library, retention policy and multi-instance verification remain unimplemented."
+      ],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1173,11 +1231,20 @@
       "acceptance_section": "INT-01 整室审批写回",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "backend_integration_passed_manual_pending",
+      "implementation_files": [
+        "backend/internal/classroom/service.go",
+        "backend/internal/booking/resources.go"
+      ],
+      "verification_files": [
+        "backend/internal/classroom/integration_test.go",
+        "docs/implementation/m2-code.md"
+      ],
+      "evidence": [
+        "M2 final approval calls M1 operations/receipt over HTTP and records APPROVED only after confirmation.",
+        "Tests cover approval, conflict, deadline, response-loss/Service rebuild and source release; manual acceptance and contract review remain open."
+      ],
       "owner_module_group": "M2",
       "ownership_status": "proposed_pending_review",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1194,11 +1261,15 @@
       "acceptance_section": "INT-02 维修下架与恢复",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
+      "implementation_status": "partial_development",
       "verification_status": "not_run",
-      "implementation_files": [],
+      "implementation_files": [
+        "backend/internal/booking/resources.go"
+      ],
       "verification_files": [],
-      "evidence": [],
+      "evidence": [
+        "M1 resource side implements maintenance block and source-scoped release; M3 workorder persistence/API/UI and real M3 integration are not implemented, so the link is not verified."
+      ],
       "owner_module_group": "M3",
       "ownership_status": "proposed_pending_review",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1215,11 +1286,16 @@
       "acceptance_section": "INT-03 来源追溯",
       "origin": "derived_from_course_requirement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
+      "implementation_status": "partial_development",
       "verification_status": "not_run",
-      "implementation_files": [],
+      "implementation_files": [
+        "backend/internal/booking/resources.go",
+        "backend/migrations/001_m1.sql"
+      ],
       "verification_files": [],
-      "evidence": [],
+      "evidence": [
+        "m1_sources records sourceModule/sourceBusinessId and /internal/resources/sources lists authorized sources; availability reason explanations and cross-module source links remain incomplete."
+      ],
       "owner_module_group": "M1",
       "ownership_status": "proposed_pending_review",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1300,6 +1376,7 @@
   ],
   "implementation_notes": {
     "M1": "M1 and M2 now consume SQL user sessions; M2-to-M1 service authentication and D-02 catalog/policy remain explicit development fixtures. These fixtures must be replaced before production acceptance.",
-    "D-01": "Local SQL registration, login, server sessions and current M1/M2 RBAC integration are implemented and backend-verified. Role administration, authorization audit, complete M3/system roles and browser manual acceptance remain open."
+    "D-01": "Local SQL registration, login, server sessions and current M1/M2 RBAC integration are implemented and backend-verified. Role administration, authorization audit, complete M3/system roles and browser manual acceptance remain open.",
+    "M3": "Domain rules and their unit tests are implemented; persistence, HTTP API, pages, resource integration and notification remain unimplemented. Historical evidence commands referencing ./internal/m3/domain predate the move to backend/internal/maintenance/domain."
   }
 }

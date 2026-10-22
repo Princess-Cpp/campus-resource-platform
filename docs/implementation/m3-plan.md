@@ -1,14 +1,14 @@
 # M3 开发任务与评审方案
 
-依据：总约定 v0.2、需求基线 v0.4；起始 Git commit `b7f44e947639e005319e46ede4fde01182530a87`，现有分支 `feat/m3-reporting`。本文是开发方案，不是组内评审或人工验收记录。
+依据：总约定 v0.2、需求基线 v0.4；起始 Git commit `b7f44e947639e005319e46ede4fde01182530a87`，原分支 `feat/m3-reporting` 已通过 PR #6 合并到 main。本文是开发方案，不是组内评审或人工验收记录。
 
 ## 当前代码与差异
 
-- M1/M2 已有 Go/Gin、MySQL 迁移和 React 页面；M3 尚无业务实现。部分规划文件的“尚未实现”描述已经落后于代码，不能据此认定已有代码通过完整验收。
-- D 身份/主数据仍是 `internal/dev` 适配器；公共审计、通知和任务库尚无正式接口。M3 不另建生产身份或第三套公共调度器。
+- M1/M2 已有 Go/Gin、MySQL 迁移和 React 页面；M3 已实现独立领域规则和测试，尚无持久化、API 与页面。部分规划文件的“尚未实现”描述已经落后于代码，不能据此认定已有代码通过完整验收。
+- D 身份已接入 SQL 会话；空间主数据和服务身份仍由 `internal/dev` fixture 适配，公共审计、通知和任务库尚无正式接口。M3 不另建生产身份或第三套公共调度器。
 - M1 `resources.go` 已实现维修阻塞/按来源释放/回执查询；没有正式资源 OpenAPI。当前资源端在阻塞事务内处理 M1 预约，而总约定描述可靠影响事件；M2 活动影响链路未交付。需 M1/M2/M3 评审差异，不能由 M3 自行选择并宣称 INT-04 完成。
 - M3 上报允许停用空间；M1 当前创建阻塞会拒绝 `Active=false`。空间停用与维修阻塞的组合行为需要共同确认。
-- `origin` 与 `upstream` 都指向 `CoffeeTau/campus-resource-platform`，尚未核实 fork 的父仓库；不直接更改远端。
+- 开发时记录：`origin` 与 `upstream` 都指向 `CoffeeTau/campus-resource-platform`；当前 GitHub 仓库为 `Princess-Cpp/campus-resource-platform`，未核实 fork 关系，不直接更改远端。
 
 ## 分步交付
 
@@ -50,7 +50,7 @@
 
 2026-10-21：用户授权按现有提案开发、保留待评审标记；这不是三组对公共契约或 schema 的评审结论。
 
-环境：本地 macOS arm64；从 Go 官方下载并校验 SHA-256 后使用临时 Go 1.27.3 工具链，未改仓库 go.mod 或安装系统工具。当前无 MySQL 可执行程序，Docker daemon 未运行。
+环境（2026-10-21）：本地 macOS arm64；从 Go 官方下载并校验 SHA-256 后使用临时 Go 1.27.3 工具链，未改仓库 go.mod 或安装系统工具。当时无 MySQL 可执行程序，Docker daemon 未运行。
 
 | 检查 | 结果及边界 |
 | --- | --- |
@@ -59,7 +59,7 @@
 | 首次测试失败 | 验收拒绝后二次完工的测试把阶段序号误写成 5；真实链路有 6 个阶段，改为验证前一待验收阶段 +2，复跑通过；未删除测试 |
 | 破坏验证：历史维修人自验收 | 临时移除参与人检查，`TestHistoricalRepairerCannotAccept` 失败：期待 FORBIDDEN 实际成功；恢复后全套通过 |
 | 破坏验证：未知结果取消 | 临时移除同步状态保护，`TestCannotCancelWhileResourceOutcomeUnknown` 失败：期待 OPERATION_PENDING 实际成功；恢复后全套通过 |
-| MySQL/真实 HTTP/前端/邮件/远程部署/人工验收 | `not_run`；未提交、未推送、未创建 PR |
+| MySQL/真实 HTTP/前端/邮件/远程部署/人工验收 | `not_run`；本次记录时未提交、未推送、未创建 PR，后续改动已通过 PR #6 合并 |
 
 测试验证的是规则函数的真实执行，没有模拟掉状态迁移；资源回执输入仅用于规则测试，不计作真实资源联调。命令幂等、SQL 锁、持久化事件、进程恢复、来源对账、多工单资源行为仍未实现。需求索引保留这些缺口，M3-01.7/M3-02.2 保持 not_started/not_run。
 
