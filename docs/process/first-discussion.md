@@ -23,7 +23,7 @@
 | 主持人/项目负责人 | 控时、收敛决定、确认下一步 | 议程和决定记录模板 |
 | 需求负责人 | M1/M2/M3/D 基线、验收和范围分级 | `docs/requirements/`、任务书 |
 | 分解负责人 | 任务、依赖、并行顺序和责任边界 | `docs/project-plan.md`、分工表 |
-| 架构/代码负责人 | 技术架构、M1 代码和现场演示 | `docs/architecture/`、`backend/internal/m1/`、`frontend/src/modules/m1/` |
+| 架构/代码负责人 | 技术架构、M1/M2 代码和现场演示 | `docs/architecture/`、`backend/internal/booking/`、`backend/internal/classroom/`、`frontend/src/modules/` |
 | AI/过程负责人 | `AGENTS.md`、任务模板、提交和测试规则 | 规则文件、commit 和验证记录 |
 | 风险/记录负责人 | 风险登记、未决问题、会议纪要 | 风险表和行动项表 |
 
@@ -65,17 +65,19 @@
 
 | 位置 | 当前内容 | 状态标签 |
 | --- | --- | --- |
-| `backend/internal/m1/` | M1 预约、资源查询、取消、签到、资源 HTTP 路由和任务逻辑 | 初始实现，待完整验收 |
+| `backend/internal/booking/` | M1 预约、资源查询、取消、签到、资源 HTTP 路由和任务逻辑 | 初始实现，待完整验收 |
+| `backend/internal/classroom/` | M2 申请、审批、撤回、资源占用和恢复逻辑 | 初始实现，待人工验收和完整联调 |
+| `backend/internal/maintenance/domain/` | M3 工单领域状态和资源操作规则 | 领域规则初稿，持久化/API/页面待实现 |
 | `frontend/src/modules/m1/` | M1 搜索、预约、历史、通知等页面 | 初始实现，待完整验收 |
 | `backend/migrations/001_m1.sql` | M1 预约、来源、操作、outbox、审计表 | 已有迁移，需补全组间迁移方案 |
 | `backend/dev-fixture.json` | 开发身份、房间、座位数据 | 开发适配，不是正式认证/主数据 |
 | `scripts/build.sh`、`scripts/dev.sh` | 前端构建、后端编译和本地启动 | 可作为演示入口，需全员验证环境 |
-| `frontend/src/modules/m2/` | M2 页面和规划入口 | 不能当作 M2 后端完成 |
+| `frontend/src/modules/m2/` | M2 申请、审批、统计等页面 | 初始实现，待人工验收 |
 
 ### 本次必须主动说明的边界
 
 - M1 当前使用 `M1_DEV_MODE=true` 和 fixture，不能宣称 D-01 正式身份/RBAC 已完成；
-- M2/M3 完整后端、调用 M1 的真实客户端和跨组联调仍需推进；
+- M2 已有初始后端和真实 M1 HTTP 调用；M3 仍缺持久化/API/页面，三组完整联调仍需推进；
 - 并发、响应丢失、重启恢复和空库迁移需要保存真实验证证据；
 - README、progress 和代码状态曾经不同步，本次讨论应指定文档维护人；
 - DSH（DeepSeek Harness）是任务书要求的附加项，必须建立在三个模块公开接口完成之后，不取代主功能验收。
@@ -117,7 +119,7 @@ M1/M2/M3 公开接口 ─> DSH 业务代理（附加项）
 
 | 风险 | 当前证据 | 影响 | 本周动作 | 负责人 |
 | --- | --- | --- | --- | --- |
-| M2/M3 后端缺口 | 当前主要为 M1 实现 | 项目偏成单模块 | 各组交付最小业务闭环 | 待确认 |
+| M3 持久化/API 缺口 | 当前主要是领域规则 | 项目缺少第三个可运行业务模块 | 实现最小工单闭环并接入资源接口 | M3 |
 | 资源契约未冻结 | 路由和设计已有，正式版本不足 | 调用方各自猜字段 | 输出资源接口 v1 和失败示例 | M1 + M2/M3 |
 | fixture 认证 | `dev-fixture.json` | 不能证明正式权限 | 给出 D-01 替换方案 | M2 |
 | 集成证据不足 | 并发/重启/响应丢失未完整验收 | 演示成功不等于可靠 | 安排真实集成测试 | 三组 |
@@ -141,8 +143,8 @@ M1/M2/M3 公开接口 ─> DSH 业务代理（附加项）
 建议第一批任务：
 
 - M1：冻结资源接口 v1，补契约和来源版本测试；
-- M2：确定申请/审批状态机，实现最小申请接口；
-- M3：确定报修/维修状态机，实现最小维修接口；
+- M2：补齐正式主数据、审批人管理和人工验收，维护现有资源契约；
+- M3：将领域规则落到 MySQL/API/页面，并实现最小工单闭环；
 - D/工程：确定服务身份、空库迁移、共享任务和发布负责人；
 - 全组：重新核对 README、progress、baseline.json 与实际实现状态。
 
@@ -154,7 +156,8 @@ M1/M2/M3 公开接口 ─> DSH 业务代理（附加项）
 docker compose up -d mysql
 cd frontend && npm ci
 cd .. && bash scripts/build.sh
-bash scripts/dev.sh
+bash scripts/dev.sh       # M1
+# 或 bash scripts/dev-m2.sh  # M1 + M2 登录/申请预览
 ```
 
 打开 `http://localhost:8080`，用开发身份 `student-demo` 演示 M1。演示结束时必须说明：fixture 只用于 M1 开发，不能作为生产身份系统或全项目完成证据。
