@@ -1,6 +1,7 @@
 package main
 
 import (
+	"campus-resource-platform/backend/internal/common/identity"
 	"campus-resource-platform/backend/internal/dev"
 	"campus-resource-platform/backend/internal/m1"
 	"campus-resource-platform/backend/internal/m2"
@@ -47,10 +48,22 @@ func main() {
 	if e = migrations.Apply(ctx, db); e != nil {
 		log.Fatal(e)
 	}
+	identityStore := identity.New(db, os.Getenv("COOKIE_SECURE") == "true")
+	if os.Getenv("AUTH_DEV_SEED") == "true" {
+		password := os.Getenv("AUTH_DEV_PASSWORD")
+		if password == "" {
+			log.Fatal("AUTH_DEV_PASSWORD is required when AUTH_DEV_SEED=true")
+		}
+		if e = identityStore.SeedDevelopment(ctx, password); e != nil {
+			log.Fatal(e)
+		}
+	}
+	identityHTTP := &identity.HTTP{Store: identityStore}
 	s := m1.New(db, f, []byte(secret))
-	r := s.Router(f.Auth)
+	r := s.Router(m1Authenticate(identityStore, f), identityHTTP.CSRFMiddleware())
+	identityHTTP.Register(r)
 	if os.Getenv("M2_ENABLED") == "true" {
-		directory, err := dev.LoadM2(os.Getenv("M1_DEV_FIXTURE"))
+		fixtureDirectory, err := dev.LoadM2(os.Getenv("M1_DEV_FIXTURE"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -58,8 +71,9 @@ func main() {
 		if base == "" || token == "" {
 			log.Fatal("M2_RESOURCE_URL and M2_SERVICE_TOKEN are required")
 		}
+		directory := &m2Directory{identity: identityStore, fixture: fixtureDirectory}
 		classroom := m2.New(db, directory, &m2.HTTPResources{BaseURL: base, Token: token})
-		classroom.Policy = directory.Policy
+		classroom.Policy = fixtureDirectory.Policy
 		classroom.Register(r)
 		go func() {
 			ticker := time.NewTicker(2 * time.Second)

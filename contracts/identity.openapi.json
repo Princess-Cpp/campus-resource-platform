@@ -1,0 +1,153 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "D-01 身份 API（待组内评审）",
+    "version": "0.1.0",
+    "description": "同源 HttpOnly Cookie 会话；任意学工号和姓名可注册学生账号，角色由服务端确定，不能自选审批或管理角色。"
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "学生注册并建立会话",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["schoolNumber", "name", "password", "confirmPassword"],
+                "properties": {
+                  "schoolNumber": { "type": "string", "maxLength": 64 },
+                  "name": { "type": "string", "maxLength": 128 },
+                  "password": { "type": "string", "minLength": 10, "maxLength": 72, "format": "password" },
+                  "confirmPassword": { "type": "string", "minLength": 10, "maxLength": 72, "format": "password" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Session" },
+          "400": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "账号密码登录",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["schoolNumber", "password"],
+                "properties": {
+                  "schoolNumber": { "type": "string", "maxLength": 64 },
+                  "password": { "type": "string", "maxLength": 72, "format": "password" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Session" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/auth/session": {
+      "get": {
+        "summary": "读取当前会话和实时权限",
+        "responses": {
+          "200": { "$ref": "#/components/responses/Session" },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "撤销当前会话",
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "退出成功" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Principal": {
+        "type": "object",
+        "required": ["id", "schoolNumber", "name", "department", "roles", "permissions", "areas", "contactRefs"],
+        "properties": {
+          "id": { "type": "string" },
+          "schoolNumber": { "type": "string" },
+          "name": { "type": "string" },
+          "department": { "type": "string" },
+          "roles": { "type": "array", "items": { "type": "string" } },
+          "permissions": { "type": "array", "items": { "type": "string" } },
+          "areas": { "type": "array", "items": { "type": "string" } },
+          "contactRefs": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error", "correlationId"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code"],
+            "properties": { "code": { "type": "string" } }
+          },
+          "correlationId": { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "Session": {
+        "description": "会话成功；Set-Cookie 不在 JSON 中返回",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["data", "correlationId"],
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "required": ["actor", "csrfToken", "expiresAt", "landingPath"],
+                  "properties": {
+                    "actor": { "$ref": "#/components/schemas/Principal" },
+                    "csrfToken": { "type": "string" },
+                    "expiresAt": { "type": "string", "format": "date-time" },
+                    "landingPath": { "type": "string" }
+                  }
+                },
+                "correlationId": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "description": "认证、输入、CSRF 或限流错误",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      }
+    }
+  }
+}

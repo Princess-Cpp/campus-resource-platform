@@ -49,5 +49,8 @@ func (f *Fixture) Auth(_ context.Context, t string) (m1.Actor, error) {
 	if !ok {
 		return m1.Actor{}, errors.New("unauthenticated")
 	}
+	if a.Service == "" && a.Role == "student" && len(a.Permissions) == 0 {
+		a.Permissions = []string{"booking.create"}
+	}
 	return a, nil
 }
