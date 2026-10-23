@@ -9,7 +9,9 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item"
 import { modules } from "@/app/modules"
 import { describeError } from "@/modules/common/api"
+import { visibleModules } from "@/modules/common/navigation"
 import { Page } from "@/modules/common/page"
+import { useSession } from "@/modules/common/session"
 import { formatRange } from "@/modules/common/time"
 import { useRequest } from "@/modules/common/use-request"
 import { listBookings } from "@/modules/m1/api"
@@ -21,9 +23,13 @@ import { CheckInDialog } from "@/modules/m1/components/check-in-dialog"
 const RECENT_LIMIT = 100
 
 export function HomePage() {
+  const session = useSession()
   const { data, error, loading, reload } = useRequest(() => listBookings(1, RECENT_LIMIT), [])
   const upcoming = data ? summarize(data).upcoming.slice(0, 5) : []
-  const otherModules = modules.filter((m) => m.id !== "m1")
+  const otherModules = visibleModules(
+    modules.filter((m) => m.id !== "m1"),
+    session.data?.actor.permissions,
+  )
 
   return (
     <Page title="工作台" description="自习座位预约概览；统计基于你最近 100 条预约记录。">

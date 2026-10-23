@@ -7,7 +7,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types --test src/modules/common/session.test.ts"
+    "test": "node --experimental-strip-types --test src/modules/common/session.test.ts src/modules/common/navigation.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",
