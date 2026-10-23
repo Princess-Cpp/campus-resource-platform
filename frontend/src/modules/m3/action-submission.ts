@@ -3,9 +3,9 @@ import type { ActionInput, ActionGateway, Order } from "./types.ts"
 type Pending = { key: string; input: ActionInput }
 export interface ActionStore { load(): Pending | undefined; save(value: Pending): void; clear(): void }
 function normalize(input: ActionInput): ActionInput {
- if (!["ASSIGN","ACCEPT_ASSIGNMENT","CANCEL","START","FINISH","REJECT_ACCEPTANCE","APPROVE_ACCEPTANCE","RETRY_RESOURCE","EVALUATE"].includes(input.action) || !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion<1) throw new Error("操作或版本无效，请刷新工单")
+ if (!["ASSIGN","ACCEPT_ASSIGNMENT","CANCEL","START","FINISH","REJECT_ACCEPTANCE","APPROVE_ACCEPTANCE","RETRY_RESOURCE","EVALUATE"].includes(input.action) || !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion<1) throw new Error("工单信息已变化，请刷新工单后重试")
  if (input.action==="ASSIGN" && !input.assigneeId) throw new Error("请选择维修人员")
- if (input.action!=="ASSIGN" && input.assigneeId) throw new Error("此操作不接受维修人员参数")
+ if (input.action!=="ASSIGN" && input.assigneeId) throw new Error("处理信息与当前操作不符，请刷新工单后重试")
  if(input.action==="EVALUATE"?(!Number.isInteger(input.score)||input.score!<1||input.score!>5):input.score!==undefined)throw new Error("评价须为 1–5 的整数评分，其他操作不能携带评分")
  const comment=(input.comment??"").trim()
  if(input.action==="EVALUATE" && Array.from(comment).length>500)throw new Error("评价文字最多 500 字")
@@ -54,7 +54,7 @@ export class ActionSubmission {
   }
   const p=this.pending
   this.inFlight=this.api.act(this.id,structuredClone(p.input),p.key).then(result=>{
-   if(!result || result.id!==this.id || !Number.isSafeInteger(result.version) || result.version<=p.input.expectedVersion)throw new Error("响应不完整，请核对原操作")
+   if(!result || result.id!==this.id || !Number.isSafeInteger(result.version) || result.version<=p.input.expectedVersion)throw new Error("暂时无法确认处理结果，请核对原操作")
    this.store.clear();this.pending=undefined;this.uncertain=false;return result
   }).catch(error=>{
    const status=error && typeof error==="object" && "status" in error?Number(error.status):0

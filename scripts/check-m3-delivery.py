@@ -19,7 +19,8 @@ REQUIRED = {'TestRepairHTTPFullLifecycleAndIndependentAcceptance',
             'TestEvaluationOnlyReporterAndSameKeyReplays',
             'TestEscalationBoundaryConcurrentAndRestart',
             'TestNotificationRealSMTPPipeline', 'TestNotificationInboxOwnerReadIsolation',
-            'TestNotificationResourceIntentDoesNotClaimSuccess'}
+            'TestNotificationResourceIntentDoesNotClaimSuccess',
+            'TestMaintenanceRoleMatrixRejectsUnrelatedActionsWithoutWrites'}
 
 
 def preflight(env):
@@ -87,7 +88,7 @@ def main():
     report = {'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
               'scope': 'local_development_only', 'status': 'running', 'stages': {}, 'evidence': str(run)}
     # Include source hashes so dirty working trees cannot masquerade as HEAD.
-    names = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
+    names = subprocess.check_output(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'], cwd=ROOT).decode().split('\0')
     report['sourceHashes'] = {p: hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in names
                               if p and (ROOT/p).is_file() and p.startswith(('backend/', 'frontend/', 'contracts/', 'scripts/'))}
     report['sourceHashes']['scripts/check-m3-delivery.py'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()

@@ -8,6 +8,7 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item"
 import { modules } from "@/app/modules"
+import { useMaintenanceNavigation } from "@/modules/m3/use-navigation"
 import { describeError } from "@/modules/common/api"
 import { Page } from "@/modules/common/page"
 import { formatRange } from "@/modules/common/time"
@@ -23,7 +24,7 @@ const RECENT_LIMIT = 100
 export function HomePage() {
   const { data, error, loading, reload } = useRequest(() => listBookings(1, RECENT_LIMIT), [])
   const upcoming = data ? summarize(data).upcoming.slice(0, 5) : []
-  const otherModules = modules.filter((m) => m.id !== "m1")
+  const otherModules = useMaintenanceNavigation(modules).filter((m) => m.id !== "m1")
 
   return (
     <Page title="工作台" description="自习座位预约概览；统计基于你最近 100 条预约记录。">
@@ -87,10 +88,10 @@ export function HomePage() {
           <Card key={m.id}>
             <CardHeader>
               <CardTitle>{m.label}</CardTitle>
-              <CardDescription>整间教室的申请与多级审批</CardDescription>
-              <CardAction>
+              <CardDescription>{m.id === "m3" ? "查看报修进度、处理待办与消息" : "整间教室的申请与多级审批"}</CardDescription>
+              {m.id !== "m3" && <CardAction>
                 <Badge variant="outline">{m.status === "planned" ? "开发中" : "开发预览"}</Badge>
-              </CardAction>
+              </CardAction>}
             </CardHeader>
             <CardContent>
               <ItemGroup className="gap-1">
@@ -109,7 +110,7 @@ export function HomePage() {
                 ))}
               </ItemGroup>
             </CardContent>
-            <CardFooter className="text-xs text-muted-foreground">申请后依次进行院系审批与场地确认。</CardFooter>
+            <CardFooter className="text-xs text-muted-foreground">{m.id === "m3" ? "维修完成后由独立人员验收，按工单来源核对恢复。" : "申请后依次进行院系审批与场地确认。"}</CardFooter>
           </Card>
         ))}
       </div>

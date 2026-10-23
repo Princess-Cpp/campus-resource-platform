@@ -46,7 +46,7 @@ test("damaged storage and invalid action inputs never reach HTTP",async()=>{
  const controller=new ActionSubmission(api,"order",actionStore("actor","order",broken))
  await assert.rejects(controller.send(input),/未确认/)
  const normal=new ActionSubmission(api,"order",actionStore("actor","order",storage()))
- await assert.rejects(normal.send({...input,expectedVersion:0}),/版本/)
+ await assert.rejects(normal.send({...input,expectedVersion:0}),/刷新工单/)
  await assert.rejects(normal.send({...input,assigneeId:""}),/维修人员/)
  assert.equal(calls,0)
 })

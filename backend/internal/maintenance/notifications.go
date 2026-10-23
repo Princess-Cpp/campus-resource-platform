@@ -49,7 +49,7 @@ func notificationSummary(kind string) string {
 	case "WORKORDER_REJECT_ACCEPTANCE":
 		return "验收未通过，继续维修"
 	case "WORKORDER_APPROVE_ACCEPTANCE":
-		return "验收通过，等待本工单场地来源释放确认"
+		return "验收通过，等待确认本工单的维修限制解除结果"
 	case "WORKORDER_RESOURCE_CONFIRMED":
 		return "场地操作已确认，请查看工单当前状态"
 	case "WORKORDER_CANCELLED":

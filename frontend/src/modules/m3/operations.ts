@@ -6,5 +6,5 @@ export function durationText(seconds:number|null):string {
 }
 export function ratioText(ratio:number|null):string{return ratio===null?"暂无样本":`${(ratio*100).toFixed(1)}%`}
 export function routingText(state:string):string{
- return ({PENDING:"待核对主管",NO_SUPERVISOR:"未配置辖区主管",DIRECTORY_UNAVAILABLE:"人员目录暂不可用",QUEUED:"主管通知意图已入队，待投递",OBSOLETE:"原阶段已结束，停止补建通知"} as Record<string,string>)[state]??state
+ return ({PENDING:"正在确认负责主管",NO_SUPERVISOR:"待指定区域主管",DIRECTORY_UNAVAILABLE:"暂时无法获取主管信息",QUEUED:"正在通知主管",OBSOLETE:"该阶段已结束，无需继续提醒"} as Record<string,string>)[state]??"通知状态待确认"
 }

@@ -218,7 +218,7 @@ func timelineText(action string) string {
 	case "EVALUATE":
 		return "报修人已提交一次性评价"
 	case "ESCALATE":
-		return "当前阶段已超时，升级记录和通知意图已保存"
+		return "当前阶段处理超时，已登记并转交主管跟进"
 	case "REPORT":
 		return "故障已上报，等待派单"
 	case "ASSIGN":
@@ -228,21 +228,21 @@ func timelineText(action string) string {
 	case "CANCEL":
 		return "报修人已取消工单"
 	case "START":
-		return "已申请开始维修，等待资源下架回执"
+		return "已申请开始维修，正在确认教室暂停预约"
 	case "FINISH":
 		return "维修已提交完工，等待独立验收，教室仍保留维修限制"
 	case "REJECT_ACCEPTANCE":
 		return "验收未通过，退回维修，保留原维修限制"
 	case "APPROVE_ACCEPTANCE":
-		return "验收通过，等待解除本工单资源来源的回执"
+		return "验收通过，正在解除本工单的维修限制"
 	case "RESOURCE_CONFIRMED":
-		return "资源操作回执已核对，工单状态已同步"
+		return "教室状态已确认，工单进度已更新"
 	case "RESOURCE_FAILED":
-		return "资源操作明确失败，查看错误后协调处理"
+		return "教室状态更新未成功，需要协调处理"
 	case "RESOURCE_UNKNOWN":
-		return "资源操作结果未知，保留原操作继续核对"
+		return "教室状态尚未确认，正在继续核对"
 	case "RETRY_RESOURCE":
-		return "已恢复核对原资源操作，操作 ID 保持不变"
+		return "已重新开始确认教室状态"
 	}
 	return "工单状态已更新"
 }

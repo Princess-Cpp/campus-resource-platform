@@ -33,7 +33,7 @@ export function OrderActions({ gateway, actorId, order, changed }: { gateway:Act
  return <Card><CardHeader><CardTitle>处理工单</CardTitle></CardHeader><CardContent className="space-y-4">
   {!controller ? <ErrorBox error={new Error("浏览器会话存储不可用，请允许后刷新；当前不会发送处理请求")} /> : controller.problem ? <ErrorBox error={controller.problem} /> : <>
    {error!==undefined && <div className="space-y-2"><ErrorBox error={error}/><Button variant="outline" onClick={changed}>刷新工单</Button></div>}
-   {pending ? <Alert><AlertTitle>上次操作结果尚待核对</AlertTitle><AlertDescription>已保留原操作、目标与版本，请重试原操作。核对期间不能改派给其他人或换成另一动作。</AlertDescription><Button disabled={busy} className="mt-3" onClick={()=>send(pending.action)}>{busy?"正在核对…":"重试原操作"}</Button></Alert> : <>
+   {pending ? <Alert><AlertTitle>上次操作结果尚待核对</AlertTitle><AlertDescription>已保留上次处理内容，请重试原操作。核对期间不能改派给其他人或换成另一动作。</AlertDescription><Button disabled={busy} className="mt-3" onClick={()=>send(pending.action)}>{busy?"正在核对…":"重试原操作"}</Button></Alert> : <>
     {canAssign && <Field><FieldLabel htmlFor="m3-assignee">维修人员</FieldLabel><select id="m3-assignee" className={selectClass} value={assignee} disabled={busy||workers.loading||!!workers.error} onChange={e=>setAssignee(e.target.value)}><option value="">请选择维修人员</option>{eligible.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select>
      {workers.loading?<p className="text-sm text-muted-foreground">正在核对可派人员…</p>:workers.error!==undefined?<><ErrorBox error={workers.error}/><Button variant="outline" onClick={workers.reload}>重新加载人员</Button></>:!eligible.length?<p className="text-sm text-muted-foreground">当前没有其他可派维修人员，请联系物业主管协调。工单状态保持不变。</p>:null}
     </Field>}
@@ -49,13 +49,13 @@ export function OrderActions({ gateway, actorId, order, changed }: { gateway:Act
      {allowed.includes("FINISH") && <Button disabled={busy||!comment.trim()} onClick={()=>send("FINISH")}>提交完工并等待验收</Button>}
      {allowed.includes("APPROVE_ACCEPTANCE") && <Button disabled={busy} onClick={()=>send("APPROVE_ACCEPTANCE")}>验收通过并申请恢复</Button>}
      {allowed.includes("REJECT_ACCEPTANCE") && <Button variant="outline" disabled={busy||!comment.trim()} onClick={()=>send("REJECT_ACCEPTANCE")}>验收驳回，退回维修</Button>}
-     {allowed.includes("RETRY_RESOURCE") && <Button disabled={busy} onClick={()=>send("RETRY_RESOURCE")}>继续核对原资源操作</Button>}
+     {allowed.includes("RETRY_RESOURCE") && <Button disabled={busy} onClick={()=>send("RETRY_RESOURCE")}>重新确认教室状态</Button>}
      {allowed.includes("EVALUATE") && <Button disabled={busy||!score} onClick={()=>send("EVALUATE")}>提交一次性评价</Button>}
      {allowed.includes("CANCEL") && <Button variant="outline" disabled={busy} onClick={()=>send("CANCEL")}>取消报修</Button>}
     </div>
-    {allowed.includes("ACCEPT_ASSIGNMENT") && <p className="text-sm text-muted-foreground">接单后可开始维修。下架回执确认后，工单才会进入维修中。</p>}
-    {allowed.includes("START") && <p className="text-sm text-muted-foreground">本轮维修按整个教室限制新增预约。系统将先保存请求，再核对资源操作回执。</p>}
-    {allowed.includes("APPROVE_ACCEPTANCE") && <p className="text-sm text-muted-foreground">验收通过后仅解除本工单的维修来源。其他维修、活动占用或停用限制仍然有效。</p>}
+    {allowed.includes("ACCEPT_ASSIGNMENT") && <p className="text-sm text-muted-foreground">接单后可开始维修，确认教室暂停预约后进入维修中。</p>}
+    {allowed.includes("START") && <p className="text-sm text-muted-foreground">开始维修后，整个教室暂停新增预约。请等待页面显示“维修中”后继续处理。</p>}
+    {allowed.includes("APPROVE_ACCEPTANCE") && <p className="text-sm text-muted-foreground">验收通过仅结束本工单的维修限制。同教室的其他维修、活动占用或停用限制仍然有效。</p>}
    </>}
   </>}
  </CardContent></Card>

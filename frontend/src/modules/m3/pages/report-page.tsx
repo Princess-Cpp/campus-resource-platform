@@ -78,7 +78,7 @@ export function ReportPage({ gateway, submission }: { gateway: MaintenanceGatewa
             <div className="flex justify-between gap-3 text-sm"><FieldDescription id="m3-description-help">请写明位置、现象和发生时间。</FieldDescription><span className={count > 1000 ? "shrink-0 text-destructive" : "shrink-0 text-muted-foreground"}>{count} / 1000</span></div>
             <FormError id="m3-description-error" message={errors.description} />
           </Field>
-          <div className="flex flex-wrap items-center gap-3 border-t pt-4"><Button type="submit" size="lg" disabled={busy || !!submission.problem || rooms.loading || rooms.error !== undefined || rooms.data?.length === 0}><WrenchIcon />{busy ? "处理中…" : gateway.mode === "preview" ? submission.locked ? "重试原示例报修" : "创建示例报修" : submission.locked ? "重试原报修" : "提交报修"}</Button><span className="text-xs text-muted-foreground">描述长度按现有待评审规则校验。</span></div>
+          <div className="flex flex-wrap items-center gap-3 border-t pt-4"><Button type="submit" size="lg" disabled={busy || !!submission.problem || rooms.loading || rooms.error !== undefined || rooms.data?.length === 0}><WrenchIcon />{busy ? "处理中…" : gateway.mode === "preview" ? submission.locked ? "重试原示例报修" : "创建示例报修" : submission.locked ? "重试原报修" : "提交报修"}</Button><span className="text-xs text-muted-foreground">故障描述请填写 10–1000 字。</span></div>
         </form>
       </CardContent></Card>
       <aside className="space-y-5 self-start text-sm">

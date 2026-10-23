@@ -1,5 +1,4 @@
 import { useMemo } from "react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Page } from "@/modules/common/page"
 import { request } from "@/modules/common/api"
 import { useSession } from "@/modules/common/session"
@@ -13,9 +12,10 @@ import { OrdersPage } from "./pages/orders-page"
 import { OperationsPage } from "./pages/operations-page"
 import { DetailPage } from "./pages/detail-page"
 import { NotificationsPage } from "./pages/notifications-page"
+import { canOpenMaintenancePage, type MaintenancePage } from "./navigation"
 
 const gateway = createHTTPGateway(request)
-export function LiveMaintenance({ page }: { page: "notifications" | "report" | "orders" | "detail" | "dispatch" | "assigned" | "acceptance" | "stats" | "escalations" }) {
+export function LiveMaintenance({ page }: { page: MaintenancePage }) {
   const auth = useSession()
   const current = useRequest(() => gateway.session(), [auth.data?.actor.id])
   const submission = useMemo(() => {
@@ -23,11 +23,11 @@ export function LiveMaintenance({ page }: { page: "notifications" | "report" | "
     try { return new ReportSubmission(gateway, () => crypto.randomUUID(), pendingStore(auth.data.actor.id, sessionStorage)) }
     catch { return undefined }
   }, [auth.data?.actor.id])
-  if (current.error !== undefined) return <Page title="物业报修"><div className="px-4 lg:px-6"><ErrorBox error={current.error} /><p className="mt-3 text-sm text-muted-foreground">请确认后端已启用 M3，再刷新页面。</p></div></Page>
+  if (current.error !== undefined) return <Page title="物业报修"><div className="px-4 lg:px-6"><ErrorBox error={current.error} /><p className="mt-3 text-sm text-muted-foreground">报修服务暂时无法加载，请稍后刷新重试。</p></div></Page>
   if (current.loading || !auth.data) return <p role="status" className="p-6 text-sm text-muted-foreground">正在加载报修服务…</p>
   if (current.data?.actor.id !== auth.data.actor.id) return <Page title="物业报修"><p className="px-4 text-sm text-destructive">登录身份已变化，请刷新后继续。</p></Page>
+  if (!canOpenMaintenancePage(page, current.data.actor.permissions)) return <Page title="无权访问此页面"><p className="px-4 text-sm text-muted-foreground lg:px-6">你当前的账号没有此业务的操作权限，请从菜单选择可用功能。</p></Page>
   return <>
-    {current.data.development && <div className="mx-4 mt-4 lg:mx-6"><Alert><AlertTitle>本地开发环境</AlertTitle><AlertDescription>工单保存到本地 MySQL。场地目录、报修权限映射和通知路由仍使用开发适配器；邮件仅支持本地测试接收器，尚未向真实物业或公网邮箱投递。</AlertDescription></Alert></div>}
-    {page==="notifications"?<NotificationsPage gateway={gateway}/>:page==="stats"||page==="escalations"?<OperationsPage key={page} gateway={gateway} view={page}/>:page === "report" ? submission ? <ReportPage gateway={gateway} submission={submission} /> : <Page title="故障报修"><p className="px-4 text-sm text-destructive">浏览器会话存储不可用，请允许后刷新。当前不会发送新报修。</p></Page> : ["orders","dispatch","assigned","acceptance"].includes(page) ? <OrdersPage key={page} gateway={gateway} view={page==="dispatch"?"dispatch":page==="assigned"?"assigned":page==="acceptance"?"acceptance":"mine"} /> : <DetailPage gateway={gateway} actions={gateway} actorId={current.data.actor.id} />}
+    {page==="notifications"?<NotificationsPage gateway={gateway}/>:page==="stats"||page==="escalations"?<OperationsPage key={page} gateway={gateway} view={page}/>:page === "report" ? submission ? <ReportPage gateway={gateway} submission={submission} /> : <Page title="故障报修"><p className="px-4 text-sm text-destructive">浏览器无法保存报修进度，请允许本站存储数据后刷新。报修尚未发送。</p></Page> : ["orders","dispatch","assigned","acceptance"].includes(page) ? <OrdersPage key={page} gateway={gateway} canReport={canOpenMaintenancePage("report",current.data.actor.permissions)} view={page==="dispatch"?"dispatch":page==="assigned"?"assigned":page==="acceptance"?"acceptance":"mine"} /> : <DetailPage gateway={gateway} actions={gateway} actorId={current.data.actor.id} />}
   </>
 }
