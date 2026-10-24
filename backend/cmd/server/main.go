@@ -25,7 +25,7 @@ var web embed.FS
 
 func main() {
 	if os.Getenv("M1_DEV_MODE") != "true" {
-		log.Fatal("M1_DEV_MODE=true is required until M2 identity/catalog is integrated")
+		log.Fatal("M1_DEV_MODE=true is required until D-02 catalog is integrated")
 	}
 	secret := os.Getenv("M1_CODE_SECRET")
 	if len(secret) < 32 {
@@ -34,6 +34,24 @@ func main() {
 	f, e := dev.Load(os.Getenv("M1_DEV_FIXTURE"))
 	if e != nil {
 		log.Fatal(e)
+	}
+	for _, service := range []struct {
+		env, id, module string
+	}{
+		{"M2_SERVICE_TOKEN", "m2-service", "M2"},
+		{"M3_SERVICE_TOKEN", "m3-service", "M3"},
+	} {
+		token := os.Getenv(service.env)
+		if token == "" {
+			continue
+		}
+		if len(token) < 32 {
+			log.Fatalf("%s must contain at least 32 bytes", service.env)
+		}
+		if _, exists := f.Tokens[token]; exists {
+			log.Fatalf("%s must not reuse a dev fixture token", service.env)
+		}
+		f.Tokens[token] = booking.Actor{ID: service.id, Service: service.module}
 	}
 	db, e := sql.Open("mysql", os.Getenv("MYSQL_DSN"))
 	if e != nil {

@@ -20,6 +20,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// testM2ServiceToken is test-only; runtime tokens must come from M2_SERVICE_TOKEN.
+const testM2ServiceToken = "m2-service"
+
 type harness struct {
 	t         *testing.T
 	db        *sql.DB
@@ -65,6 +68,7 @@ func setup(t *testing.T) *harness {
 	if e != nil {
 		t.Fatal(e)
 	}
+	f.Tokens[testM2ServiceToken] = booking.Actor{ID: testM2ServiceToken, Service: "M2"}
 	d, e := dev.LoadClassroom("../../dev-fixture.json")
 	if e != nil {
 		t.Fatal(e)
@@ -82,7 +86,7 @@ func setup(t *testing.T) *harness {
 	router := h.resource.Router(f.Auth)
 	h.server = httptest.NewServer(router)
 	t.Cleanup(h.server.Close)
-	h.s = classroom.New(db, d, &classroom.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"})
+	h.s = classroom.New(db, d, &classroom.HTTPResources{BaseURL: h.server.URL, Token: testM2ServiceToken})
 	h.s.Now = func() time.Time { return h.now }
 	h.s.Register(router)
 	return h
@@ -352,14 +356,14 @@ func TestM2LostResponseRecoversAfterRestart(t *testing.T) {
 		w.Write(buf.Bytes())
 	}))
 	defer proxy.Close()
-	h.s.Resources = &classroom.HTTPResources{BaseURL: proxy.URL, Token: "m2-service"}
+	h.s.Resources = &classroom.HTTPResources{BaseURL: proxy.URL, Token: testM2ServiceToken}
 	b = h.run(b)
 	if b.Status == "APPROVED" || b.SyncStatus != "UNKNOWN" {
 		t.Fatal("lost response reported success")
 	}
 	// Advance beyond deadline. Persisted pre-deadline receipt still decides approval.
 	h.now = b.DeadlineAt.Add(time.Hour)
-	restarted := classroom.New(h.db, h.directory, &classroom.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"})
+	restarted := classroom.New(h.db, h.directory, &classroom.HTTPResources{BaseURL: h.server.URL, Token: testM2ServiceToken})
 	restarted.Now = func() time.Time { return h.now }
 	if e := restarted.Tick(context.Background()); e != nil {
 		t.Fatal(e)
@@ -454,7 +458,7 @@ func TestM2ReleaseUnavailableAndRetryLimit(t *testing.T) {
 	b = h.action(b, "student-demo", "CANCEL", "cancel")
 	unavailable := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(503) }))
 	defer unavailable.Close()
-	h.s.Resources = &classroom.HTTPResources{BaseURL: unavailable.URL, Token: "m2-service"}
+	h.s.Resources = &classroom.HTTPResources{BaseURL: unavailable.URL, Token: testM2ServiceToken}
 	for i := 0; i < 8; i++ {
 		b = h.run(b)
 	}
@@ -470,7 +474,7 @@ func TestM2ReleaseUnavailableAndRetryLimit(t *testing.T) {
 	if b.OperationID != original {
 		t.Fatal("retry changed operation identity")
 	}
-	h.s.Resources = &classroom.HTTPResources{BaseURL: h.server.URL, Token: "m2-service"}
+	h.s.Resources = &classroom.HTTPResources{BaseURL: h.server.URL, Token: testM2ServiceToken}
 	b = h.run(b)
 	if b.Status != "CANCELLED" {
 		t.Fatal("release did not recover")

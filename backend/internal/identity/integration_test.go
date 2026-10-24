@@ -25,6 +25,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// testM2ServiceToken is test-only; runtime tokens must come from M2_SERVICE_TOKEN.
+const testM2ServiceToken = "m2-service"
+
 type identityHarness struct {
 	t       *testing.T
 	db      *sql.DB
@@ -117,6 +120,7 @@ func setupIdentity(t *testing.T) *identityHarness {
 	if err != nil {
 		t.Fatal(err)
 	}
+	fixture.Tokens[testM2ServiceToken] = booking.Actor{ID: testM2ServiceToken, Service: "M2"}
 	m2Fixture, err := dev.LoadClassroom("../../dev-fixture.json")
 	if err != nil {
 		t.Fatal(err)
@@ -147,7 +151,7 @@ func setupIdentity(t *testing.T) *identityHarness {
 	classrooms.Register(router)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
-	classrooms.Resources = &classroom.HTTPResources{BaseURL: server.URL, Token: "m2-service"}
+	classrooms.Resources = &classroom.HTTPResources{BaseURL: server.URL, Token: testM2ServiceToken}
 
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -320,7 +324,7 @@ func TestSQLIdentityHTTPAndModuleIsolation(t *testing.T) {
 	if status != http.StatusUnauthorized {
 		t.Fatalf("revoked session remained valid: %d %s", status, raw)
 	}
-	h.client.Jar.SetCookies(h.baseURL, []*http.Cookie{{Name: identity.CookieName, Value: "m2-service", Path: "/"}})
+	h.client.Jar.SetCookies(h.baseURL, []*http.Cookie{{Name: identity.CookieName, Value: testM2ServiceToken, Path: "/"}})
 	status, raw, _ = h.request(http.MethodGet, "/api/v1/internal/resources/sources", nil, nil)
 	if status != http.StatusUnauthorized {
 		t.Fatalf("service credential in browser cookie was accepted: %d %s", status, raw)

@@ -1174,7 +1174,8 @@
         "backend/migrations/005_identity.sql",
         "backend/internal/identity/seed.go",
         "scripts/dev.sh",
-        "scripts/dev-m2.sh"
+        "scripts/dev-m2.sh",
+        ".env.example"
       ],
       "verification_files": [
         "docs/implementation/backend-package-layout.md",
