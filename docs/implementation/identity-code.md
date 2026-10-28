@@ -18,11 +18,17 @@
 `AUTH_DEV_SEED=true` 时才注入虚构数据：名册学生 `20260001 / 演示学生 / CS`，以及 `DEV-DEP-001`、`DEV-VENUE-001`、`DEV-OP-001` 三个受控账号。三者密码来自未提交的 `AUTH_DEV_PASSWORD`；种子不会覆盖已有密码。启动示例：
 
 ```sh
+cp .env.example .env   # 填入强数据库密码，.env 已被 .gitignore 忽略
 docker compose up -d mysql
 cd backend && go build -o server ./cmd/server
 cd ..
+export MYSQL_DSN='campus:<MYSQL_PASSWORD>@tcp(127.0.0.1:3306)/campus?parseTime=true&multiStatements=true'
+export M1_CODE_SECRET="$(openssl rand -hex 32)"
+export M2_SERVICE_TOKEN="$(openssl rand -hex 32)"
 AUTH_DEV_PASSWORD='自行设置至少10字节的本地密码' scripts/dev-m2.sh
 ```
+
+`MYSQL_DSN` 中的密码要与 `.env` 的 `MYSQL_PASSWORD` 一致；`M1_CODE_SECRET` 与 `M2_SERVICE_TOKEN` 必须至少 32 字节，脚本不再提供默认值。
 
 另开终端执行 `cd frontend && npm run dev`。学生可使用任意学工号和姓名注册；审批与运营账号使用本地设置的同一开发密码登录。当前空间主数据和服务身份仍依赖 `M1_DEV_MODE=true` 的 fixture，因此不能视为正式 D-02 或生产身份交付。
 
