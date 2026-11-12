@@ -137,7 +137,8 @@ func (s *Service) Get(ctx context.Context, a domain.Actor, id string) (Detail, e
 		if summary.State == "PENDING" {
 			summary.NextAttempt = &due
 		}
-		if summary.State != "PAUSED" {
+		_, canReconcile := s.Resources.(SourceReader)
+		if summary.State != "PAUSED" && !(summary.State == "FAILED" && order.Operation.Action == "RELEASE_SOURCE" && order.LastResourceError == "VERSION_CONFLICT" && canReconcile) {
 			out.AllowedActions = slices.DeleteFunc(out.AllowedActions, func(v string) bool { return v == "RETRY_RESOURCE" })
 		}
 	}

@@ -151,6 +151,33 @@ func (s *Service) Router(auth Authenticate, before ...gin.HandlerFunc) *gin.Engi
 			c.Abort()
 		}
 	})
+	internal.POST("/maintenance-impacts/:id/retry", func(c *gin.Context) {
+		err := s.RetryMaintenanceImpact(c.Request.Context(), get(c), c.Param("id"))
+		s.reply(c, gin.H{"eventId": c.Param("id")}, err)
+	})
+	internal.GET("/maintenance-impacts", func(c *gin.Context) {
+		if get(c).Service != "M3" {
+			s.reply(c, nil, bad("FORBIDDEN", 403))
+			return
+		}
+		rows, err := s.DB.QueryContext(c.Request.Context(), "SELECT id,source_business_id,state,attempts,last_error FROM m1_maintenance_impacts WHERE state IN ('FAILED','PENDING') ORDER BY created_at,id LIMIT 100")
+		if err != nil {
+			s.reply(c, nil, err)
+			return
+		}
+		defer rows.Close()
+		items := []gin.H{}
+		for rows.Next() {
+			var id, business, state, reason string
+			var attempts int
+			if err = rows.Scan(&id, &business, &state, &attempts, &reason); err != nil {
+				s.reply(c, nil, err)
+				return
+			}
+			items = append(items, gin.H{"eventId": id, "sourceBusinessId": business, "state": state, "attempts": attempts, "lastError": reason})
+		}
+		s.reply(c, items, rows.Err())
+	})
 	internal.POST("/operations", func(c *gin.Context) {
 		var q Operation
 		if c.ShouldBindJSON(&q) != nil {

@@ -186,3 +186,23 @@ func (s *Service) routeOne(ctx context.Context, event, id string) error {
 	}
 	return tx.Commit()
 }
+
+// recordDepartedStage preserves overdue facts when a command beats the scanner.
+// The caller holds the workorder lock; the history and action commit together.
+// Historical stages are obsolete for notification routing, but count in statistics.
+func (s *Service) recordDepartedStage(ctx context.Context, tx *sql.Tx, old, next domain.Order, endedAt, detectedAt time.Time) error {
+	if old.Stage.Number == next.Stage.Number || old.Stage.Escalated || old.Stage.DeadlineAt.IsZero() || endedAt.Before(old.Stage.DeadlineAt) {
+		return nil
+	}
+	event := ID()
+	_, err := tx.ExecContext(ctx, `INSERT INTO m3_escalations(id,workorder_id,stage_number,level,policy_version,stage_state,deadline_at,detected_at,routing_state,next_route_at,updated_at) VALUES (?,?,?,1,?,?,?,?,'OBSOLETE',?,?)`, event, old.ID, old.Stage.Number, old.Policy.Version, old.State, old.Stage.DeadlineAt, detectedAt, detectedAt, detectedAt)
+	if err != nil {
+		return err
+	}
+	if s.Events == nil {
+		return fault("DEPENDENCY_UNAVAILABLE", 503)
+	}
+	old.Version = next.Version
+	old.Stage.Escalated = true
+	return s.Events.Append(ctx, tx, domain.Change{Order: old, Action: "ESCALATE", ActorID: "system", From: old.State, At: detectedAt}, event, "m3-escalation-"+event)
+}

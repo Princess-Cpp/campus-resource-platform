@@ -592,7 +592,11 @@
         "backend/internal/maintenance/service.go",
         "frontend/src/modules/m3/pending-store.ts",
         "frontend/src/modules/m3/navigation.ts",
-        "frontend/src/modules/m3/use-navigation.ts"
+        "frontend/src/modules/m3/use-navigation.ts",
+        "backend/internal/booking/maintenance_impacts.go",
+        "backend/internal/classroom/maintenance_impacts.go",
+        "backend/migrations/011_maintenance_impacts.sql",
+        "contracts/resource-maintenance.openapi.json"
       ],
       "verification_files": [
         "backend/internal/maintenance/domain/workorder_test.go",
@@ -606,7 +610,10 @@
         "docs/implementation/m3-reporting.md",
         "docs/implementation/m3-delivery-candidate.md",
         "docs/implementation/m3-integration-gaps.md",
-        "frontend/src/modules/m3/navigation.test.ts"
+        "frontend/src/modules/m3/navigation.test.ts",
+        "backend/internal/classroom/maintenance_impacts_test.go",
+        "backend/internal/maintenance/repair_integration_test.go",
+        "docs/implementation/m3-review-fixes.md"
       ],
       "evidence": [
         "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
@@ -614,7 +621,8 @@
         "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。",
         "2026-10-22：新增报修/本人查询前端及显式示例适配器；M3前端11测试通过，浏览器预览操作和构建通过。无SQL/API/权限接入，真实业务集成not_run；组内schema/公共接口仍待评审。见 docs/local-review/2026-10-22-m3-round1-frontend.md。",
         "2026-10-22后续：基于main@aff197a，后端39顶层+18子测试通过，0失败/跳过，前端17测试及构建通过；归属/幂等破坏测试如期失败并恢复通过。文本创建、当前会话/CSRF/动作权限、目录范围、12路同键并发及结果丢失重试通过；目录和学生权限为显式开发适配器，图片仍postponed。 浏览器实际提交、刷新和筛选通过，人工验收待进行；见 docs/implementation/m3-reporting.md。",
-        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md."
+        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md.",
+        "2026-11-12: user-authorized candidate STARTED impact HTTP/MySQL recovery and explicit room lifecycle tests passed; team review/manual joint acceptance pending; ENDED/ROOM_DISABLED not implemented. See m3-review-fixes.md."
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -709,7 +717,11 @@
         "backend/cmd/server/maintenance.go",
         "frontend/src/modules/m3/components/order-actions.tsx",
         "frontend/src/modules/m3/pages/detail-page.tsx",
-        "frontend/src/modules/m3/pages/orders-page.tsx"
+        "frontend/src/modules/m3/pages/orders-page.tsx",
+        "backend/internal/booking/maintenance_impacts.go",
+        "backend/internal/classroom/maintenance_impacts.go",
+        "backend/migrations/011_maintenance_impacts.sql",
+        "contracts/resource-maintenance.openapi.json"
       ],
       "verification_files": [
         "backend/internal/maintenance/domain/workorder_test.go",
@@ -720,14 +732,17 @@
         "contracts/m3.openapi.json",
         "docs/implementation/m3-repair-recovery.md",
         "docs/implementation/m3-delivery-candidate.md",
-        "docs/implementation/m3-integration-gaps.md"
+        "docs/implementation/m3-integration-gaps.md",
+        "backend/internal/classroom/maintenance_impacts_test.go",
+        "docs/implementation/m3-review-fixes.md"
       ],
       "evidence": [
         "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
         "仅测试准备/回执规则；真实 M1 HTTP、MySQL、多来源、进程重启与影响补偿 not_run。",
         "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。",
         "2026-10-22 round 3, base 359f0b7: Go race 67 top-level + 18 subtests passed, zero failures/skips; frontend 26 tests and build passed. Wrong-business receipt and wrong-source release mutations failed as expected; restored 16 repair integration tests passed. Real M1 HTTP block, receipt provenance, idempotency, concurrency and restart/lost-response recovery passed; reliable impact events and formal shared adapters pending. Browser completed a fictional workflow. Manual acceptance and team review pending; local changes only, no commit/push. See docs/implementation/m3-repair-recovery.md.",
-        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md."
+        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md.",
+        "2026-11-12: user-authorized candidate STARTED impact HTTP/MySQL recovery and explicit room lifecycle tests passed; team review/manual joint acceptance pending; ENDED/ROOM_DISABLED not implemented. See m3-review-fixes.md."
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -773,14 +788,16 @@
         "docs/implementation/m3-repair-recovery.md",
         "docs/implementation/m3-delivery-candidate.md",
         "docs/implementation/m3-integration-gaps.md",
-        "frontend/src/modules/m3/navigation.test.ts"
+        "frontend/src/modules/m3/navigation.test.ts",
+        "docs/implementation/m3-review-fixes.md"
       ],
       "evidence": [
         "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
         "仅测试验收规则；处理/验收历史持久化、真实来源释放及重复 HTTP 命令 not_run。",
         "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。",
         "2026-10-22 round 3, base 359f0b7: Go race 67 top-level + 18 subtests passed, zero failures/skips; frontend 26 tests and build passed. Wrong-business receipt and wrong-source release mutations failed as expected; restored 16 repair integration tests passed. Persisted finish/acceptance history, independent acceptance, rejection/rework, own-source release and failure safety passed; manual acceptance pending. Browser completed a fictional workflow. Manual acceptance and team review pending; local changes only, no commit/push. See docs/implementation/m3-repair-recovery.md.",
-        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md."
+        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md.",
+        "2026-11-12: review-fix candidate on codex/m3-review-fixes; isolated MySQL/HTTP regression and mutation probes recorded in docs/implementation/m3-review-fixes.md. Team review, browser acceptance and production deployment remain pending."
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -1002,7 +1019,8 @@
         "frontend/src/modules/m3/pages/operations-page.tsx",
         "frontend/src/modules/m3/pages/detail-page.tsx",
         "frontend/src/modules/m3/operations.ts",
-        "frontend/src/modules/m3/transport.ts"
+        "frontend/src/modules/m3/transport.ts",
+        "backend/internal/maintenance/recovery.go"
       ],
       "verification_files": [
         "backend/internal/maintenance/domain/workorder_test.go",
@@ -1011,14 +1029,16 @@
         "backend/internal/maintenance/operations_integration_test.go",
         "frontend/src/modules/m3/actions.test.ts",
         "contracts/m3.openapi.json",
-        "docs/implementation/m3-evaluation-operations.md"
+        "docs/implementation/m3-evaluation-operations.md",
+        "docs/implementation/m3-review-fixes.md"
       ],
       "evidence": [
         "2026-10-21: go test -race -count=1 -cover ./internal/m3/domain passed (domain rules only).",
         "仅测试阶段阈值与状态规则；公共任务、持久化去重、主管异常、通知失败和重启补扫 not_run。",
         "2026-10-22: main@3b7d897 本地复跑 Go race 全包测试通过；M3领域12顶层+12子测试，覆盖率90.9%；未执行M3 SQL/API/资源集成或新破坏验证，见 docs/local-review/2026-10-22-m3-alignment.md。",
         "2026-10-22 round 4, base f968b8f: Go race 77 top-level +18 subtests passed, zero failures/skips; frontend 30 tests, TypeScript/Vite build, go vet and backend build passed. Rating-owner and stage-duplication mutations failed as expected, restored 10 new integration tests passed. Persistent per-stage escalation, threshold boundary, concurrent/restart deduplication, reassignment/rework timing, unresolved-resource exclusion, missing-supervisor exceptions and same-event routing recovery verified. Shared scheduler integration pending. Browser verified fictional rating, supervisor escalation and aggregates. Development adapters, policy/schema team review and manual acceptance remain pending; no commit/push/merge. See docs/implementation/m3-evaluation-operations.md.",
-        "2026-10-22 subsequent delivery: user authorized checking and uploading round 4 to the existing team feat/m3-reporting branch. Reviewed product-source hashes match the tested snapshot; only publication documentation/evidence changed. No merge/deployment or team-policy approval is implied. See docs/local-review/2026-10-22-m3-round4-prepublish.md."
+        "2026-10-22 subsequent delivery: user authorized checking and uploading round 4 to the existing team feat/m3-reporting branch. Reviewed product-source hashes match the tested snapshot; only publication documentation/evidence changed. No merge/deployment or team-policy approval is implied. See docs/local-review/2026-10-22-m3-round4-prepublish.md.",
+        "2026-11-12: review-fix candidate on codex/m3-review-fixes; isolated MySQL/HTTP regression and mutation probes recorded in docs/implementation/m3-review-fixes.md. Team review, browser acceptance and production deployment remain pending."
       ],
       "owner_module_group": "M3",
       "ownership_status": "user_stated_module_assignment",
@@ -1437,11 +1457,19 @@
       "acceptance_section": "D-04.3 对账与异常恢复",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
-      "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_status": "partial_development",
+      "verification_status": "local_m3_release_reconciliation_sql_http_passed_other_recovery_pending",
+      "implementation_files": [
+        "backend/internal/maintenance/actions.go",
+        "backend/internal/maintenance/resources.go"
+      ],
+      "verification_files": [
+        "backend/internal/maintenance/repair_integration_test.go",
+        "docs/implementation/m3-review-fixes.md"
+      ],
+      "evidence": [
+        "2026-11-12: review-fix candidate on codex/m3-review-fixes; isolated MySQL/HTTP regression and mutation probes recorded in docs/implementation/m3-review-fixes.md. Team review, browser acceptance and production deployment remain pending."
+      ],
       "owner_module_group": "M1",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
@@ -1487,15 +1515,19 @@
       "implementation_status": "partial_development",
       "verification_status": "local_packaging_fresh_migrations_seed_backup_passed_release_pending",
       "implementation_files": [
-        "backend/migrations/migrate.go"
+        "backend/migrations/migrate.go",
+        "backend/migrations/resume.go"
       ],
       "verification_files": [
         "docs/implementation/local-package-validation.md",
-        "docs/local-review/2026-10-23-m3-round6-prepublish.md"
+        "docs/local-review/2026-10-23-m3-round6-prepublish.md",
+        "backend/migrations/resume_test.go",
+        "docs/implementation/m3-review-fixes.md"
       ],
       "evidence": [
         "2026-10-23 subsequent local packaging verification, base 5137d28: current Vite output embedded into a private backend source copy; macOS/arm64 binary served 5 SPA routes and 7 static assets with matching hashes; unknown API/asset returned 404; anonymous M1/M2/M3 APIs returned 401. Fresh isolated MySQL applied all 10 migration checksums; second startup preserved versions, 4 seed/fictional users and public-registration session. Test-only backup restored to a second new database with all 31 table row counts and EXTENDED checksums matching. Original tracked product files/embed unchanged. No production/public interface change, commit/push, deployment, tag or rollback approval. See docs/implementation/local-package-validation.md. Restored-database application boot, platform release scripts, remote CI and team/manual acceptance remain not_run.",
-        "2026-10-23 authorized round-6 delivery: user approved submitting to existing team feat/m3-reporting branch. Prepublish review tightened full DSN matching and nonzero frontend test/skip checks, with 6 checker tests and two failed-as-expected mutations/restored pass. Initial frontend summary-format mismatch was retained as failed; after supporting Node default and TAP summaries, the complete runner passed 91 backend top-level +18 subtests and 30 frontend tests, zero failures/skips, plus vet/build. Application/schema/contract source unchanged; local packaging/empty migration/31-table test-only restore evidence retained with empty-business-table limitation. Team/manual/INT-04 acceptance, production and remote CI not inferred. See docs/local-review/2026-10-23-m3-round6-prepublish.md."
+        "2026-10-23 authorized round-6 delivery: user approved submitting to existing team feat/m3-reporting branch. Prepublish review tightened full DSN matching and nonzero frontend test/skip checks, with 6 checker tests and two failed-as-expected mutations/restored pass. Initial frontend summary-format mismatch was retained as failed; after supporting Node default and TAP summaries, the complete runner passed 91 backend top-level +18 subtests and 30 frontend tests, zero failures/skips, plus vet/build. Application/schema/contract source unchanged; local packaging/empty migration/31-table test-only restore evidence retained with empty-business-table limitation. Team/manual/INT-04 acceptance, production and remote CI not inferred. See docs/local-review/2026-10-23-m3-round6-prepublish.md.",
+        "2026-11-12: review-fix candidate on codex/m3-review-fixes; isolated MySQL/HTTP regression and mutation probes recorded in docs/implementation/m3-review-fixes.md. Team review, browser acceptance and production deployment remain pending."
       ],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",
@@ -1579,7 +1611,11 @@
         "backend/cmd/server/maintenance.go",
         "frontend/src/modules/m3/components/order-actions.tsx",
         "frontend/src/modules/m3/pages/detail-page.tsx",
-        "frontend/src/modules/m3/pages/orders-page.tsx"
+        "frontend/src/modules/m3/pages/orders-page.tsx",
+        "backend/internal/booking/maintenance_impacts.go",
+        "backend/internal/classroom/maintenance_impacts.go",
+        "backend/migrations/011_maintenance_impacts.sql",
+        "contracts/resource-maintenance.openapi.json"
       ],
       "verification_files": [
         "backend/internal/maintenance/repair_integration_test.go",
@@ -1587,11 +1623,14 @@
         "contracts/m3.openapi.json",
         "docs/implementation/m3-repair-recovery.md",
         "docs/implementation/m3-delivery-candidate.md",
-        "docs/implementation/m3-integration-gaps.md"
+        "docs/implementation/m3-integration-gaps.md",
+        "backend/internal/classroom/maintenance_impacts_test.go",
+        "docs/implementation/m3-review-fixes.md"
       ],
       "evidence": [
         "2026-10-22 round 3, base 359f0b7: Go race 67 top-level + 18 subtests passed, zero failures/skips; frontend 26 tests and build passed. Wrong-business receipt and wrong-source release mutations failed as expected; restored 16 repair integration tests passed. M3-to-M1 HTTP block/finish/independent acceptance/own-source release verified, preserving other M3/M2 sources and disabled rooms. Impact events, M2 activity interruption and violation compensation remain unverified; overall integration is incomplete. Browser completed a fictional workflow. Manual acceptance and team review pending; local changes only, no commit/push. See docs/implementation/m3-repair-recovery.md.",
-        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md."
+        "2026-10-23 local review closeout, base f647faa + uncommitted patch: full Go race 91 top-level +18 subtests, frontend 35 tests, vet/build passed with no failures/skips. Default npm test discovers all frontend tests; M3 permission menu uses effective server session for sidebar/home, 5 menu tests and a private mutation (4 expected failures) verified. AI browser operation with fictional reporter/dispatcher/repairer/independent acceptor completed two same-room orders: A complete + B awaiting kept search empty; both complete restored 2 seats; reporter rated A once. Team human signoff remains not_run, shared adapters and INT-04 remain open; no commit/push/merge/deploy. See docs/implementation/m3-delivery-candidate.md.",
+        "2026-11-12: user-authorized candidate STARTED impact HTTP/MySQL recovery and explicit room lifecycle tests passed; team review/manual joint acceptance pending; ENDED/ROOM_DISABLED not implemented. See m3-review-fixes.md."
       ],
       "owner_module_group": "M3",
       "ownership_status": "proposed_pending_review",
@@ -1635,15 +1674,24 @@
       "acceptance_section": "补充集成：INT-04 停用、维修对既有使用的影响",
       "origin": "integration_or_engineering_refinement",
       "approval_status": "pending_review",
-      "implementation_status": "not_started",
+      "implementation_status": "partial_development",
       "verification_status": "not_run",
-      "implementation_files": [],
+      "implementation_files": [
+        "backend/internal/booking/maintenance_impacts.go",
+        "backend/internal/classroom/maintenance_impacts.go",
+        "backend/migrations/011_maintenance_impacts.sql",
+        "contracts/resource-maintenance.openapi.json"
+      ],
       "verification_files": [
         "docs/implementation/m3-delivery-candidate.md",
-        "docs/implementation/m3-integration-gaps.md"
+        "docs/implementation/m3-integration-gaps.md",
+        "backend/internal/classroom/maintenance_impacts_test.go",
+        "backend/internal/maintenance/repair_integration_test.go",
+        "docs/implementation/m3-review-fixes.md"
       ],
       "evidence": [
-        "2026-10-23 review closeout, base f647faa: verified M1 rejects maintenance block for inactive rooms and M2 has no maintenance-impact consumer; existing TERMINATE is not an equivalent future-activity contract. Joint cases J-01/J-02 recorded as unresolved/not_run; no cross-module business writes or invented team decisions. See docs/implementation/m3-integration-gaps.md."
+        "2026-10-23 review closeout, base f647faa: verified M1 rejects maintenance block for inactive rooms and M2 has no maintenance-impact consumer; existing TERMINATE is not an equivalent future-activity contract. Joint cases J-01/J-02 recorded as unresolved/not_run; no cross-module business writes or invented team decisions. See docs/implementation/m3-integration-gaps.md.",
+        "2026-11-12: user-authorized candidate STARTED impact HTTP/MySQL recovery and explicit room lifecycle tests passed; team review/manual joint acceptance pending; ENDED/ROOM_DISABLED not implemented. See m3-review-fixes.md."
       ],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",

@@ -78,6 +78,26 @@ func main() {
 		classroomService := classroom.New(db, directory, &classroom.HTTPResources{BaseURL: base, Token: token})
 		classroomService.Policy = fixtureDirectory.Policy
 		classroomService.Register(r)
+		if os.Getenv("M3_ENABLED") == "true" {
+			impactToken := os.Getenv("M1_IMPACT_SERVICE_TOKEN")
+			if impactToken == os.Getenv("M2_SERVICE_TOKEN") || impactToken == os.Getenv("M3_SERVICE_TOKEN") {
+				log.Fatal("impact delivery token must be separate from resource service tokens")
+			}
+			if _, exists := f.Tokens[impactToken]; exists {
+				log.Fatal("impact delivery token must not reuse fixture credentials")
+			}
+			if e = classroomService.RegisterMaintenanceImpacts(r, impactToken); e != nil {
+				log.Fatal(e)
+			}
+			endpoint := os.Getenv("M2_IMPACT_URL")
+			if endpoint == "" {
+				endpoint = os.Getenv("M2_RESOURCE_URL")
+			}
+			s.ImpactSender, e = booking.NewHTTPImpactSender(endpoint, impactToken)
+			if e != nil {
+				log.Fatal(e)
+			}
+		}
 		go func() {
 			ticker := time.NewTicker(2 * time.Second)
 			defer ticker.Stop()

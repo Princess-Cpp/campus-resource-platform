@@ -30,6 +30,7 @@ type Seat struct {
 	Active bool   `json:"active"`
 }
 type Room struct {
+	Status     string `json:"status,omitempty"`
 	ID         string `json:"id"`
 	Name       string `json:"name"`
 	Area       string `json:"area"`
@@ -93,14 +94,26 @@ func (f *Fault) Error() string          { return f.Code }
 func bad(code string, status int) error { return &Fault{code, status} }
 
 type Service struct {
-	DB         *sql.DB
-	Catalog    Catalog
-	Now        func() time.Time
-	CodeSecret []byte
-	Zone       *time.Location
+	ImpactSender ImpactSender
+	DB           *sql.DB
+	Catalog      Catalog
+	Now          func() time.Time
+	CodeSecret   []byte
+	Zone         *time.Location
 }
 
 func New(db *sql.DB, c Catalog, secret []byte) *Service {
 	zone, _ := time.LoadLocation("Asia/Shanghai")
-	return &Service{db, c, time.Now, secret, zone}
+	return &Service{DB: db, Catalog: c, Now: time.Now, CodeSecret: secret, Zone: zone}
+}
+
+// Empty legacy false is intentionally not interpreted as DISABLED.
+func (r Room) Lifecycle() string {
+	if r.Status != "" {
+		return r.Status
+	}
+	if r.Active {
+		return "ACTIVE"
+	}
+	return "UNKNOWN"
 }

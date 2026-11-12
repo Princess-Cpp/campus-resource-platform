@@ -1,0 +1,235 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Resource maintenance impact candidate v1",
+    "version": "1.0.0",
+    "description": "用户授权实现；M1/M2/M3 组内评审待完成。202 ACCEPTED 只表示 M2 持久化接收，不表示活动来源已释放。"
+  },
+  "paths": {
+    "/api/v1/internal/m2/maintenance-impacts": {
+      "post": {
+        "operationId": "receiveMaintenanceImpact",
+        "security": [
+          {
+            "M1ImpactBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceImpact"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "持久化接收；同 ID 同载荷重放返回相同回执。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "eventId",
+                        "status"
+                      ],
+                      "properties": {
+                        "eventId": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ACCEPTED"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "非法事件或 JSON（最大16KiB）。"
+          },
+          "401": {
+            "description": "非专用服务身份或携带 Cookie。"
+          },
+          "409": {
+            "description": "同 eventId 不同载荷。"
+          },
+          "500": {
+            "description": "未确认接收，原 eventId 重试。"
+          }
+        }
+      }
+    },
+    "/api/v1/internal/resources/maintenance-impacts": {
+      "get": {
+        "operationId": "listMaintenanceImpacts",
+        "security": [
+          {
+            "M3ResourceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "data 数组，最多100条 PENDING/FAILED，按 created_at/id；字段 eventId、sourceBusinessId、state、attempts、lastError。"
+          },
+          "401": {
+            "description": "未认证"
+          },
+          "403": {
+            "description": "非M3服务"
+          },
+          "500": {
+            "description": "数据库错误"
+          }
+        }
+      }
+    },
+    "/api/v1/internal/resources/maintenance-impacts/{id}/retry": {
+      "post": {
+        "operationId": "retryMaintenanceImpact",
+        "security": [
+          {
+            "M3ResourceBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FAILED 重置为 PENDING；保留原事件 ID/载荷，事务审计；data.eventId。"
+          },
+          "401": {
+            "description": "未认证"
+          },
+          "403": {
+            "description": "非M3服务"
+          },
+          "404": {
+            "description": "事件不存在"
+          },
+          "409": {
+            "description": "非FAILED，不重复重置重试预算"
+          },
+          "500": {
+            "description": "数据库错误"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "M1ImpactBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "独立 M1_IMPACT_SERVICE_TOKEN，至少32字节；禁止 Cookie、浏览器凭证、M2/M3资源服务凭证。"
+      },
+      "M3ResourceBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "现有 M3 资源服务身份。"
+      }
+    },
+    "schemas": {
+      "MaintenanceImpact": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eventId",
+          "roomId",
+          "sourceBusinessId",
+          "applicationId",
+          "type",
+          "sourceModule",
+          "sourceVersion",
+          "applicationSourceVersion",
+          "occurredAt"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9._:-]{1,64}$"
+          },
+          "roomId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "sourceBusinessId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "applicationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ROOM_MAINTENANCE_STARTED"
+            ]
+          },
+          "sourceModule": {
+            "type": "string",
+            "enum": [
+              "M3"
+            ]
+          },
+          "sourceVersion": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "applicationSourceVersion": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "correlationId": {
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "description": "M1 阻塞事务快照中的精确 M2 活动来源及版本；仅 endAt > occurredAt。未来活动取消，已开始活动终止；迟到事件不扩大为房间范围取消。"
+      },
+      "RoomLifecycle": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "DISABLED",
+          "RETIRED"
+        ],
+        "description": "显式状态优先；缺省仅 active=true 兼容 ACTIVE，active=false 为 UNKNOWN 并拒绝新增占用/维修。DISABLED 可维修但不能预约；RETIRED 拒绝新维修；释放不改变生命周期。"
+      }
+    }
+  }
+}

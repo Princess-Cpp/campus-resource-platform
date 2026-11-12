@@ -106,3 +106,56 @@ func (h *HTTPResources) Execute(ctx context.Context, q ResourceRequest, trace st
 	r, _, e := h.call(ctx, http.MethodPost, "", q, trace)
 	return r, e
 }
+
+// SourceReader uses the existing v1 sources endpoint; no provider table access.
+type ResourceSource struct {
+	SourceModule     string `json:"sourceModule"`
+	SourceBusinessID string `json:"sourceBusinessId"`
+	RoomID           string `json:"roomId"`
+	Version          int64  `json:"sourceVersion"`
+	Active           bool   `json:"active"`
+	Kind             string `json:"kind"`
+}
+type SourceReader interface {
+	Source(context.Context, string) (ResourceSource, error)
+}
+
+func (h *HTTPResources) Source(ctx context.Context, businessID string) (ResourceSource, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, h.base+"/api/v1/internal/resources/sources", nil)
+	if err != nil {
+		return ResourceSource{}, err
+	}
+	req.Header.Set("Authorization", "Bearer "+h.token)
+	res, err := h.client.Do(req)
+	if err != nil {
+		return ResourceSource{}, fmt.Errorf("resource source lookup unavailable")
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return ResourceSource{}, fmt.Errorf("resource source lookup status %d", res.StatusCode)
+	}
+	var envelope struct {
+		Data []ResourceSource `json:"data"`
+	}
+	decoder := json.NewDecoder(io.LimitReader(res.Body, 4<<20))
+	if err = decoder.Decode(&envelope); err != nil {
+		return ResourceSource{}, err
+	}
+	if err = decoder.Decode(new(any)); err != io.EOF {
+		return ResourceSource{}, fmt.Errorf("invalid source response tail")
+	}
+	var found *ResourceSource
+	for _, source := range envelope.Data {
+		if source.SourceModule == "M3" && source.SourceBusinessID == businessID {
+			if found != nil {
+				return ResourceSource{}, fmt.Errorf("duplicate source")
+			}
+			value := source
+			found = &value
+		}
+	}
+	if found == nil || found.Version < 1 {
+		return ResourceSource{}, fmt.Errorf("source missing or invalid")
+	}
+	return *found, nil
+}

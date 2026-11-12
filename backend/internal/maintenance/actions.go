@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"math"
 	"slices"
 	"strings"
 	"time"
@@ -115,6 +116,34 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 	}{"WORKORDER_ACTION", id, q})
 	digest := sha256.Sum256(canonical)
 	hash := hex.EncodeToString(digest[:])
+	// Query the provider before acquiring any business transaction/row lock.
+	var reconciled *ResourceSource
+	if q.Action == "RETRY_RESOURCE" {
+		current, err := s.Get(ctx, a, id)
+		if err != nil {
+			return Order{}, err
+		}
+		if current.Operation != nil && current.Operation.State == "FAILED" {
+			if !slices.Contains(current.AllowedActions, "RETRY_RESOURCE") {
+				return Order{}, fault("FORBIDDEN", 403)
+			}
+			if q.Comment == "" {
+				return Order{}, fault("INVALID_INPUT", 400)
+			}
+			reader, ok := s.Resources.(SourceReader)
+			if !ok {
+				return Order{}, fault("DEPENDENCY_UNAVAILABLE", 503)
+			}
+			source, err := reader.Source(ctx, id)
+			if err != nil {
+				return Order{}, fault("DEPENDENCY_UNAVAILABLE", 503)
+			}
+			if source.SourceModule != "M3" || source.SourceBusinessID != id || source.RoomID != current.RoomID || source.Version < 1 || source.Version == math.MaxInt64 || (source.Active && source.Kind != "MAINTENANCE") {
+				return Order{}, fault("SOURCE_MISMATCH", 409)
+			}
+			reconciled = &source
+		}
+	}
 	tx, e := s.DB.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if e != nil {
 		return Order{}, e
@@ -194,7 +223,7 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 		if e = tx.QueryRowContext(ctx, "SELECT state FROM m3_resource_operations WHERE id=? FOR UPDATE", order.Operation.ID).Scan(&state); e != nil {
 			return Order{}, e
 		}
-		if state != "PAUSED" {
+		if state != "PAUSED" && !(state == "FAILED" && order.Operation.Action == "RELEASE_SOURCE" && order.LastResourceError == "VERSION_CONFLICT" && reconciled != nil) {
 			return Order{}, fault("INVALID_STATE", 409)
 		}
 		next := order
@@ -203,7 +232,22 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 		next.Version++
 		next.UpdatedAt = now
 		change = domain.Change{Order: next, Action: q.Action, ActorID: a.ID, Comment: q.Comment, From: order.State, At: now}
-		_, e = tx.ExecContext(ctx, "UPDATE m3_resource_operations SET state='PENDING',attempts=0,next_attempt=?,last_error='',updated_at=? WHERE id=?", now, now, order.Operation.ID)
+		if state == "FAILED" {
+			// Explicit terminal failure is reconciled with a NEW fenced operation.
+			// Unknown outcomes above retain their original operation ID and request.
+			if order.SourceVersion == math.MaxInt64 {
+				return Order{}, fault("SOURCE_MISMATCH", 409)
+			}
+			next.SourceVersion = max(order.SourceVersion, reconciled.Version) + 1
+			op := *order.Operation
+			op.ID = "M3OP-" + ID()
+			op.SourceVersion = next.SourceVersion
+			next.Operation = &op
+			change.Order = next
+			change.Comment = q.Comment + " (reconciled source version)"
+		} else {
+			_, e = tx.ExecContext(ctx, "UPDATE m3_resource_operations SET state='PENDING',attempts=0,next_attempt=?,last_error='',updated_at=? WHERE id=?", now, now, order.Operation.ID)
+		}
 	} else {
 		opID := ""
 		if q.Action == "START" || q.Action == "APPROVE_ACCEPTANCE" {
@@ -225,7 +269,7 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 		}
 		return Order{}, fault(e.Error(), status)
 	}
-	if q.Action == "START" || q.Action == "APPROVE_ACCEPTANCE" {
+	if q.Action == "START" || q.Action == "APPROVE_ACCEPTANCE" || (q.Action == "RETRY_RESOURCE" && change.Order.Operation.ID != order.Operation.ID) {
 		if s.Resources == nil {
 			return Order{}, fault("DEPENDENCY_UNAVAILABLE", 503)
 		}
@@ -240,6 +284,9 @@ func (s *Service) Act(ctx context.Context, a domain.Actor, id string, q ActionIn
 		}
 	}
 	next := change.Order
+	if e = s.recordDepartedStage(ctx, tx, order, next, now, now); e != nil {
+		return Order{}, e
+	}
 	raw, e = json.Marshal(next)
 	if e != nil {
 		return Order{}, e

@@ -24,7 +24,7 @@ func (s *Service)interval(start,end time.Time,max int)error{
  if a.Minute()!=0||a.Second()!=0||a.Nanosecond()!=0||b.Minute()!=0||b.Second()!=0||b.Nanosecond()!=0||!end.After(start)||end.Sub(start)>time.Duration(max)*time.Hour||a.Format("2006-01-02")!=b.Add(-time.Nanosecond).Format("2006-01-02"){return bad("INVALID_INPUT",400)};return nil
 }
 func (s *Service)access(r Room,a Actor,start,end time.Time)error{
- if !r.Active{return bad("RESOURCE_UNAVAILABLE",409)}
+ if r.Lifecycle()!="ACTIVE"{return bad("RESOURCE_UNAVAILABLE",409)}
  if r.Department!=""&&r.Department!=a.Department&&a.Service==""{return bad("FORBIDDEN",403)}
  if start.In(s.Zone).Hour()<r.OpenHour || end.In(s.Zone).Hour()>r.CloseHour || (end.In(s.Zone).Hour()==0 && r.CloseHour!=24){return bad("CLOSED",409)};return nil
 }

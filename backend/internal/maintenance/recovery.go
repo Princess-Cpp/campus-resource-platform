@@ -150,6 +150,16 @@ func (s *Service) RunOperation(ctx context.Context, id string) error {
 		}
 	}
 	next := change.Order
+	endedAt := now
+	if transportErr == nil && receipt.Status == "CONFIRMED" {
+		endedAt = receipt.EffectiveAt
+		if order.Operation.Action == "RELEASE_SOURCE" {
+			endedAt = order.Operation.RequestedAt
+		}
+	}
+	if e = s.recordDepartedStage(ctx, tx, order, next, endedAt, now); e != nil {
+		return e
+	}
 	raw, e = json.Marshal(next)
 	if e != nil {
 		return e

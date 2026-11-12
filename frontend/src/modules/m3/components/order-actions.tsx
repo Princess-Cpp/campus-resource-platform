@@ -41,7 +41,7 @@ export function OrderActions({ gateway, actorId, order, changed }: { gateway:Act
      <Field><FieldLabel htmlFor="m3-rating">维修评分（提交后不能修改）</FieldLabel><select id="m3-rating" className={selectClass} value={score} disabled={busy} onChange={e=>setScore(e.target.value)}><option value="">请选择 1–5 分</option>{[5,4,3,2,1].map(n=><option key={n} value={n}>{n} 分</option>)}</select></Field>
      <Field><FieldLabel htmlFor="m3-rating-comment">评价文字（选填）</FieldLabel><Textarea id="m3-rating-comment" value={comment} disabled={busy} onChange={e=>setComment(e.target.value)} placeholder="可描述维修后的使用情况"/><p className="text-xs text-muted-foreground">最多 500 字。仅报修人可在评价期内提交一次。</p></Field>
     </>}
-    {(canAssign||allowed.some(v=>["CANCEL","FINISH","REJECT_ACCEPTANCE","APPROVE_ACCEPTANCE"].includes(v))) && <Field><FieldLabel htmlFor="m3-action-comment">{canAssign?"处理建议（必填）":allowed.includes("FINISH")?"维修处理结果（必填）":allowed.includes("REJECT_ACCEPTANCE")?"验收意见（驳回时必填）":"取消说明（选填）"}</FieldLabel><Textarea id="m3-action-comment" value={comment} disabled={busy} onChange={e=>setComment(e.target.value)} placeholder="填写实际检查、处理结果或意见"/><p className="text-xs text-muted-foreground">最多 1000 字。</p></Field>}
+    {(canAssign||allowed.some(v=>["CANCEL","FINISH","REJECT_ACCEPTANCE","APPROVE_ACCEPTANCE","RETRY_RESOURCE"].includes(v))) && <Field><FieldLabel htmlFor="m3-action-comment">{allowed.includes("RETRY_RESOURCE")?"恢复说明（明确失败后必填）":canAssign?"处理建议（必填）":allowed.includes("FINISH")?"维修处理结果（必填）":allowed.includes("REJECT_ACCEPTANCE")?"验收意见（驳回时必填）":"取消说明（选填）"}</FieldLabel><Textarea id="m3-action-comment" value={comment} disabled={busy} onChange={e=>setComment(e.target.value)} placeholder="填写实际检查、处理结果或意见"/><p className="text-xs text-muted-foreground">最多 1000 字。</p></Field>}
     <div className="flex flex-wrap gap-2">
      {canAssign && <Button disabled={busy||workers.loading||!!workers.error||!assignee||!comment.trim()} onClick={()=>send("ASSIGN")}>{busy?"正在提交…":order.assigneeId?"确认重派":"确认派单"}</Button>}
      {allowed.includes("ACCEPT_ASSIGNMENT") && <Button disabled={busy} onClick={()=>send("ACCEPT_ASSIGNMENT")}>{busy?"正在提交…":"确认接单"}</Button>}
@@ -49,7 +49,7 @@ export function OrderActions({ gateway, actorId, order, changed }: { gateway:Act
      {allowed.includes("FINISH") && <Button disabled={busy||!comment.trim()} onClick={()=>send("FINISH")}>提交完工并等待验收</Button>}
      {allowed.includes("APPROVE_ACCEPTANCE") && <Button disabled={busy} onClick={()=>send("APPROVE_ACCEPTANCE")}>验收通过并申请恢复</Button>}
      {allowed.includes("REJECT_ACCEPTANCE") && <Button variant="outline" disabled={busy||!comment.trim()} onClick={()=>send("REJECT_ACCEPTANCE")}>验收驳回，退回维修</Button>}
-     {allowed.includes("RETRY_RESOURCE") && <Button disabled={busy} onClick={()=>send("RETRY_RESOURCE")}>重新确认教室状态</Button>}
+     {allowed.includes("RETRY_RESOURCE") && <Button disabled={busy||(order.operation?.state==="FAILED"&&!comment.trim())} onClick={()=>send("RETRY_RESOURCE")}>重新确认教室状态</Button>}
      {allowed.includes("EVALUATE") && <Button disabled={busy||!score} onClick={()=>send("EVALUATE")}>提交一次性评价</Button>}
      {allowed.includes("CANCEL") && <Button variant="outline" disabled={busy} onClick={()=>send("CANCEL")}>取消报修</Button>}
     </div>

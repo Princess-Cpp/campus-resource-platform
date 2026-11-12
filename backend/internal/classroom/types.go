@@ -36,6 +36,7 @@ func (a Actor) Area(area string) bool {
 }
 
 type Room struct {
+	Status     string `json:"status,omitempty"`
 	ID         string `json:"id"`
 	Name       string `json:"name"`
 	Area       string `json:"area"`

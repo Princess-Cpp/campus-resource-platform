@@ -203,7 +203,7 @@ func (s *Service) Tick(ctx context.Context) error {
 			return e
 		}
 	}
-	return nil
+	return s.ProcessMaintenanceImpacts(ctx)
 }
 func (s *Service) expire(ctx context.Context, application string) error {
 	tx, e := s.begin(ctx)

@@ -30,7 +30,7 @@ func (s *Service)Operate(ctx context.Context,a Actor,q Operation,key,trace strin
  fail:=func(code string){receipt.OperationStatus="FAILED";receipt.ErrorCode=code}
  if err==nil&&(q.SourceVersion<=version||oldRoom!=q.RoomID){fail("VERSION_CONFLICT")}
  if receipt.ErrorCode==""&&q.Action!="RELEASE_SOURCE"{
-  r,e:=s.room(ctx,tx,q.RoomID);if e!=nil{return receipt,e};if !r.Active{fail("RESOURCE_UNAVAILABLE")}
+  r,e:=s.room(ctx,tx,q.RoomID);if e!=nil{return receipt,e};if r.Lifecycle()!="ACTIVE" && !(q.Action=="BLOCK_ROOM_MAINTENANCE" && r.Lifecycle()=="DISABLED"){fail("RESOURCE_UNAVAILABLE")}
   if q.Action=="HOLD_ROOM_INTERVAL"{
    if q.StartAt==nil||q.EndAt==nil||q.DeadlineAt==nil{return receipt,bad("INVALID_INPUT",400)}
    if e=s.interval(*q.StartAt,*q.EndAt,24);e!=nil{return receipt,e}
@@ -44,7 +44,7 @@ func (s *Service)Operate(ctx context.Context,a Actor,q Operation,key,trace strin
   if q.Action=="HOLD_ROOM_INTERVAL"{kind="ROOM";start=q.StartAt.UTC();end=q.EndAt.UTC()}
   var released any;if q.Action=="RELEASE_SOURCE"{active=false;kind="RELEASED";released=s.Now().UTC()}
   _,err=tx.ExecContext(ctx,`INSERT INTO m1_sources VALUES (?,?,?,'',?,?, ?,?,?,?,?) ON DUPLICATE KEY UPDATE version=VALUES(version),active=VALUES(active),released_at=VALUES(released_at)`,q.SourceModule,q.SourceBusinessID,q.RoomID,q.SourceVersion,active,kind,start,end,s.Now().UTC(),released);if err!=nil{return receipt,err}
-  if q.Action=="BLOCK_ROOM_MAINTENANCE"{if err=s.cancelMaintenance(ctx,tx,q.RoomID,trace);err!=nil{return receipt,err}}
+  if q.Action=="BLOCK_ROOM_MAINTENANCE"{if err=s.cancelMaintenance(ctx,tx,q.RoomID,trace);err!=nil{return receipt,err};if err=s.queueMaintenanceImpacts(ctx,tx,q,receipt.EffectiveAt,trace);err!=nil{return receipt,err}}
   if err=s.audit(ctx,tx,a.Service,q.Action,q.SourceBusinessID,q.SourceModule,trace);err!=nil{return receipt,err}
  }
  raw,_:=json.Marshal(receipt);_,err=tx.ExecContext(ctx,"INSERT INTO m1_operations VALUES (?,?,?,?,?)",q.OperationID,a.Service,key,hash(q),string(raw));if err!=nil{return receipt,err};return receipt,tx.Commit()

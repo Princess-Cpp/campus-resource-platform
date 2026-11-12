@@ -1349,6 +1349,15 @@
           },
           "active": {
             "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED",
+              "RETIRED"
+            ],
+            "description": "显式生命周期优先于 active；缺省时仅 active=true 兼容 ACTIVE。停用维修不会启用场地。"
           }
         }
       }

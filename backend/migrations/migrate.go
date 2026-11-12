@@ -60,7 +60,9 @@ func Apply(ctx context.Context, db *sql.DB) error {
 				continue
 			}
 			if _, e = conn.ExecContext(ctx, statement); e != nil {
-				return e
+				if e = resumeDDL(ctx, conn, statement, e); e != nil {
+					return e
+				}
 			}
 		}
 		if _, e = conn.ExecContext(ctx, "INSERT INTO m1_schema_migrations VALUES (?,?)", version, sum); e != nil {

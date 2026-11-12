@@ -95,7 +95,7 @@ func setupIdentity(t *testing.T) *identityHarness {
 		t.Fatal(err)
 	}
 	tables := []string{
-		"m2_commands", "m2_events", "m2_outbox", "m2_operations", "m2_applications",
+		"m1_maintenance_impacts", "m2_maintenance_impacts", "m2_commands", "m2_events", "m2_outbox", "m2_operations", "m2_applications",
 		"m1_operations", "m1_sources", "m1_bookings", "m1_audit", "m1_outbox", "m1_violations",
 		"d_login_attempts", "d_sessions", "d_user_contacts", "d_user_areas",
 		"d_user_roles", "d_users", "d_student_roster",

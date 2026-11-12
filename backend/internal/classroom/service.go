@@ -40,7 +40,7 @@ func (s *Service) Search(ctx context.Context, a Actor, token string, start, end 
 		if endHour == 0 {
 			endHour = 24
 		}
-		if r.Active && r.Capacity >= capacity && (area == "" || strings.Contains(r.Area, area)) && (r.Department == "" || r.Department == a.Department) && start.In(s.Zone).Hour() >= r.OpenHour && endHour <= r.CloseHour && available[r.ID] {
+		if (r.Status == "ACTIVE" || (r.Status == "" && r.Active)) && r.Capacity >= capacity && (area == "" || strings.Contains(r.Area, area)) && (r.Department == "" || r.Department == a.Department) && start.In(s.Zone).Hour() >= r.OpenHour && endHour <= r.CloseHour && available[r.ID] {
 			out = append(out, r)
 		}
 	}

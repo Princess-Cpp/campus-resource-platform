@@ -32,7 +32,7 @@ type repairHarness struct {
 func setupRepair(t *testing.T) *repairHarness {
 	h := setup(t)
 	// Fixture cleanup is confined to the campus_m3_check database checked above.
-	for _, table := range []string{"m1_operations", "m1_sources", "m1_bookings", "m1_audit", "m1_outbox", "m1_violations"} {
+	for _, table := range []string{"m1_maintenance_impacts", "m1_operations", "m1_sources", "m1_bookings", "m1_audit", "m1_outbox", "m1_violations"} {
 		if _, e := h.db.Exec("DELETE FROM " + table); e != nil {
 			t.Fatal(e)
 		}
@@ -76,6 +76,19 @@ func setupRepair(t *testing.T) *repairHarness {
 					return
 				}
 			}
+		}
+		if r.mode.Load() == 4 && req.URL.Path == "/api/v1/internal/resources/sources" {
+			var envelope struct {
+				Data []map[string]any `json:"data"`
+			}
+			if err := json.Unmarshal(out.Body.Bytes(), &envelope); err != nil {
+				t.Error(err)
+			}
+			for _, source := range envelope.Data {
+				source["roomId"] = "another-room"
+			}
+			json.NewEncoder(w).Encode(envelope)
+			return
 		}
 		w.Write(out.Body.Bytes())
 	}))
@@ -425,7 +438,7 @@ func TestRepairLocalOutboxFailureAfterRemoteCommitRecovers(t *testing.T) {
 	}
 }
 
-func TestRepairKnownReleaseFailureKeepsSafetyAndRejectsRetry(t *testing.T) {
+func TestRepairKnownReleaseFailureReconcilesWithNewFencedOperation(t *testing.T) {
 	r := setupRepair(t)
 	o, _, w, a := r.ready()
 	o = r.command(o, w, "START")
@@ -439,13 +452,51 @@ func TestRepairKnownReleaseFailureKeepsSafetyAndRejectsRetry(t *testing.T) {
 	if current.State != "AWAITING_ACCEPTANCE" || current.SyncState != "NEEDS_ATTENTION" || current.LastResourceError != "VERSION_CONFLICT" || current.Operation.State != "FAILED" || !r.sourceActive("M3", o.ID) {
 		t.Fatalf("release failure unsafe %+v", current)
 	}
-	if slices.Contains(current.AllowedActions, "RETRY_RESOURCE") {
-		t.Fatal("terminal failed receipt offered unknown retry")
+	if !slices.Contains(current.AllowedActions, "RETRY_RESOURCE") {
+		t.Fatal("missing reconciliation action")
 	}
-	code, _ := r.act(o.ID, maintenance.ID(), a, action("RETRY_RESOURCE", current.Version, ""))
-	if code != 409 {
-		t.Fatal("terminal failed operation reset", code)
+	failedID := current.Operation.ID
+	r.extraSource("M3", "other-workorder", 1)
+	code, _ := r.act(o.ID, maintenance.ID(), w, action("RETRY_RESOURCE", current.Version, ""))
+	if code != 403 {
+		t.Fatal("repairer may not reconcile release", code)
 	}
+	empty := action("RETRY_RESOURCE", current.Version, "")
+	empty["comment"] = ""
+	code, _ = r.act(o.ID, maintenance.ID(), a, empty)
+	if code != 400 {
+		t.Fatal("reconciliation needs reason", code)
+	}
+	r.mode.Store(4)
+	before := r.count("m3_resource_operations")
+	code, _ = r.act(o.ID, maintenance.ID(), a, action("RETRY_RESOURCE", current.Version, ""))
+	if code != 409 || r.count("m3_resource_operations") != before {
+		t.Fatal("mismatched source accepted", code)
+	}
+	r.mode.Store(0)
+	key := maintenance.ID()
+	q := action("RETRY_RESOURCE", current.Version, "")
+	code, raw := r.act(o.ID, key, a, q)
+	if code != 202 {
+		t.Fatalf("reconcile %d %s", code, raw)
+	}
+	next := decode[maintenance.Order](t, raw)
+	if next.Operation.ID == failedID {
+		t.Fatal("terminal receipt reused")
+	}
+	code, raw = r.act(o.ID, key, a, q)
+	if code != 202 || decode[maintenance.Order](t, raw).Operation.ID != next.Operation.ID {
+		t.Fatal("retry replay minted operation")
+	}
+	r.run(next.Operation.ID)
+	if r.current(o.ID, a).State != "COMPLETED" || r.sourceActive("M3", o.ID) || !r.sourceActive("M3", "other-workorder") {
+		t.Fatal("recovery failed or released another source")
+	}
+	var state string
+	if err := r.db.QueryRow("SELECT state FROM m3_resource_operations WHERE id=?", failedID).Scan(&state); err != nil || state != "FAILED" {
+		t.Fatal("failed receipt history overwritten", state, err)
+	}
+
 }
 
 func TestRepairConcurrentSameCommandAndWorkersAreIdempotent(t *testing.T) {
@@ -616,5 +667,35 @@ func TestRepairRequiresAcceptedAssignment(t *testing.T) {
 	code, raw := h.act(o.ID, "start-before-accept", w, action("START", o.Version, ""))
 	if code != 409 {
 		t.Fatalf("unaccepted repair must be a state conflict: %d %s", code, raw)
+	}
+}
+
+func TestExplicitDisabledRoomCanRepairWithoutEnablingBookings(t *testing.T) {
+	r := setupRepair(t)
+	r.m1catalog.RoomsData[0].Active = false
+	r.m1catalog.RoomsData[0].Status = "DISABLED"
+	o, _, w, a := r.ready()
+	o = r.command(o, w, "START")
+	r.run(o.Operation.ID)
+	o = r.current(o.ID, w).Order
+	if o.State != "IN_PROGRESS" {
+		t.Fatal("disabled room cannot be repaired")
+	}
+	o = r.command(o, w, "FINISH")
+	o = r.command(o, a, "APPROVE_ACCEPTANCE")
+	r.run(o.Operation.ID)
+	if r.current(o.ID, a).State != "COMPLETED" || r.available() {
+		t.Fatal("repair implicitly enabled disabled room")
+	}
+}
+func TestRetiredRoomRejectsNewMaintenanceEvenWithLegacyActive(t *testing.T) {
+	r := setupRepair(t)
+	r.m1catalog.RoomsData[0].Status = "RETIRED"
+	r.m1catalog.RoomsData[0].Active = true
+	o, _, w, _ := r.ready()
+	o = r.command(o, w, "START")
+	r.run(o.Operation.ID)
+	if r.current(o.ID, w).State != "ASSIGNED" || r.sourceActive("M3", o.ID) || r.available() {
+		t.Fatal("retired room accepted a new block or booking")
 	}
 }

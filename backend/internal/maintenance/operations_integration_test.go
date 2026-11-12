@@ -288,8 +288,8 @@ func TestEscalationReassignUnknownAndReworkStages(t *testing.T) {
 	if e := r.service.EscalateOverdue(context.Background()); e != nil {
 		t.Fatal(e)
 	}
-	if r.count("m3_escalations") != 3 {
-		t.Fatal("repair, acceptance, rework must have distinct stages", r.count("m3_escalations"))
+	if r.count("m3_escalations") != 4 {
+		t.Fatal("late start, repair, acceptance, rework must have distinct stages", r.count("m3_escalations"))
 	}
 	if !r.sourceActive("M3", o.ID) {
 		t.Fatal("escalation released safety source")
@@ -458,5 +458,51 @@ func TestEscalationAuditRollbackAndOutboxRetry(t *testing.T) {
 	h.db.QueryRow("SELECT COUNT(*) FROM m3_outbox WHERE kind='WORKORDER_ESCALATED'").Scan(&n)
 	if n != 1 {
 		t.Fatal("route duplicated notification intent", n)
+	}
+}
+
+func TestDepartedOverdueStageRecordedWithoutScanner(t *testing.T) {
+	r := setupRepair(t)
+	o, _, w, a := r.ready()
+	clock := clockFor(r.harness)
+	o = r.command(o, w, "START")
+	r.run(o.Operation.ID)
+	o = r.current(o.ID, w).Order
+	clock.Add(int64(25 * time.Hour))
+	// An audit failure must roll back both the action and missed-stage record.
+	if _, err := r.db.Exec("CREATE TRIGGER m3_departure_failure BEFORE INSERT ON m3_events FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='test'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { r.db.Exec("DROP TRIGGER IF EXISTS m3_departure_failure") })
+	code, _ := r.act(o.ID, maintenance.ID(), w, action("FINISH", o.Version, ""))
+	if code != 500 || r.count("m3_escalations") != 0 || r.current(o.ID, w).State != "IN_PROGRESS" {
+		t.Fatal("historical escalation did not roll back", code)
+	}
+	r.db.Exec("DROP TRIGGER m3_departure_failure")
+	o = r.command(o, w, "FINISH")
+	if r.count("m3_escalations") != 1 {
+		t.Fatal("overdue repair vanished")
+	}
+	clock.Add(int64(25 * time.Hour))
+	o = r.command(o, a, "APPROVE_ACCEPTANCE")
+	r.run(o.Operation.ID)
+	if r.count("m3_escalations") != 2 {
+		t.Fatal("overdue acceptance vanished")
+	}
+	if err := r.service.Sweep(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if r.count("m3_escalations") != 2 {
+		t.Fatal("scanner duplicated historical stages")
+	}
+	var stale int
+	if err := r.db.QueryRow("SELECT COUNT(*) FROM m3_outbox WHERE kind='WORKORDER_ESCALATED'").Scan(&stale); err != nil || stale != 0 {
+		t.Fatal("historical stage sent current-action notification", stale, err)
+	}
+	stats := r.staff("workorder.stats", "A楼")
+	code, raw := r.request("GET", "/stats", "", stats, nil)
+	result := decode[maintenance.Statistics](t, raw)
+	if code != 200 || result.RecordedOverdueCount != 1 {
+		t.Fatal("historical overdue missing from statistics", code, string(raw))
 	}
 }
