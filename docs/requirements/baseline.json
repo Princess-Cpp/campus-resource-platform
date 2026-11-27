@@ -314,6 +314,7 @@
       ],
       "verification_files": [
         "backend/internal/classroom/integration_test.go",
+        "backend/internal/booking/maintenance_integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -350,6 +351,7 @@
       ],
       "verification_files": [
         "backend/internal/classroom/integration_test.go",
+        "backend/internal/booking/maintenance_integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -1089,7 +1091,7 @@
       ],
       "evidence": [
         "Resource operations implement source-scoped hold/block/release, idempotency keys and version fences.",
-        "M2 real-MySQL/HTTP tests cover room hold conflict, release and response-loss recovery; M3 caller integration is not implemented."
+        "M2 real-MySQL/HTTP tests cover room hold conflict, release and response-loss recovery; M1 MySQL tests cover DISABLED maintenance block/release and RETIRED/missing room rejection, including repeated runs. M3 caller integration is not implemented."
       ],
       "owner_module_group": "M1",
       "ownership_status": "revised_proposal_pending_team_estimates",
@@ -1265,11 +1267,12 @@
       "implementation_status": "partial_development",
       "verification_status": "not_run",
       "implementation_files": [
-        "backend/internal/booking/resources.go"
+        "backend/internal/booking/resources.go",
+        "backend/internal/booking/types.go"
       ],
-      "verification_files": [],
+      "verification_files": ["backend/internal/booking/maintenance_integration_test.go"],
       "evidence": [
-        "M1 resource side implements maintenance block and source-scoped release; M3 workorder persistence/API/UI and real M3 integration are not implemented, so the link is not verified."
+        "M1 resource side implements maintenance block and source-scoped release; isolated MySQL tests passed twice for DISABLED block/release and RETIRED/missing rejection. M3 workorder persistence/API/UI and real M3 integration are not implemented, so the link is not verified."
       ],
       "owner_module_group": "M3",
       "ownership_status": "proposed_pending_review",
@@ -1315,9 +1318,9 @@
       "approval_status": "pending_review",
       "implementation_status": "not_started",
       "verification_status": "not_run",
-      "implementation_files": [],
-      "verification_files": [],
-      "evidence": [],
+      "implementation_files": ["backend/internal/booking/resources.go", "backend/internal/booking/tasks.go"],
+      "verification_files": ["backend/internal/booking/maintenance_integration_test.go"],
+      "evidence": ["M1 isolated MySQL tests passed twice for DISABLED maintenance block/release and RETIRED/missing rejection. Existing booking cancellation logic is present; M2 activity impact and full M3 HTTP integration remain unverified."],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
