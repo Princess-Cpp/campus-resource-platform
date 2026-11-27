@@ -35,6 +35,7 @@ type Room struct {
 	Area       string `json:"area"`
 	Department string `json:"department"`
 	Active     bool   `json:"active"`
+	Status     string `json:"status,omitempty"`
 	OpenHour   int    `json:"openHour"`
 	CloseHour  int    `json:"closeHour"`
 	Seats      []Seat `json:"seats"`
