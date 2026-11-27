@@ -314,7 +314,6 @@
       ],
       "verification_files": [
         "backend/internal/classroom/integration_test.go",
-        "backend/internal/booking/maintenance_integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -351,7 +350,6 @@
       ],
       "verification_files": [
         "backend/internal/classroom/integration_test.go",
-        "backend/internal/booking/maintenance_integration_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
@@ -1087,11 +1085,13 @@
       ],
       "verification_files": [
         "backend/internal/classroom/integration_test.go",
+        "backend/internal/booking/maintenance_integration_test.go",
+        "backend/internal/booking/service_test.go",
         "docs/implementation/m2-code.md"
       ],
       "evidence": [
         "Resource operations implement source-scoped hold/block/release, idempotency keys and version fences.",
-        "M2 real-MySQL/HTTP tests cover room hold conflict, release and response-loss recovery; M1 MySQL tests cover DISABLED maintenance block/release and RETIRED/missing room rejection, including repeated runs. M3 caller integration is not implemented."
+        "M2 real-MySQL/HTTP tests cover room hold conflict, release and response-loss recovery; M1 MySQL tests cover DISABLED maintenance block/release and RETIRED/missing room rejection, including repeated runs. Room state tests reject contradictory Status/Active values. M3 caller integration is not implemented."
       ],
       "owner_module_group": "M1",
       "ownership_status": "revised_proposal_pending_team_estimates",
@@ -1318,9 +1318,9 @@
       "approval_status": "pending_review",
       "implementation_status": "not_started",
       "verification_status": "not_run",
-      "implementation_files": ["backend/internal/booking/resources.go", "backend/internal/booking/tasks.go"],
-      "verification_files": ["backend/internal/booking/maintenance_integration_test.go"],
-      "evidence": ["M1 isolated MySQL tests passed twice for DISABLED maintenance block/release and RETIRED/missing rejection. Existing booking cancellation logic is present; M2 activity impact and full M3 HTTP integration remain unverified."],
+      "implementation_files": [],
+      "verification_files": [],
+      "evidence": [],
       "owner_module_group": "M3",
       "ownership_status": "revised_proposal_pending_team_estimates",
       "ownership_document": "docs/process/module-ownership.md",
