@@ -30,7 +30,10 @@ func (s *Service)Operate(ctx context.Context,a Actor,q Operation,key,trace strin
  fail:=func(code string){receipt.OperationStatus="FAILED";receipt.ErrorCode=code}
  if err==nil&&(q.SourceVersion<=version||oldRoom!=q.RoomID){fail("VERSION_CONFLICT")}
  if receipt.ErrorCode==""&&q.Action!="RELEASE_SOURCE"{
-  r,e:=s.room(ctx,tx,q.RoomID);if e!=nil{return receipt,e};if !r.Active{fail("RESOURCE_UNAVAILABLE")}
+  r,e:=s.room(ctx,tx,q.RoomID);if e!=nil{return receipt,e}
+  if q.Action=="BLOCK_ROOM_MAINTENANCE" {
+   if r.State()!="ACTIVE" && r.State()!="DISABLED" {fail("RESOURCE_UNAVAILABLE")}
+  } else if r.State()!="ACTIVE" {fail("RESOURCE_UNAVAILABLE")}
   if q.Action=="HOLD_ROOM_INTERVAL"{
    if q.StartAt==nil||q.EndAt==nil||q.DeadlineAt==nil{return receipt,bad("INVALID_INPUT",400)}
    if e=s.interval(*q.StartAt,*q.EndAt,24);e!=nil{return receipt,e}

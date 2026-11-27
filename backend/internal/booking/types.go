@@ -35,9 +35,30 @@ type Room struct {
 	Area       string `json:"area"`
 	Department string `json:"department"`
 	Active     bool   `json:"active"`
+	Status     string `json:"status,omitempty"`
 	OpenHour   int    `json:"openHour"`
 	CloseHour  int    `json:"closeHour"`
 	Seats      []Seat `json:"seats"`
+}
+
+// Status is authoritative when supplied by D-02. Active is retained for
+// existing catalogs and must agree with an explicit status.
+func (r Room) State() string {
+	if r.Status == "" {
+		if r.Active {
+			return "ACTIVE"
+		}
+		return "UNKNOWN"
+	}
+	if (r.Status == "ACTIVE") != r.Active {
+		return "UNKNOWN"
+	}
+	switch r.Status {
+	case "ACTIVE", "DISABLED", "RETIRED":
+		return r.Status
+	default:
+		return "UNKNOWN"
+	}
 }
 
 // Implemented by M2's master-data module. Updates must use WithRoomLock and
