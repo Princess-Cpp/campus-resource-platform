@@ -41,6 +41,26 @@ type Room struct {
 	Seats      []Seat `json:"seats"`
 }
 
+// Status is authoritative when supplied by D-02. Active is retained for
+// existing catalogs and must agree with an explicit status.
+func (r Room) State() string {
+	if r.Status == "" {
+		if r.Active {
+			return "ACTIVE"
+		}
+		return "UNKNOWN"
+	}
+	if (r.Status == "ACTIVE") != r.Active {
+		return "UNKNOWN"
+	}
+	switch r.Status {
+	case "ACTIVE", "DISABLED", "RETIRED":
+		return r.Status
+	default:
+		return "UNKNOWN"
+	}
+}
+
 // Implemented by M2's master-data module. Updates must use WithRoomLock and
 // validate existing occupancy in the same transaction before changing a room.
 type Catalog interface {
