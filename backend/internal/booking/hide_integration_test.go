@@ -46,7 +46,7 @@ func setupHide(t *testing.T) *hideHarness {
 	if e = migrations.Apply(context.Background(), db); e != nil {
 		t.Fatal(e)
 	}
-	for _, table := range []string{"m1_sources", "m1_bookings", "m1_audit", "m1_outbox", "m1_violations"} {
+	for _, table := range []string{"m1_operations", "m1_sources", "m1_bookings", "m1_audit", "m1_outbox", "m1_violations"} {
 		if _, e = db.Exec("DELETE FROM " + table); e != nil {
 			t.Fatal(e)
 		}
